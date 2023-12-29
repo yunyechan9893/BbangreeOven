@@ -1,2 +1,4 @@
-package com.bbangle.bbangle.controller;public class Dummy2 {
+package com.bbangle.bbangle.controller;
+
+public class Dummy2 {
 }

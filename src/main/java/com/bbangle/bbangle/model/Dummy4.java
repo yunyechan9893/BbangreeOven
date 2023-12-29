@@ -1,4 +1,4 @@
 package com.bbangle.bbangle.model;
 
-public class dummy4 {
+public class Dummy4 {
 }

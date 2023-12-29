@@ -1,4 +1,4 @@
 package com.bbangle.bbangle.repository;
 
-public class dummy5 {
+public class Dummy5 {
 }

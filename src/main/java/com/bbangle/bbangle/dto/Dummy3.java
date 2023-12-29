@@ -1,2 +1,4 @@
-package com.bbangle.bbangle.dto;public class Dummy3 {
+package com.bbangle.bbangle.dto;
+
+public class Dummy3 {
 }
