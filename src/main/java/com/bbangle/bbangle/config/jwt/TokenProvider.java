@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.config.jwt;
 
-import com.bbangle.bbangle.model.entity.MemberEntity;
+import com.bbangle.bbangle.model.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
@@ -33,7 +33,7 @@ public class TokenProvider {
      * @param expiredAt 만료기간
      * @return JWT 토큰
      */
-    public String generateToken(MemberEntity member, Duration expiredAt){
+    public String generateToken(Member member, Duration expiredAt){
         Date now = new Date();
         return makeToken(new Date(now.getTime() + expiredAt.toMillis()), member);
     }
@@ -46,7 +46,7 @@ public class TokenProvider {
      * @param member 유저
      * @return JWT 토큰
      */
-    private String makeToken(Date expiry, MemberEntity member) {
+    private String makeToken(Date expiry, Member member) {
         Date now = new Date();
 
         return Jwts.builder()
