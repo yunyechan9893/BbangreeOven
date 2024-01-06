@@ -48,7 +48,7 @@ public class Member extends BaseEntity implements UserDetails {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
-
+  
     @Builder
     public Member(Long id, String email, String phone, String name, String nickname, String birth, boolean isDeleted) {
         this.id = id;
