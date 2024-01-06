@@ -10,7 +10,7 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
     open-in-view: false
   datasource:
-    url: jdbc:mariadb://localhost:3308/bakery?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    url: jdbc:mariadb://localhost:3309/bakery?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
     username: ${MARIADB_LOCAL_USER}
     password: ${MARIADB_LOCAL_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
