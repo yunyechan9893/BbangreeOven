@@ -28,7 +28,7 @@ public class Member extends BaseEntity implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "phone")
@@ -95,4 +95,8 @@ public class Member extends BaseEntity implements UserDetails {
         return true;
     }
 
+    public Member update(String nickname){
+        this.nickname = nickname;
+        return this;
+    }
 }
