@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import com.bbangle.bbangle.dto.BoardResponseDto;
+import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.model.Board;
 import com.bbangle.bbangle.model.Category;
 import com.bbangle.bbangle.model.Product;
@@ -11,11 +12,10 @@ import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.repository.BoardRepository;
 import com.bbangle.bbangle.repository.ProductRepository;
 import com.bbangle.bbangle.repository.StoreRepository;
-import org.hibernate.annotations.Parameter;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,7 +92,7 @@ public class BoardServiceTest {
             false,
             "BREAD");
 
-        Product product3 =  productGenerator(board2,
+        Product product3 = productGenerator(board2,
             true,
             false,
             true,
@@ -148,7 +148,7 @@ public class BoardServiceTest {
             false,
             "BREAD");
 
-        Product product3 =  productGenerator(board2,
+        Product product3 = productGenerator(board2,
             false,
             false,
             true,
@@ -197,7 +197,7 @@ public class BoardServiceTest {
             false,
             "BREAD");
 
-        Product product3 =  productGenerator(board2,
+        Product product3 = productGenerator(board2,
             true,
             false,
             true,
@@ -238,7 +238,7 @@ public class BoardServiceTest {
             false,
             "BREAD");
 
-        Product product3 =  productGenerator(board2,
+        Product product3 = productGenerator(board2,
             true,
             false,
             true,
@@ -280,7 +280,7 @@ public class BoardServiceTest {
             false,
             "BREAD");
 
-        Product product3 =  productGenerator(board2,
+        Product product3 = productGenerator(board2,
             true,
             false,
             true,
@@ -322,7 +322,7 @@ public class BoardServiceTest {
             true,
             "BREAD");
 
-        Product product3 =  productGenerator(board2,
+        Product product3 = productGenerator(board2,
             true,
             false,
             true,
@@ -344,9 +344,9 @@ public class BoardServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT"})
-    @DisplayName("ketogenic 제품이 포함된 게시물만 조회한다.")
+    @DisplayName("카테고리로 필터링하여서 조회한다.")
     public void showListFilterCategory(String category) {
-        //given, when
+        //given
 
         Product product1 = productGenerator(board,
             false,
@@ -364,7 +364,7 @@ public class BoardServiceTest {
             true,
             "ETC");
 
-        Product product3 =  productGenerator(board2,
+        Product product3 = productGenerator(board2,
             true,
             false,
             true,
@@ -378,12 +378,13 @@ public class BoardServiceTest {
         String noSort = "";
 
         String realCategory;
-        if(category != null & !category.isBlank()){
+        if (category != null & !category.isBlank()) {
             realCategory = "ETC";
         } else {
             realCategory = category;
         }
 
+        //when
         List<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, null,
             null, null, realCategory);
 
@@ -393,8 +394,50 @@ public class BoardServiceTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {"bread", "school", "SOCCER", "잼"})
+    @DisplayName("잘못된 카테고리로 조회할 경우 예외가 발생한다.")
+    public void showListFilterWithInvalidCategory(String category) {
+        //given, when
+
+        Product product1 = productGenerator(board,
+            false,
+            false,
+            true,
+            false,
+            true,
+            "BREAD");
+
+        Product product2 = productGenerator(board2,
+            false,
+            true,
+            true,
+            false,
+            true,
+            "ETC");
+
+        Product product3 = productGenerator(board2,
+            true,
+            false,
+            true,
+            false,
+            true,
+            "JAM");
+
+        productRepository.save(product1);
+        productRepository.save(product2);
+        productRepository.save(product3);
+        String noSort = "";
+
+        //then
+        Assertions.assertThatThrownBy(() -> boardService.getBoardList(noSort, null, null, null,
+                null, null, category))
+            .isInstanceOf(CategoryTypeException.class);
+
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT"})
-    @DisplayName("ketogenic 제품이 포함된 게시물만 조회한다.")
+    @DisplayName("성분과 카테고리를 한꺼번에 요청 시 정상적으로 필터링해서 반환한다.")
     public void showListFilterCategoryAndIngredient(String category) {
         //given, when
 
@@ -414,7 +457,7 @@ public class BoardServiceTest {
             true,
             category);
 
-        Product product3 =  productGenerator(board2,
+        Product product3 = productGenerator(board2,
             false,
             false,
             true,
