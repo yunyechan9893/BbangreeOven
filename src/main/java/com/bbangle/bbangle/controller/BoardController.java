@@ -18,7 +18,21 @@ public class BoardController {
     private final BoardService boardService;
 
     @GetMapping("")
-    public ResponseEntity<List<BoardResponseDto>> getList(@RequestParam(required = false) String sort){
-        return ResponseEntity.ok(boardService.getBoardList(sort));
+    public ResponseEntity<List<BoardResponseDto>> getList(@RequestParam(required = false) String sort,
+                                                          @RequestParam(required = false) Boolean glutenFreeTag,
+                                                          @RequestParam(required = false) Boolean highProteinTag,
+                                                          @RequestParam(required = false) Boolean sugarFreeTag,
+                                                          @RequestParam(required = false) Boolean veganTag,
+                                                          @RequestParam(required = false) Boolean ketogenicTag,
+                                                          @RequestParam(required = false) String category
+                                                          ){
+        return ResponseEntity.ok(boardService.getBoardList(sort,
+            glutenFreeTag,
+            highProteinTag,
+            sugarFreeTag,
+            veganTag,
+            ketogenicTag,
+            category));
     }
+
 }
