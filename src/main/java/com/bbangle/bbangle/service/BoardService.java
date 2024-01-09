@@ -12,12 +12,18 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
 
-    public List<BoardResponseDto> getBoardList(String sort) {
-
-        if (sort == null || sort.isEmpty()){
-            return boardRepository.getBoardResponseDto();
-        }
-        return null;
+    public List<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                               Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                               String category) {
+        return boardRepository.getBoardResponseDto(
+            sort,
+            glutenFreeTag,
+            highProteinTag,
+            sugarFreeTag,
+            veganTag,
+            ketogenicTag,
+            category
+        );
     }
 
 }
