@@ -126,10 +126,10 @@ class BoardControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT", "ETC"})
     @DisplayName("순서가 없고 카테고리 필터링 조건이 있어도 정상적으로 조회한다.")
-    public void getBoardListSuccessWithCategoryCondition(String ingredient) throws Exception {
+    public void getBoardListSuccessWithCategoryCondition(String category) throws Exception {
         //given, when, then
         mockMvc.perform(get("/api/v1/boards")
-                .param(ingredient, "true"))
+                .param("category", category))
             .andExpect(status().isOk())
             .andDo(print());
     }
@@ -146,8 +146,19 @@ class BoardControllerTest {
 
         // when, then
         mockMvc.perform(get("/api/v1/boards")
-                .param(ingredient, "true"))
+                .params(info))
             .andExpect(status().isOk())
+            .andDo(print());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"bread", "school", "SOCCER", "잼"})
+    @DisplayName("잘못된 카테고리로 카테고리 필터링 검색을 하면 조회한다.")
+    public void getBoardListFailWithWrongCategory(String category) throws Exception {
+        // given, when, then
+        mockMvc.perform(get("/api/v1/boards")
+                .param("category", category))
+            .andExpect(status().isBadRequest())
             .andDo(print());
     }
 
