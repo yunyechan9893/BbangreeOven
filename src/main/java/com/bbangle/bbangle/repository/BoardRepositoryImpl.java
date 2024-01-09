@@ -5,11 +5,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.dto.ProductTagDto;
+import com.bbangle.bbangle.model.Category;
 import com.bbangle.bbangle.model.QBoard;
 import com.bbangle.bbangle.model.QProduct;
 import com.bbangle.bbangle.model.QStore;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -20,11 +23,33 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<BoardResponseDto> getBoardResponseDto() {
+    public List<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                                      Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                                      String category) {
 
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
+
+        BooleanBuilder filterBuilder = new BooleanBuilder();
+        if (glutenFreeTag != null) {
+            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
+        }
+        if (highProteinTag != null) {
+            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
+        }
+        if (sugarFreeTag != null) {
+            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
+        }
+        if (veganTag != null) {
+            filterBuilder.and(product.veganTag.eq(veganTag));
+        }
+        if (ketogenicTag != null) {
+            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
+        }
+        if (category != null && !category.isBlank()) {
+            filterBuilder.and(product.category.eq(Category.valueOf(category)));
+        }
 
         List<Tuple> fetch = queryFactory
             .select(
@@ -42,6 +67,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .from(product)
             .join(product.board, board)
             .join(board.store, store)
+            .where(filterBuilder)
+            .orderBy(board.createdAt.asc())
             .fetch();
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = fetch.stream()
@@ -57,6 +84,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     Collectors.toList())
             ));
 
+        return getList(fetch, board, store, productTagsByBoardId);
+    }
+
+
+    private List<BoardResponseDto> getList(List<Tuple> fetch, QBoard board, QStore store,
+                                           Map<Long, List<ProductTagDto>> productTagsByBoardId) {
         return fetch.stream()
             .map(tuple -> BoardResponseDto.builder()
                 .boardId(tuple.get(board.id))
