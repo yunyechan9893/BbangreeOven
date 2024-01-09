@@ -7,7 +7,5 @@ import com.bbangle.bbangle.dto.BoardResponseDto;
 
 public interface BoardQueryDSLRepository {
     List<BoardResponseDto> getBoardResponseDto();
-//    List<BoardDetailResponseDto> getBoardDetailResponseDto(Long boardId);
-Boolean getBoardDetailResponseDto(Long boardId);
-
+    BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
 }

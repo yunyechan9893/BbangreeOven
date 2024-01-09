@@ -1,9 +1,11 @@
 package com.bbangle.bbangle.dto;
 
-import java.util.List;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 
 @Builder
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record BoardResponseDto(
         Long boardId,
         Long storeId,
