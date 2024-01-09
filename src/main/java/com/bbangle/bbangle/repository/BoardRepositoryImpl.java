@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.dto.ProductTagDto;
+import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.model.Category;
 import com.bbangle.bbangle.model.QBoard;
 import com.bbangle.bbangle.model.QProduct;
@@ -48,6 +49,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
         }
         if (category != null && !category.isBlank()) {
+            if(!Category.checkCategory(category)){
+                throw new CategoryTypeException();
+            }
             filterBuilder.and(product.category.eq(Category.valueOf(category)));
         }
 
