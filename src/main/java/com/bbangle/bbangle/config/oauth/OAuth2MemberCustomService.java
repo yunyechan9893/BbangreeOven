@@ -3,15 +3,16 @@ package com.bbangle.bbangle.config.oauth;
 import com.bbangle.bbangle.model.Member;
 import com.bbangle.bbangle.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 @RequiredArgsConstructor
+@Service
 public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
     private final MemberRepository memberRepository;
 
