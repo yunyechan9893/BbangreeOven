@@ -8,7 +8,7 @@ import java.util.List;
 public interface BoardService {
 
     List<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                               Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                               String category);
+                                        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                        String category);
     BoardDetailResponseDto getBoardDetailResponse(Long boardId);
 }

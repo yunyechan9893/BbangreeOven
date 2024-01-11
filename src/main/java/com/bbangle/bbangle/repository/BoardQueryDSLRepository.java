@@ -9,3 +9,4 @@ public interface BoardQueryDSLRepository {
     List<BoardResponseDto> getBoardResponseDto();
     BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
 }
+

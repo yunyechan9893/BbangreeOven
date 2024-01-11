@@ -15,5 +15,4 @@ public record ProductTagDto(
         boolean veganTag,
         @JsonProperty(value = "ketogenic")
         boolean ketogenicTag
-) {
-}
+) { }

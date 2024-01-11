@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  mysql-local:
+    build:
+      context: ./mariadb
+      dockerfile: Dockerfile
+    ports:
+      - "3308:3306"
+    volumes:
+      - "data_volume:/var/lib/mysql-local"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_LOCAL_PASSWORD}
+  mysql-test:
+    build:
+      context: ./mariadb
+      dockerfile: Dockerfile
+    ports:
+      - "3309:3306"
+    volumes:
+      - "data_volume:/var/lib/mysql-test"
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_LOCAL_PASSWORD}
+
+volumes:
+  data_volume:
