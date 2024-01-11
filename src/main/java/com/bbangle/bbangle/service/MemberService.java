@@ -15,6 +15,11 @@ public class MemberService {
 
     public Member findById(Long id){
         return memberRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("no Member by Id"));
+                .orElseThrow(() -> new IllegalArgumentException("findById() >>>>> no Member by Id"));
+    }
+
+    public Member findByEmail(String email){
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("findByEmail() >>>> no Member by Email"));
     }
 }
