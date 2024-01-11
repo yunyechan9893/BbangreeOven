@@ -11,7 +11,7 @@ import org.springframework.web.util.WebUtils;
 /**
  * 권한 인증 흐름에서 클라이언트의 요청을 유지하는데 사용하는 클래스
  */
-public class oAuth2AuthorizationReqBasedOnCookieRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
+public class OAuth2AuthorizationReqBasedOnCookieRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
     public final static String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
     private final static int COOKIE_EXPIRE_SECONDS = 18000;
