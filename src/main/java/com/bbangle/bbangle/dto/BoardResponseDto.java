@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.dto;
 
+
 import java.util.List;
 import lombok.Builder;
 
@@ -12,6 +13,5 @@ public record BoardResponseDto(
         String title,
         int price,
         ProductTagDto tagDto
-) {
+) { }
 
-}
