@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.dto;
 
-
 import java.util.HashMap;
 import java.util.List;
 import lombok.Builder;
@@ -18,4 +17,3 @@ public record BoardResponseDto(
 ) {
 
 }
-

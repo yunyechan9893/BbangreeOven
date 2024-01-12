@@ -9,9 +9,7 @@ public record StoreDto(
     Long id,
     String name,
     String profile,
-
     Boolean isWished,
-
     String introduce
 ) {
 

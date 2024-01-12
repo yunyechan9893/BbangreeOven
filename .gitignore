@@ -4,9 +4,20 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+*.yml
 
-# Created by https://www.toptal.com/developers/gitignore/api/intellij+all,macos,visualstudiocode,windows,gradle,dotenv
-# Edit at https://www.toptal.com/developers/gitignore?templates=intellij+all,macos,visualstudiocode,windows,gradle,dotenv
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
 ### dotenv ###
 .env
