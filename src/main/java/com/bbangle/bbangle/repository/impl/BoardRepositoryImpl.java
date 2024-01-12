@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bbangle.bbangle.dto.*;
+import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.BoardQueryDSLRepository;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -29,22 +31,47 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QProduct product = QProduct.product;
         QStore store = QStore.store;
 
+        BooleanBuilder filterBuilder = new BooleanBuilder();
+        if (glutenFreeTag != null) {
+            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
+        }
+        if (highProteinTag != null) {
+            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
+        }
+        if (sugarFreeTag != null) {
+            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
+        }
+        if (veganTag != null) {
+            filterBuilder.and(product.veganTag.eq(veganTag));
+        }
+        if (ketogenicTag != null) {
+            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
+        }
+        if (category != null && !category.isBlank()) {
+            if(!Category.checkCategory(category)){
+                throw new CategoryTypeException();
+            }
+            filterBuilder.and(product.category.eq(Category.valueOf(category)));
+        }
+
         List<Tuple> fetch = queryFactory
-                .select(
-                        board.id,
-                        store.id,
-                        store.name,
-                        board.profile,
-                        board.title,
-                        board.price,
-                        product.glutenFreeTag,
-                        product.highProteinTag,
-                        product.sugarFreeTag,
-                        product.veganTag,
-                        product.ketogenicTag)
-                .from(product)
-                .join(product.board, board)
-                .join(board.store, store)
+            .select(
+                board.id,
+                store.id,
+                store.name,
+                board.profile,
+                board.title,
+                board.price,
+                product.glutenFreeTag,
+                product.highProteinTag,
+                product.sugarFreeTag,
+                product.veganTag,
+                product.ketogenicTag)
+            .from(product)
+            .join(product.board, board)
+            .join(board.store, store)
+            .where(filterBuilder)
+            .orderBy(board.createdAt.asc())
                 .fetch();
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = fetch.stream()
@@ -238,8 +265,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
 
         return BoardDetailResponseDto.builder()
-                .storeDto(storeDto)
-                .boardDto(boardDto)
+                .store(storeDto)
+                .board(boardDto)
                 .build();
     }
 }

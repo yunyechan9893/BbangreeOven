@@ -96,7 +96,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                         .price(tuple.get(board.price))
                         .isWished(true)
                         .isBundled(false)
-                        .allTags(tagDto)
+                        .tags(tagDto)
                         .build());
 
                 // 태그 초기화
@@ -143,7 +143,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 .toList();
 
         return StoreDetailResponseDto.builder()
-                .storeDto(storeDto)
+                .store(storeDto)
                 .bestProducts(bestBoards)
                 .allProducts(boardDtos)
                 .build();

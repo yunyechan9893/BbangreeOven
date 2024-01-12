@@ -5,11 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ProductDto(
+    Long boardId,
+    String name,
+    TagDto tags
+) {
 
-        Long boardId,
-        @JsonProperty(value = "title")
-        String name,
-        TagDto tags
-) { }
+}

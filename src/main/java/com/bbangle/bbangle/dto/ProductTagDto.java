@@ -4,9 +4,11 @@ import lombok.Builder;
 
 @Builder
 public record ProductTagDto(
-        boolean glutenFreeTag,
-        boolean highProteinTag,
-        boolean sugarFreeTag,
-        boolean veganTag,
-        boolean ketogenicTag
-) { }
+    boolean glutenFreeTag,
+    boolean highProteinTag,
+    boolean sugarFreeTag,
+    boolean veganTag,
+    boolean ketogenicTag
+) {
+
+}
