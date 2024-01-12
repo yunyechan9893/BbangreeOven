@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     #전송 쿼리 생성
     show-sql: true
     properties:
@@ -10,9 +10,9 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
     open-in-view: false
   datasource:
-    url: jdbc:mariadb://localhost:3309/bakery?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
-    username: ${MARIADB_LOCAL_USER}
-    password: ${MARIADB_LOCAL_PASSWORD}
+    url: ${MARIADB_TEST_URL}
+    username: ${MARIADB_TEST_USER}
+    password: ${MARIADB_TEST_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
   security:
     oauth2:
@@ -35,9 +35,9 @@ spring:
             client_name: Kakao
         provider:
           kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me
+            authorization-uri: ${AUTHORIZATION_URI}
+            token-uri: ${TOKEN_URI}
+            user-info-uri: ${USER_INFO_URI}
             user-name-attribute: id
 jwt:
   issuer: bbanglebbangle

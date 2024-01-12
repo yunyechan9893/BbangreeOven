@@ -10,7 +10,7 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
     open-in-view: false
   datasource:
-    url: ${USER_INFO_URI}
+    url: ${MARIADB_LOCAL_URL}
     username: ${MARIADB_LOCAL_USER}
     password: ${MARIADB_LOCAL_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
