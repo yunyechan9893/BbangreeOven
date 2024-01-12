@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.dto;
 
 
+import java.util.HashMap;
 import java.util.List;
 import lombok.Builder;
 
@@ -12,6 +13,7 @@ public record BoardResponseDto(
         String thumbnail,
         String title,
         int price,
-        ProductTagDto tagDto
+        Boolean isWished,
+        List<HashMap<String, Boolean>> tags
 ) { }
 

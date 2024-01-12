@@ -10,10 +10,8 @@ public record StoreDetailResponseDto(
         @JsonProperty(value = "store")
         StoreDto storeDto,
 
-        @JsonProperty("best_products")
         List<BoardDto> bestProducts,
 
-        @JsonProperty("all_products")
         List<BoardDto> allProducts
 ) {
 }

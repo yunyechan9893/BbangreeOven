@@ -13,11 +13,19 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
-    private final BoardRepositoryImpl boardRepository;
+    private final BoardRepository boardRepository;
 
     @Override
     public List<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag, Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag, String category) {
-        return null;
+        return boardRepository.getBoardResponseDto(
+                sort,
+                glutenFreeTag,
+                highProteinTag,
+                sugarFreeTag,
+                veganTag,
+                ketogenicTag,
+                category
+        );
     }
 
     @Override
