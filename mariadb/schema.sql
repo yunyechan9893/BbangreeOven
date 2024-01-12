@@ -142,3 +142,12 @@ CREATE TABLE product_img
     CONSTRAINT product_img_pk PRIMARY KEY (id),
     CONSTRAINT fk_product_board_product_img FOREIGN KEY (product_board_id) REFERENCES product_board (id)
 );
+
+CREATE TABLE refresh_token
+(
+    id               BIGINT AUTO_INCREMENT,
+    member_id        BIGINT       NOT NULL,
+    refresh_token    VARCHAR(255) NOT NULL,
+    CONSTRAINT refresh_token_pk PRIMARY KEY (id),
+    CONSTRAINT fk_refresh_token_user FOREIGN KEY (member_id) REFERENCES member (id)
+);
