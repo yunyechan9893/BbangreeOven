@@ -24,6 +24,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 public class BoardServiceTest {
 
+    private static final String GLUTEN_FREE = "glutenFree";
+    private static final String HIGH_PROTEIN = "highProtein";
+    private static final String SUGAR_FREE = "sugarFree";
+    private static final String VEGAN = "vegan";
+    private static final String KETOGENIC = "ketogenic";
+
     @Autowired
     StoreRepository storeRepository;
 
@@ -112,17 +118,17 @@ public class BoardServiceTest {
         //then
         assertThat(boardList).hasSize(2);
 
-        assertThat(response1.tagDto().glutenFreeTag()).isEqualTo(true);
-        assertThat(response1.tagDto().highProteinTag()).isEqualTo(true);
-        assertThat(response1.tagDto().sugarFreeTag()).isEqualTo(true);
-        assertThat(response1.tagDto().veganTag()).isEqualTo(true);
-        assertThat(response1.tagDto().ketogenicTag()).isEqualTo(true);
+        assertThat(response1.tags().get(0).get(GLUTEN_FREE)).isEqualTo(true);
+        assertThat(response1.tags().get(1).get(HIGH_PROTEIN)).isEqualTo(true);
+        assertThat(response1.tags().get(2).get(SUGAR_FREE)).isEqualTo(true);
+        assertThat(response1.tags().get(3).get(VEGAN)).isEqualTo(true);
+        assertThat(response1.tags().get(4).get(KETOGENIC)).isEqualTo(true);
 
-        assertThat(response2.tagDto().glutenFreeTag()).isEqualTo(true);
-        assertThat(response2.tagDto().highProteinTag()).isEqualTo(true);
-        assertThat(response2.tagDto().sugarFreeTag()).isEqualTo(true);
-        assertThat(response2.tagDto().veganTag()).isEqualTo(true);
-        assertThat(response2.tagDto().ketogenicTag()).isEqualTo(false);
+        assertThat(response2.tags().get(0).get(GLUTEN_FREE)).isEqualTo(true);
+        assertThat(response2.tags().get(1).get(HIGH_PROTEIN)).isEqualTo(true);
+        assertThat(response2.tags().get(2).get(SUGAR_FREE)).isEqualTo(true);
+        assertThat(response2.tags().get(3).get(VEGAN)).isEqualTo(true);
+        assertThat(response2.tags().get(4).get(KETOGENIC)).isEqualTo(false);
 
     }
 
@@ -167,11 +173,11 @@ public class BoardServiceTest {
         //then
         assertThat(boardList).hasSize(1);
 
-        assertThat(response1.tagDto().glutenFreeTag()).isEqualTo(true);
-        assertThat(response1.tagDto().highProteinTag()).isEqualTo(true);
-        assertThat(response1.tagDto().sugarFreeTag()).isEqualTo(true);
-        assertThat(response1.tagDto().veganTag()).isEqualTo(true);
-        assertThat(response1.tagDto().ketogenicTag()).isEqualTo(false);
+        assertThat(response1.tags().get(0).get(GLUTEN_FREE)).isEqualTo(true);
+        assertThat(response1.tags().get(1).get(HIGH_PROTEIN)).isEqualTo(true);
+        assertThat(response1.tags().get(2).get(SUGAR_FREE)).isEqualTo(true);
+        assertThat(response1.tags().get(3).get(VEGAN)).isEqualTo(true);
+        assertThat(response1.tags().get(4).get(KETOGENIC)).isEqualTo(false);
 
     }
 
@@ -477,11 +483,11 @@ public class BoardServiceTest {
         //then
         assertThat(boardList).hasSize(1);
 
-        assertThat(response1.tagDto().glutenFreeTag()).isEqualTo(false);
-        assertThat(response1.tagDto().highProteinTag()).isEqualTo(false);
-        assertThat(response1.tagDto().sugarFreeTag()).isEqualTo(true);
-        assertThat(response1.tagDto().veganTag()).isEqualTo(false);
-        assertThat(response1.tagDto().ketogenicTag()).isEqualTo(true);
+        assertThat(response1.tags().get(0).get(GLUTEN_FREE)).isEqualTo(false);
+        assertThat(response1.tags().get(1).get(HIGH_PROTEIN)).isEqualTo(false);
+        assertThat(response1.tags().get(2).get(SUGAR_FREE)).isEqualTo(true);
+        assertThat(response1.tags().get(3).get(VEGAN)).isEqualTo(false);
+        assertThat(response1.tags().get(4).get(KETOGENIC)).isEqualTo(true);
 
     }
 
