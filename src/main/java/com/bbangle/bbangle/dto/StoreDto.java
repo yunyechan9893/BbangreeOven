@@ -12,7 +12,7 @@ public record StoreDto(
         @JsonProperty(value = "title")
         String name,
         String profile,
-        @JsonProperty(value = "is_wished")
+
         Boolean isWished,
 
         String introduce

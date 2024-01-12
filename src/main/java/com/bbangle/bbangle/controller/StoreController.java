@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.controller;
 
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
-import com.bbangle.bbangle.service.impl.StoreServiceImpl;
+import com.bbangle.bbangle.service.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class StoreController {
 
     @Autowired
-    StoreServiceImpl storeService;
+    StoreService storeService;
     @GetMapping("/{id}")
     public ResponseEntity<StoreDetailResponseDto> getStoreDetailResponse(
             @PathVariable("id")

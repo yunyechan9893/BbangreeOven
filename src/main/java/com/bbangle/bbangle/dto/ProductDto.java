@@ -11,6 +11,5 @@ public record ProductDto(
         Long boardId,
         @JsonProperty(value = "title")
         String name,
-        @JsonProperty(value = "tags")
-        ProductTagDto tagDto
+        TagDto tags
 ) { }
