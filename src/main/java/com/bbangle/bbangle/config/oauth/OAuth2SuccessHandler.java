@@ -11,6 +11,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -21,6 +22,7 @@ import java.time.Duration;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     public static final String REFRESH_TOKEN_DELIMITER_ID = "refresh_token_id";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
@@ -39,11 +41,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Member member = memberService.findByEmail((String) oAuth2User.getAttributes().get("email"));
 
         //리프레시 토큰 생성 -> 저장 -> 쿠키에 리프레시 토큰 ID 저장
+        log.info("RefeshToken Generating");
         String refreshToken = tokenProvider.generateToken(member, REFRESH_TOKEN_DURATION);
         Long refreshTokenId = saveRefreshToken(member.getId(), refreshToken);
         addRefreshTokenIdToCookie(request, response, refreshTokenId);
 
         //액세스 토큰 생성 -> 헤더에 액세스 토큰 추가
+        log.info("AccessToken Generating");
         String accessToken = tokenProvider.generateToken(member, ACCESS_TOKEN_DURATION);
         response.addHeader("token", accessToken);
         clearAuthenticationAttributes(request, response);
@@ -72,7 +76,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      * @param response       the response
      * @param refreshTokenId the refresh token id
      */
-    public void addRefreshTokenIdToCookie(HttpServletRequest request, HttpServletResponse response, Long refreshTokenId) {
+    private void addRefreshTokenIdToCookie(HttpServletRequest request, HttpServletResponse response, Long refreshTokenId) {
         int cookieMaxAge = (int)REFRESH_TOKEN_DURATION.toSeconds();
         CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_DELIMITER_ID);
         CookieUtil.addCookie(response, REFRESH_TOKEN_DELIMITER_ID, String.valueOf(refreshTokenId), cookieMaxAge);
@@ -86,7 +90,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      * @param newRefreshToken 생성된 리프레시 토큰
      * @return 리프레시 토큰 Id
      */
-    public Long saveRefreshToken(Long memberId, String newRefreshToken) {
+    private Long saveRefreshToken(Long memberId, String newRefreshToken) {
         RefreshToken refreshToken = refreshTokenRepository.findByMemberId(memberId)
                 .map(refreshTokenEntity -> refreshTokenEntity.update(newRefreshToken))
                 .orElse(new RefreshToken(memberId, newRefreshToken));
