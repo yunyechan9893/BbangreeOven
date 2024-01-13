@@ -1,18 +1,15 @@
 package com.bbangle.bbangle.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -50,7 +47,8 @@ public class Member extends BaseEntity implements UserDetails {
     private boolean isDeleted;
   
     @Builder
-    public Member(Long id, String email, String phone, String name, String nickname, String birth, boolean isDeleted) {
+    public Member(Long id, String email, String phone, String name, String nickname,
+                  String birth, boolean isDeleted, String profile)  {
         this.id = id;
         this.email = email;
         this.phone = phone;
@@ -58,6 +56,7 @@ public class Member extends BaseEntity implements UserDetails {
         this.nickname = nickname;
         this.birth = birth;
         this.isDeleted = isDeleted;
+        this.profile = profile;
     }
 
     @Override
@@ -95,8 +94,9 @@ public class Member extends BaseEntity implements UserDetails {
         return true;
     }
 
-    public Member update(String nickname){
+    public Member update(String nickname, String profile){
         this.nickname = nickname;
+        this.profile = profile;
         return this;
     }
 }
