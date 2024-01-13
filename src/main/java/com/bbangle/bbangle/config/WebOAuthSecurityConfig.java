@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -21,6 +22,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @RequiredArgsConstructor
 @Configuration
+@EnableWebSecurity
 @Slf4j
 public class WebOAuthSecurityConfig {
     private final OAuth2MemberCustomService oAuth2MemberCustomService;
@@ -38,10 +40,11 @@ public class WebOAuthSecurityConfig {
         http.authorizeRequests()
                 .requestMatchers("/api/token").permitAll()
                 .requestMatchers("/**").authenticated()
+                //Test시 위 2줄을 주석처리하시고 밑에 주석을 풀어주세요
+                //.requestMatchers("/**").permitAll() //모든 경로에 인증 없이 접근
                 .anyRequest().permitAll();
 
         http.oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")//default 로그인 페이지??
                         .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
                                 //Authorization 요청과 관련된 상태 저장
                                 .authorizationRequestRepository(oAuth2AuthorizationReqBasedOnCookieRepository()))
