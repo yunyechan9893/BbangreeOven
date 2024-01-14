@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Repository
@@ -54,7 +53,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         TagDto tagDto = TagDto.builder()
                 .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), false))
                 .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), false))
-                .sugarFreeTag(getTagHash(TagEnum.SUGER_FREE.label(), false))
+                .sugarFreeTag(getTagHash(TagEnum.SUGAR_FREE.label(), false))
                 .veganTag(getTagHash(TagEnum.VEGAN.label(), false))
                 .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), false))
                 .build();
@@ -74,8 +73,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             if (!tagDto.highProteinTag().get(TagEnum.HIGH_PROTEIN.label()) && tuple.get(product.highProteinTag))
                 tagDto.highProteinTag().put(TagEnum.HIGH_PROTEIN.label(), true);
 
-            if (!tagDto.sugarFreeTag().get(TagEnum.SUGER_FREE.label()) && tuple.get(product.sugarFreeTag))
-                tagDto.sugarFreeTag().put(TagEnum.SUGER_FREE.label(), true);
+            if (!tagDto.sugarFreeTag().get(TagEnum.SUGAR_FREE.label()) && tuple.get(product.sugarFreeTag))
+                tagDto.sugarFreeTag().put(TagEnum.SUGAR_FREE.label(), true);
 
             if (!tagDto.veganTag().get(TagEnum.VEGAN.label()) && tuple.get(product.veganTag))
                 tagDto.veganTag().put(TagEnum.VEGAN.label(), true);
@@ -103,7 +102,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 tagDto = TagDto.builder()
                         .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), false))
                         .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), false))
-                        .sugarFreeTag(getTagHash(TagEnum.SUGER_FREE.label(), false))
+                        .sugarFreeTag(getTagHash(TagEnum.SUGAR_FREE.label(), false))
                         .veganTag(getTagHash(TagEnum.VEGAN.label(), false))
                         .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), false))
                         .build();

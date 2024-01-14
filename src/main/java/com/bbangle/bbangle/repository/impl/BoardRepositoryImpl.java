@@ -31,28 +31,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QProduct product = QProduct.product;
         QStore store = QStore.store;
 
-        BooleanBuilder filterBuilder = new BooleanBuilder();
-        if (glutenFreeTag != null) {
-            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
-        }
-        if (highProteinTag != null) {
-            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
-        }
-        if (sugarFreeTag != null) {
-            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
-        }
-        if (veganTag != null) {
-            filterBuilder.and(product.veganTag.eq(veganTag));
-        }
-        if (ketogenicTag != null) {
-            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
-        }
-        if (category != null && !category.isBlank()) {
-            if(!Category.checkCategory(category)){
-                throw new CategoryTypeException();
-            }
-            filterBuilder.and(product.category.eq(Category.valueOf(category)));
-        }
+        BooleanBuilder filter =
+            setFilteringCondition(glutenFreeTag, highProteinTag, sugarFreeTag, veganTag, ketogenicTag, category, product);
 
         List<Tuple> fetch = queryFactory
             .select(
@@ -70,7 +50,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .from(product)
             .join(product.board, board)
             .join(board.store, store)
-            .where(filterBuilder)
+            .where(filter)
             .orderBy(board.createdAt.asc())
                 .fetch();
 
@@ -96,13 +76,41 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
                         .isWished(true)
-                        .tags(checkingTrue(productTagsByBoardId.get(tuple.get(board.id))))
+                        .tags(addList(productTagsByBoardId.get(tuple.get(board.id))))
                         .build())
                 .distinct() // 중복 제거
                 .toList();
     }
 
-    private List<HashMap<String, Boolean>> checkingTrue(List<ProductTagDto> dtos) {
+    private static BooleanBuilder setFilteringCondition(Boolean glutenFreeTag, Boolean highProteinTag, Boolean sugarFreeTag,
+                                                        Boolean veganTag, Boolean ketogenicTag, String category,
+                                                        QProduct product) {
+        BooleanBuilder filterBuilder = new BooleanBuilder();
+        if (glutenFreeTag != null) {
+            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
+        }
+        if (highProteinTag != null) {
+            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
+        }
+        if (sugarFreeTag != null) {
+            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
+        }
+        if (veganTag != null) {
+            filterBuilder.and(product.veganTag.eq(veganTag));
+        }
+        if (ketogenicTag != null) {
+            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
+        }
+        if (category != null && !category.isBlank()) {
+            if(!Category.checkCategory(category)){
+                throw new CategoryTypeException();
+            }
+            filterBuilder.and(product.category.eq(Category.valueOf(category)));
+        }
+        return filterBuilder;
+    }
+
+    private List<String> addList(List<ProductTagDto> dtos) {
         boolean glutenFreeTag = false;
         boolean highProteinTag = false;
         boolean sugarFreeTag = false;
@@ -125,14 +133,23 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 ketogenicTag = true;
             }
         }
-
-        return List.of(
-                getTagHash("glutenFree", glutenFreeTag),
-                getTagHash("highProtein", highProteinTag),
-                getTagHash("sugarFree", sugarFreeTag),
-                getTagHash("vegan", veganTag),
-                getTagHash("ketogenic", ketogenicTag)
-        );
+        List<String> tags = new ArrayList<>();
+        if(glutenFreeTag){
+            tags.add(TagEnum.GLUTEN_FREE.label());
+        }
+        if(highProteinTag){
+            tags.add(TagEnum.HIGH_PROTEIN.label());
+        }
+        if(sugarFreeTag){
+            tags.add(TagEnum.SUGAR_FREE.label());
+        }
+        if(veganTag){
+            tags.add(TagEnum.VEGAN.label());
+        }
+        if(ketogenicTag){
+            tags.add(TagEnum.KETOGENIC.label());
+        }
+        return tags;
     }
 
     private HashMap<String, Boolean> getTagHash(String tagName, Boolean isTrued){
@@ -207,7 +224,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                                         TagDto.builder()
                                                 .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), tuple.get(product.glutenFreeTag)))
                                                 .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), tuple.get(product.highProteinTag)))
-                                                .sugarFreeTag(getTagHash(TagEnum.SUGER_FREE.label(), tuple.get(product.sugarFreeTag)))
+                                                .sugarFreeTag(getTagHash(TagEnum.SUGAR_FREE.label(), tuple.get(product.sugarFreeTag)))
                                                 .veganTag(getTagHash(TagEnum.VEGAN.label(), tuple.get(product.veganTag)))
                                                 .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), tuple.get(product.ketogenicTag)))
                                                 .build()

@@ -13,7 +13,7 @@ public record BoardResponseDto(
     String title,
     int price,
     Boolean isWished,
-    List<HashMap<String, Boolean>> tags
+    List<String> tags
 ) {
 
 }
