@@ -7,6 +7,7 @@ import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.model.Board;
 import com.bbangle.bbangle.model.Category;
+import com.bbangle.bbangle.model.Ingredient;
 import com.bbangle.bbangle.model.Product;
 import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.repository.BoardRepository;
@@ -118,17 +119,16 @@ public class BoardServiceTest {
         //then
         assertThat(boardList).hasSize(2);
 
-        assertThat(response1.tags().get(0).get(GLUTEN_FREE)).isEqualTo(true);
-        assertThat(response1.tags().get(1).get(HIGH_PROTEIN)).isEqualTo(true);
-        assertThat(response1.tags().get(2).get(SUGAR_FREE)).isEqualTo(true);
-        assertThat(response1.tags().get(3).get(VEGAN)).isEqualTo(true);
-        assertThat(response1.tags().get(4).get(KETOGENIC)).isEqualTo(true);
-
-        assertThat(response2.tags().get(0).get(GLUTEN_FREE)).isEqualTo(true);
-        assertThat(response2.tags().get(1).get(HIGH_PROTEIN)).isEqualTo(true);
-        assertThat(response2.tags().get(2).get(SUGAR_FREE)).isEqualTo(true);
-        assertThat(response2.tags().get(3).get(VEGAN)).isEqualTo(true);
-        assertThat(response2.tags().get(4).get(KETOGENIC)).isEqualTo(false);
+        assertThat(response1.tags().contains(Ingredient.GLUTEN_FREE.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.HIGH_PROTEIN.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.SUGAR_FREE.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.VEGAN.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.KETOGENIC.getName())).isEqualTo(true);
+        assertThat(response2.tags().contains(Ingredient.GLUTEN_FREE.getName())).isEqualTo(true);
+        assertThat(response2.tags().contains(Ingredient.HIGH_PROTEIN.getName())).isEqualTo(true);
+        assertThat(response2.tags().contains(Ingredient.SUGAR_FREE.getName())).isEqualTo(true);
+        assertThat(response2.tags().contains(Ingredient.VEGAN.getName())).isEqualTo(true);
+        assertThat(response2.tags().contains(Ingredient.KETOGENIC.getName())).isEqualTo(false);
 
     }
 
@@ -173,11 +173,11 @@ public class BoardServiceTest {
         //then
         assertThat(boardList).hasSize(1);
 
-        assertThat(response1.tags().get(0).get(GLUTEN_FREE)).isEqualTo(true);
-        assertThat(response1.tags().get(1).get(HIGH_PROTEIN)).isEqualTo(true);
-        assertThat(response1.tags().get(2).get(SUGAR_FREE)).isEqualTo(true);
-        assertThat(response1.tags().get(3).get(VEGAN)).isEqualTo(true);
-        assertThat(response1.tags().get(4).get(KETOGENIC)).isEqualTo(false);
+        assertThat(response1.tags().contains(Ingredient.GLUTEN_FREE.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.HIGH_PROTEIN.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.SUGAR_FREE.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.VEGAN.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.KETOGENIC.getName())).isEqualTo(false);
 
     }
 
@@ -483,11 +483,11 @@ public class BoardServiceTest {
         //then
         assertThat(boardList).hasSize(1);
 
-        assertThat(response1.tags().get(0).get(GLUTEN_FREE)).isEqualTo(false);
-        assertThat(response1.tags().get(1).get(HIGH_PROTEIN)).isEqualTo(false);
-        assertThat(response1.tags().get(2).get(SUGAR_FREE)).isEqualTo(true);
-        assertThat(response1.tags().get(3).get(VEGAN)).isEqualTo(false);
-        assertThat(response1.tags().get(4).get(KETOGENIC)).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.GLUTEN_FREE.getName())).isEqualTo(false);
+        assertThat(response1.tags().contains(Ingredient.HIGH_PROTEIN.getName())).isEqualTo(false);
+        assertThat(response1.tags().contains(Ingredient.SUGAR_FREE.getName())).isEqualTo(true);
+        assertThat(response1.tags().contains(Ingredient.VEGAN.getName())).isEqualTo(false);
+        assertThat(response1.tags().contains(Ingredient.KETOGENIC.getName())).isEqualTo(true);
 
     }
 
