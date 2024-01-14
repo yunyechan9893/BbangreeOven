@@ -51,13 +51,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         List<BoardDto> boardDtos = new ArrayList<>();
 
         // TagDto 초기화
-        TagDto tagDto = TagDto.builder()
-                .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), false))
-                .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), false))
-                .sugarFreeTag(getTagHash(TagEnum.SUGER_FREE.label(), false))
-                .veganTag(getTagHash(TagEnum.VEGAN.label(), false))
-                .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), false))
-                .build();
+        List<String> tags = new ArrayList<>();
 
         int resultSize = fetch.size();
         Long curProductId = fetch.get(0).get(board.id);
@@ -68,20 +62,20 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             index++;
 
             // 개별 태그의 True를 각각 확인하여 전체 태그로 구성
-            if (!tagDto.glutenFreeTag().get(TagEnum.GLUTEN_FREE.label()) && tuple.get(product.glutenFreeTag))
-                tagDto.glutenFreeTag().put(TagEnum.GLUTEN_FREE.label(), true);
+            if (!tags.contains(TagEnum.GLUTEN_FREE.label()) && tuple.get(product.glutenFreeTag))
+                tags.add(TagEnum.GLUTEN_FREE.label());
 
-            if (!tagDto.highProteinTag().get(TagEnum.HIGH_PROTEIN.label()) && tuple.get(product.highProteinTag))
-                tagDto.highProteinTag().put(TagEnum.HIGH_PROTEIN.label(), true);
+            if (!tags.contains(TagEnum.HIGH_PROTEIN.label()) && tuple.get(product.highProteinTag))
+                tags.add(TagEnum.HIGH_PROTEIN.label());
 
-            if (!tagDto.sugarFreeTag().get(TagEnum.SUGER_FREE.label()) && tuple.get(product.sugarFreeTag))
-                tagDto.sugarFreeTag().put(TagEnum.SUGER_FREE.label(), true);
+            if (!tags.contains(TagEnum.SUGER_FREE.label()) && tuple.get(product.sugarFreeTag))
+                tags.add(TagEnum.SUGER_FREE.label());
 
-            if (!tagDto.veganTag().get(TagEnum.VEGAN.label()) && tuple.get(product.veganTag))
-                tagDto.veganTag().put(TagEnum.VEGAN.label(), true);
+            if (!tags.contains(TagEnum.VEGAN.label()) && tuple.get(product.veganTag))
+                tags.add(TagEnum.VEGAN.label());
 
-            if (!tagDto.ketogenicTag().get(TagEnum.KETOGENIC.label()) && tuple.get(product.ketogenicTag))
-                tagDto.ketogenicTag().put(TagEnum.KETOGENIC.label(), true);
+            if (!tags.contains(TagEnum.KETOGENIC.label()) && tuple.get(product.ketogenicTag))
+                tags.add(TagEnum.KETOGENIC.label());
 
             // ProductId가 달라지거나 반복문 마지막 일 시 Board 데이터 추가
             if (tuple.get(board.id) != curProductId || index == resultSize){
@@ -96,17 +90,11 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                         .price(tuple.get(board.price))
                         .isWished(true)
                         .isBundled(false)
-                        .tags(tagDto)
+                        .tags(tags)
                         .build());
 
                 // 태그 초기화
-                tagDto = TagDto.builder()
-                        .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), false))
-                        .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), false))
-                        .sugarFreeTag(getTagHash(TagEnum.SUGER_FREE.label(), false))
-                        .veganTag(getTagHash(TagEnum.VEGAN.label(), false))
-                        .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), false))
-                        .build();
+                tags = new ArrayList<>();
             }
 
             // 반복문 마지막에 스토어 Dto 추가
@@ -147,12 +135,6 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 .bestProducts(bestBoards)
                 .allProducts(boardDtos)
                 .build();
-    }
-
-    private HashMap<String, Boolean> getTagHash(String tagName, Boolean isTrued){
-        HashMap<String, Boolean> tagHash = new HashMap<>();
-        tagHash.put(tagName, isTrued);
-        return tagHash;
     }
 }
 

@@ -15,7 +15,7 @@ public record BoardDto(
     Boolean isWished,
     Boolean isBundled,
     String detail,
-    TagDto tags,
+    List<String> tags,
     List<ProductDto> products
 ) {
 
