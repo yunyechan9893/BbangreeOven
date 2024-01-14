@@ -135,19 +135,19 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         }
         List<String> tags = new ArrayList<>();
         if(glutenFreeTag){
-            tags.add(Ingredient.GLUTEN_FREE.getName());
+            tags.add(TagEnum.GLUTEN_FREE.label());
         }
         if(highProteinTag){
-            tags.add(Ingredient.HIGH_PROTEIN.getName());
+            tags.add(TagEnum.HIGH_PROTEIN.label());
         }
         if(sugarFreeTag){
-            tags.add(Ingredient.SUGAR_FREE.getName());
+            tags.add(TagEnum.SUGAR_FREE.label());
         }
         if(veganTag){
-            tags.add(Ingredient.VEGAN.getName());
+            tags.add(TagEnum.VEGAN.label());
         }
         if(ketogenicTag){
-            tags.add(Ingredient.KETOGENIC.getName());
+            tags.add(TagEnum.KETOGENIC.label());
         }
         return tags;
     }
@@ -224,7 +224,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                                         TagDto.builder()
                                                 .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), tuple.get(product.glutenFreeTag)))
                                                 .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), tuple.get(product.highProteinTag)))
-                                                .sugarFreeTag(getTagHash(TagEnum.SUGER_FREE.label(), tuple.get(product.sugarFreeTag)))
+                                                .sugarFreeTag(getTagHash(TagEnum.SUGAR_FREE.label(), tuple.get(product.sugarFreeTag)))
                                                 .veganTag(getTagHash(TagEnum.VEGAN.label(), tuple.get(product.veganTag)))
                                                 .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), tuple.get(product.ketogenicTag)))
                                                 .build()
