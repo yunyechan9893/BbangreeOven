@@ -94,9 +94,8 @@ public class Member extends BaseEntity implements UserDetails {
         return true;
     }
 
-    public Member update(String nickname, String profile){
+    public Member update(String nickname){
         this.nickname = nickname;
-        this.profile = profile;
         return this;
     }
 }
