@@ -3,6 +3,7 @@ package com.bbangle.bbangle.config.oauth;
 import com.bbangle.bbangle.model.Member;
 import com.bbangle.bbangle.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -14,42 +15,48 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Service
 public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
-    private final MemberRepository memberRepository;
 
+    private final MemberRepository memberRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        OAuth2User user = super.loadUser(userRequest); // 요청을 바탕으로 유저 정보를 담은 객체 반환
+        Map<String, Object> originAttributes = user.getAttributes();  // OAuth2User의 attribute
 
-        // 요청을 바탕으로 멤버 정보를 담은 객체 반환
-        // 리소스 서버에서 보내주는 사용자 정보를 불러옴
-        OAuth2User member = super.loadUser(userRequest);
-        Map<String , Object> originAttributes = member.getAttributes();
-        //OAuth 서비스 id(google, kakao)
+        // OAuth2 서비스 id (google, kakao)
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-
         OAuthAttributes oAuthAttributes = OAuthAttributes.of(registrationId, originAttributes);
         saveOrUpdate(oAuthAttributes);
 
-        //OAuth2User를 반환하면 알아서 Spring에서 세션에 자동 저장
-        return member;
+        return user;
     }
 
-
-    /**
-     * 이미 존재하는 회원이라면 이름과 프로필 이미지르 업데이트
-     * 없는 회원이라면 새로 등록
-     *
-     * @param oAuthAttributes 각 OAuthProvider 별 유저 정보를 담고 있는 클래스
-     * @return the member
-     */
-    public Member saveOrUpdate(OAuthAttributes oAuthAttributes) {
+    // 유저가 있으면 업데이트, 없으면 유저 생성
+    private Member saveOrUpdate(OAuthAttributes oAuthAttributes)  {
+        String provider = oAuthAttributes.getProvider();
         String email = oAuthAttributes.getEmail();
+        String nickname = oAuthAttributes.getNickname();
+        String profile = oAuthAttributes.getProfile();
         String name = oAuthAttributes.getName();
-        String profileImageUrl = oAuthAttributes.getProfileImageUrl();
-        Member member = memberRepository.findByEmail(email)
-                .map(entity -> entity.update(name, profileImageUrl))
-                .orElse(oAuthAttributes.toEntity());
+        Member member = null;
+        if(provider.equals("google")){
+            member = memberRepository.findByEmail(email)
+                    .map(entity -> entity.update(name))
+                    .orElse(Member.builder()
+                            .email(email)
+                            .name(name)
+                            .profile(profile)
+                            .build());
+        }else if(provider.equals("kakao")) {
+            //FIXME 닉네임은 중복될 가능성 높음, 추후 이메일과 이름의 권한 승인을 받아야 할 것으로 보임
+            member = memberRepository.findByNickname(nickname)
+                    .map(entity -> entity.update(nickname))
+                    .orElse(Member.builder()
+                            .nickname(nickname)
+                            .profile(profile)
+                            .build());
+        }
         return memberRepository.save(member);
     }
-
 }
+
