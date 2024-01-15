@@ -16,44 +16,76 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Duration;
 
 @RequiredArgsConstructor
 @Component
-@Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    public static final String REFRESH_TOKEN_DELIMITER_ID = "refresh_token_id";
+
+    public static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    public static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
-    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofDays(1);
-    public static final String GOOGLE_REDIRECT_PATH = "/login/oauth2/code/google";
-    public static final String KAKAO_REDIRECT_PATH = "/oauth2/kakao/callback";
+    public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
+    public static final String REDIRECT_PATH = "/test";
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final OAuth2AuthorizationReqBasedOnCookieRepository oAuth2AuthorizationReqBasedOnCookieRepository;
+    private final OAuth2AuthorizationReqBasedOnCookieRepository authorizationRequestRepository;
     private final MemberService memberService;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Member member = memberService.findByEmail((String) oAuth2User.getAttributes().get("email"));
 
-        //리프레시 토큰 생성 -> 저장 -> 쿠키에 리프레시 토큰 ID 저장
-        log.info("RefeshToken Generating");
         String refreshToken = tokenProvider.generateToken(member, REFRESH_TOKEN_DURATION);
-        Long refreshTokenId = saveRefreshToken(member.getId(), refreshToken);
-        addRefreshTokenIdToCookie(request, response, refreshTokenId);
-
-        //액세스 토큰 생성 -> 헤더에 액세스 토큰 추가
-        log.info("AccessToken Generating");
+        saveRefreshToken(member.getId(), refreshToken);
         String accessToken = tokenProvider.generateToken(member, ACCESS_TOKEN_DURATION);
-        response.addHeader("token", accessToken);
-        clearAuthenticationAttributes(request, response);
-        getRedirectStrategy().sendRedirect(request, response, GOOGLE_REDIRECT_PATH);
-        //getRedirectStrategy().sendRedirect(request, response, KAKAO_REDIRECT_PATH);
+        addTokensToCookie(request, response, refreshToken, accessToken);
 
+        String targetUrl = UriComponentsBuilder.fromUriString(REDIRECT_PATH)
+                                .build()
+                                .toUriString();
+
+        clearAuthenticationAttributes(request, response);
+
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    /**
+     * 리프레시 토큰 DB에 저장
+     *
+     * @param memberId        the member id
+     * @param newRefreshToken the new refresh token
+     */
+    public void saveRefreshToken(Long memberId, String newRefreshToken) {
+        RefreshToken refreshToken = refreshTokenRepository.findByMemberId(memberId)
+                .map(entity -> entity.update(newRefreshToken))
+                .orElse(new RefreshToken(memberId, newRefreshToken));
+
+        refreshTokenRepository.save(refreshToken);
+    }
+
+    /**
+     * 액세스 토큰과 리프레시 토큰 쿠키에 담기.
+     *
+     * @param request      the request
+     * @param response     the response
+     * @param refreshToken the refresh token
+     * @param accessToken  the access token
+     */
+    private void addTokensToCookie(HttpServletRequest request, HttpServletResponse response,
+                                         String refreshToken, String accessToken) {
+        int cookieMaxAge = (int) REFRESH_TOKEN_DURATION.toSeconds();
+        CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME);
+        CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, cookieMaxAge);
+
+        cookieMaxAge = (int) ACCESS_TOKEN_DURATION.toSeconds();
+        CookieUtil.deleteCookie(request, response, ACCESS_TOKEN_COOKIE_NAME);
+        CookieUtil.addCookie(response, ACCESS_TOKEN_COOKIE_NAME, accessToken, cookieMaxAge);
     }
 
 
@@ -65,35 +97,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      */
     private void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
-        oAuth2AuthorizationReqBasedOnCookieRepository.removeAuthorizationRequestCookies(request, response);
-    }
-
-
-    /**
-     * 리프레시 토큰의 id를 쿠키에 반환
-     *
-     * @param request        the request
-     * @param response       the response
-     * @param refreshTokenId the refresh token id
-     */
-    private void addRefreshTokenIdToCookie(HttpServletRequest request, HttpServletResponse response, Long refreshTokenId) {
-        int cookieMaxAge = (int)REFRESH_TOKEN_DURATION.toSeconds();
-        CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_DELIMITER_ID);
-        CookieUtil.addCookie(response, REFRESH_TOKEN_DELIMITER_ID, String.valueOf(refreshTokenId), cookieMaxAge);
-    }
-
-
-    /**
-     * 생성된 리프레시 토큰을 저장하고 리프레시토큰 Id를 반환
-     *
-     * @param memberId        멤버 id
-     * @param newRefreshToken 생성된 리프레시 토큰
-     * @return 리프레시 토큰 Id
-     */
-    private Long saveRefreshToken(Long memberId, String newRefreshToken) {
-        RefreshToken refreshToken = refreshTokenRepository.findByMemberId(memberId)
-                .map(refreshTokenEntity -> refreshTokenEntity.update(newRefreshToken))
-                .orElse(new RefreshToken(memberId, newRefreshToken));
-        return refreshTokenRepository.save(refreshToken).getId();
+        authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
 }
