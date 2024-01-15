@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
-    public RefreshToken findByMemberId(Long memberId){
-      return refreshTokenRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("no Token by memberId"));
+    public RefreshToken findByRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("Unexpected token"));
     }
 }

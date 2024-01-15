@@ -102,17 +102,4 @@ public class TokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
-    /**
-     * 토큰 기반으로 멤버의 Id 가져오기
-     *
-     * @param token the token
-     * @return 멤버 Id
-     */
-    public Long getMemberId(String token){
-        Claims claims = getClaims(token);
-        return claims.get("id", Long.class);
-    }
-
-
 }

@@ -13,19 +13,19 @@ import java.time.Duration;
 @RequiredArgsConstructor
 @Service
 public class TokenService {
-    private final MemberService memberService;
     private final TokenProvider tokenProvider;
     private final RefreshTokenService refreshTokenService;
+    private final MemberService memberService;
 
-    /**
-     * 액세스 토큰 새로 생성
-     *
-     * @param memberId 멤버 id
-     * @return the string 토큰
-     */
-    public String createNewAccessToken(Long memberId){
-        Long id = refreshTokenService.findByMemberId(memberId).getMemberId();
-        Member member = memberService.findById(id);
-        return tokenProvider.generateToken(member, Duration.ofHours(1));
+    public String createNewAccessToken(String refreshToken) {
+        // 토큰 유효성 검사에 실패하면 예외 발생
+        if(!tokenProvider.isValidToken(refreshToken)) {
+            throw new IllegalArgumentException("Unexpected token");
+        }
+
+        Long memberId = refreshTokenService.findByRefreshToken(refreshToken).getMemberId();
+        Member member = memberService.findById(memberId);
+
+        return tokenProvider.generateToken(member, Duration.ofHours(2));
     }
 }
