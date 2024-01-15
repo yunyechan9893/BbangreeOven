@@ -4,6 +4,7 @@ import com.bbangle.bbangle.model.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
@@ -19,17 +20,19 @@ public class OAuthAttributes {
     private String name;
     private String email;
     private String nickname;
-    private String profileImageUrl;
+    private String profile;
+    private String provider;
 
     @Builder
     public OAuthAttributes(Map<String, Object> attributes, String nameAttributesKey, String name, String email,
-                           String gender, String profile, String nickname, String profileImageUrl) {
+                           String gender, String profile, String nickname, String provider) {
         this.attributes = attributes;
         this.nameAttributesKey = nameAttributesKey;
         this.name = name;
         this.email = email;
         this.nickname = nickname;
-        this.profileImageUrl = profileImageUrl;
+        this.profile = profile;
+        this.provider = provider;
     }
 
 
@@ -46,9 +49,10 @@ public class OAuthAttributes {
         return OAuthAttributes.builder()
                 .name(String.valueOf(attributes.get("name")))
                 .email(String.valueOf(attributes.get("email")))
-                .profileImageUrl(String.valueOf(attributes.get("picture")))
+                .profile(String.valueOf(attributes.get("picture")))
                 .attributes(attributes)
                 .nameAttributesKey(userNameAttributeName)
+                .provider("google")
                 .build();
     }
 
@@ -57,19 +61,11 @@ public class OAuthAttributes {
         Map<String, Object> kakaoProfile = (Map<String, Object>) kakaoAccount.get("profile");
 
         return OAuthAttributes.builder()
-                .name(String.valueOf(kakaoProfile.get("nickname")))
-                .profileImageUrl(String.valueOf(kakaoProfile.get("profile_image_url")))
+                .nickname(String.valueOf(kakaoProfile.get("nickname")))
+                .profile(String.valueOf(kakaoProfile.get("profile_image_url")))
                 .nameAttributesKey(userNameAttributeName)
                 .attributes(attributes)
-                .build();
-    }
-
-    public Member toEntity(){
-        return Member.builder()
-                .email(email)
-                .nickname(nickname)
-                .name(name)
-                .profile(profileImageUrl)
+                .provider("kakao")
                 .build();
     }
 }
