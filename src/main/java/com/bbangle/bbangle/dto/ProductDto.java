@@ -1,14 +1,15 @@
 package com.bbangle.bbangle.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import java.util.List;
 
 @Builder
 public record ProductDto(
-    Long boardId,
-    String name,
-    TagDto tags
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    Long id,
+    String title,
+    List<String> tags
 ) {
 
 }
