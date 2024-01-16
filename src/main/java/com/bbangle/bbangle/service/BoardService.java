@@ -9,6 +9,6 @@ public interface BoardService {
 
     List<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                        String category);
+                                        String category, Integer minPrice, Integer maxPrice);
     BoardDetailResponseDto getBoardDetailResponse(Long boardId);
 }
