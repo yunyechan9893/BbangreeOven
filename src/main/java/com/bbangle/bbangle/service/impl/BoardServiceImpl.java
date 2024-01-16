@@ -13,18 +13,23 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
+
     private final BoardRepository boardRepository;
 
     @Override
-    public List<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag, Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag, String category) {
+    public List<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                               Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                               String category, Integer minPrice, Integer maxPrice) {
         return boardRepository.getBoardResponseDto(
-                sort,
-                glutenFreeTag,
-                highProteinTag,
-                sugarFreeTag,
-                veganTag,
-                ketogenicTag,
-                category
+            sort,
+            glutenFreeTag,
+            highProteinTag,
+            sugarFreeTag,
+            veganTag,
+            ketogenicTag,
+            category,
+            minPrice,
+            maxPrice
         );
     }
 
@@ -32,4 +37,5 @@ public class BoardServiceImpl implements BoardService {
     public BoardDetailResponseDto getBoardDetailResponse(Long boardId) {
         return boardRepository.getBoardDetailResponseDto(boardId);
     }
+
 }
