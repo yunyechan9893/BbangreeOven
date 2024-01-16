@@ -67,8 +67,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             if (!tags.contains(TagEnum.HIGH_PROTEIN.label()) && tuple.get(product.highProteinTag))
                 tags.add(TagEnum.HIGH_PROTEIN.label());
 
-            if (!tags.contains(TagEnum.SUGER_FREE.label()) && tuple.get(product.sugarFreeTag))
-                tags.add(TagEnum.SUGER_FREE.label());
+            if (!tags.contains(TagEnum.SUGAR_FREE.label()) && tuple.get(product.sugarFreeTag))
+                tags.add(TagEnum.SUGAR_FREE.label());
 
             if (!tags.contains(TagEnum.VEGAN.label()) && tuple.get(product.veganTag))
                 tags.add(TagEnum.VEGAN.label());
