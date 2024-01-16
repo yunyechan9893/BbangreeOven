@@ -32,25 +32,30 @@ public class BoardController {
                                                           @RequestParam(required = false) Boolean sugarFreeTag,
                                                           @RequestParam(required = false) Boolean veganTag,
                                                           @RequestParam(required = false) Boolean ketogenicTag,
-                                                          @RequestParam(required = false) String category
-    ){
+                                                          @RequestParam(required = false) String category,
+                                                          @RequestParam(required = false) Integer minPrice,
+                                                          @RequestParam(required = false) Integer maxPrice
+    ) {
         return ResponseEntity.ok(boardService.getBoardList(sort,
-                glutenFreeTag,
-                highProteinTag,
-                sugarFreeTag,
-                veganTag,
-                ketogenicTag,
-                category));
+            glutenFreeTag,
+            highProteinTag,
+            sugarFreeTag,
+            veganTag,
+            ketogenicTag,
+            category,
+            minPrice,
+            maxPrice));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<BoardDetailResponseDto> getBoardDetailResponse(
-            @PathVariable("id")
-            Long boardId
-    ){
+        @PathVariable("id")
+        Long boardId
+    ) {
         return ResponseEntity.ok().body(
-                boardService.getBoardDetailResponse(boardId)
+            boardService.getBoardDetailResponse(boardId)
         );
     }
+
 }
 
