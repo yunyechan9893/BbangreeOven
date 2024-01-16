@@ -141,7 +141,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             tags.add(TagEnum.HIGH_PROTEIN.label());
         }
         if(sugarFreeTag){
-            tags.add(TagEnum.SUGAR_FREE.label());
+            tags.add(TagEnum.SUGER_FREE.label());
         }
         if(veganTag){
             tags.add(TagEnum.VEGAN.label());
@@ -215,26 +215,30 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         for (Tuple tuple:fetch) {
             index++;
 
+            List<String> tags = new ArrayList<>();
+            if (tuple.get(product.glutenFreeTag))
+                tags.add(TagEnum.GLUTEN_FREE.label());
+            if (tuple.get(product.highProteinTag))
+                tags.add(TagEnum.HIGH_PROTEIN.label());
+            if (tuple.get(product.sugarFreeTag))
+                tags.add(TagEnum.SUGER_FREE.label());
+            if (tuple.get(product.veganTag))
+                tags.add(TagEnum.VEGAN.label());
+            if (tuple.get(product.ketogenicTag))
+                tags.add(TagEnum.KETOGENIC.label());
+
             // 중복 제거 및 상품 추가
             if (alreadyProductId.indexOf(tuple.get(product.id)) == -1){
                 productDtos.add(
                         ProductDto.builder()
-                                .name(tuple.get(product.title))
-                                .tags(
-                                        TagDto.builder()
-                                                .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), tuple.get(product.glutenFreeTag)))
-                                                .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), tuple.get(product.highProteinTag)))
-                                                .sugarFreeTag(getTagHash(TagEnum.SUGAR_FREE.label(), tuple.get(product.sugarFreeTag)))
-                                                .veganTag(getTagHash(TagEnum.VEGAN.label(), tuple.get(product.veganTag)))
-                                                .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), tuple.get(product.ketogenicTag)))
-                                                .build()
-                                ).build());
+                                .title(tuple.get(product.title))
+                                .tags(tags).build());
 
                 alreadyProductId.add(tuple.get(product.id));
             }
 
             // 중복 제거 및 보드 이미지 추가
-            if (alreadyProductImgId.indexOf(tuple.get(productImg.id)) == -1){
+            if (alreadyProductImgId.indexOf(tuple.get(productImg.id)) == -1 && tuple.get(productImg.id) != null){
                 boardImgDtos.add(
                         BoardImgDto.builder()
                                 .id(tuple.get(productImg.id))
@@ -272,9 +276,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                         .build();
 
                 storeDto = StoreDto.builder()
-                        .id(tuple.get(board.id))
-                        .name(tuple.get(board.title))
-                        .profile(tuple.get(board.profile))
+                        .id(tuple.get(store.id))
+                        .name(tuple.get(store.name))
+                        .profile(tuple.get(store.profile))
                         .isWished(true)
                         .build();
             }

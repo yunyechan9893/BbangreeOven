@@ -4,7 +4,7 @@ public enum TagEnum {
 
     GLUTEN_FREE("glutenFree"),
     HIGH_PROTEIN("highProtein"),
-    SUGAR_FREE("sugarFree"),
+    SUGER_FREE("sugarFree"),
     VEGAN("vegan"),
     KETOGENIC("ketogenic");
 

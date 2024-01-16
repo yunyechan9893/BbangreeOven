@@ -38,6 +38,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 product.sugarFreeTag,
                 product.veganTag,
                 product.ketogenicTag,
+//                product.category,
                 board.view
         ).from(product)
                 .join(product.board, board)
@@ -50,43 +51,35 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         List<BoardDto> boardDtos = new ArrayList<>();
 
         // TagDto 초기화
-        TagDto tagDto = TagDto.builder()
-                .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), false))
-                .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), false))
-                .sugarFreeTag(getTagHash(TagEnum.SUGAR_FREE.label(), false))
-                .veganTag(getTagHash(TagEnum.VEGAN.label(), false))
-                .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), false))
-                .build();
+        List<String> tags = new ArrayList<>();
 
         int resultSize = fetch.size();
         Long curProductId = fetch.get(0).get(board.id);
         int index = 0;
 
-        for (Tuple tuple:
-        fetch) {
+        for (Tuple tuple: fetch) {
             index++;
 
             // 개별 태그의 True를 각각 확인하여 전체 태그로 구성
-            if (!tagDto.glutenFreeTag().get(TagEnum.GLUTEN_FREE.label()) && tuple.get(product.glutenFreeTag))
-                tagDto.glutenFreeTag().put(TagEnum.GLUTEN_FREE.label(), true);
+            if (!tags.contains(TagEnum.GLUTEN_FREE.label()) && tuple.get(product.glutenFreeTag))
+                tags.add(TagEnum.GLUTEN_FREE.label());
 
-            if (!tagDto.highProteinTag().get(TagEnum.HIGH_PROTEIN.label()) && tuple.get(product.highProteinTag))
-                tagDto.highProteinTag().put(TagEnum.HIGH_PROTEIN.label(), true);
+            if (!tags.contains(TagEnum.HIGH_PROTEIN.label()) && tuple.get(product.highProteinTag))
+                tags.add(TagEnum.HIGH_PROTEIN.label());
 
-            if (!tagDto.sugarFreeTag().get(TagEnum.SUGAR_FREE.label()) && tuple.get(product.sugarFreeTag))
-                tagDto.sugarFreeTag().put(TagEnum.SUGAR_FREE.label(), true);
+            if (!tags.contains(TagEnum.SUGER_FREE.label()) && tuple.get(product.sugarFreeTag))
+                tags.add(TagEnum.SUGER_FREE.label());
 
-            if (!tagDto.veganTag().get(TagEnum.VEGAN.label()) && tuple.get(product.veganTag))
-                tagDto.veganTag().put(TagEnum.VEGAN.label(), true);
+            if (!tags.contains(TagEnum.VEGAN.label()) && tuple.get(product.veganTag))
+                tags.add(TagEnum.VEGAN.label());
 
-            if (!tagDto.ketogenicTag().get(TagEnum.KETOGENIC.label()) && tuple.get(product.ketogenicTag))
-                tagDto.ketogenicTag().put(TagEnum.KETOGENIC.label(), true);
+            if (!tags.contains(TagEnum.KETOGENIC.label()) && tuple.get(product.ketogenicTag))
+                tags.add(TagEnum.KETOGENIC.label());
 
             // ProductId가 달라지거나 반복문 마지막 일 시 Board 데이터 추가
-            if (tuple.get(board.id) != curProductId || index == resultSize){
-                // 현재 상품 아이디를 최신 상품 아이디로 변경
-                curProductId = tuple.get(board.id);
-
+            System.out.println(resultSize);
+            System.out.println(index);
+            if ( resultSize > index &&  tuple.get(board.id) != fetch.get(index).get(board.id) || resultSize == index){
                 // 보드 리스트에 데이터 추가
                 boardDtos.add(BoardDto.builder()
                         .id(tuple.get(board.id))
@@ -95,18 +88,13 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                         .price(tuple.get(board.price))
                         .isWished(true)
                         .isBundled(false)
-                        .tags(tagDto)
+                        .tags(tags)
                         .build());
 
                 // 태그 초기화
-                tagDto = TagDto.builder()
-                        .glutenFreeTag(getTagHash(TagEnum.GLUTEN_FREE.label(), false))
-                        .highProteinTag(getTagHash(TagEnum.HIGH_PROTEIN.label(), false))
-                        .sugarFreeTag(getTagHash(TagEnum.SUGAR_FREE.label(), false))
-                        .veganTag(getTagHash(TagEnum.VEGAN.label(), false))
-                        .ketogenicTag(getTagHash(TagEnum.KETOGENIC.label(), false))
-                        .build();
+                tags = new ArrayList<>();
             }
+
 
             // 반복문 마지막에 스토어 Dto 추가
             if (index == resultSize){
@@ -114,7 +102,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                         .id(tuple.get(store.id))
                         .profile(tuple.get(store.profile))
                         .name(tuple.get(store.name))
-                        .introduce(tuple.get(store.introduce))
+                        .introduce(tuple.get(store.introduce).isBlank() ? "": tuple.get(store.introduce))
                         .isWished(true)
                         .build();
             }
@@ -126,17 +114,25 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             return Integer.compare(t2.get(board.view), t1.get(board.view));
         });
 
+        curProductId = -1L;
+
+        List<BoardDto> bestBoardCollection = new ArrayList<>();
+        for (Tuple tuple: fetch){
+//            if curProductId !=
+//
+//            bestBoardCollection
+        }
 
         List<BoardDto> bestBoards = fetch.stream()
                 .map(
-                tuple -> BoardDto.builder()
-                        .id(tuple.get(board.id))
-                        .profile(tuple.get(board.profile))
-                        .title(tuple.get(board.title))
-                        .price(tuple.get(board.price))
-                        .isBundled(false)
-                        .build()
-        )
+                        tuple -> BoardDto.builder()
+                                .id(tuple.get(board.id))
+                                .profile(tuple.get(board.profile))
+                                .title(tuple.get(board.title))
+                                .price(tuple.get(board.price))
+                                .isBundled(false)
+                                .build()
+                )
                 .distinct()
                 .limit(3)
                 .toList();
@@ -146,12 +142,6 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 .bestProducts(bestBoards)
                 .allProducts(boardDtos)
                 .build();
-    }
-
-    private HashMap<String, Boolean> getTagHash(String tagName, Boolean isTrued){
-        HashMap<String, Boolean> tagHash = new HashMap<>();
-        tagHash.put(tagName, isTrued);
-        return tagHash;
     }
 }
 
