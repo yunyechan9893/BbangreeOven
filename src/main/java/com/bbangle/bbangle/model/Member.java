@@ -1,38 +1,31 @@
 package com.bbangle.bbangle.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-//import org.springframework.security.core.GrantedAuthority;
-//import org.springframework.security.core.authority.SimpleGrantedAuthority;
-//import org.springframework.security.core.userdetails.UserDetails;
-//
-//import java.time.LocalDateTime;
-//import java.util.Collection;
-//import java.util.List;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Table(name = "member")
 @Entity
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Member extends BaseEntity {
-//public class Member extends BaseEntity implements UserDetails {
+public class Member extends BaseEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "phone")
@@ -54,7 +47,8 @@ public class Member extends BaseEntity {
     private boolean isDeleted;
   
     @Builder
-    public Member(Long id, String email, String phone, String name, String nickname, String birth, boolean isDeleted) {
+    public Member(Long id, String email, String phone, String name, String nickname,
+                  String birth, boolean isDeleted, String profile)  {
         this.id = id;
         this.email = email;
         this.phone = phone;
@@ -62,41 +56,46 @@ public class Member extends BaseEntity {
         this.nickname = nickname;
         this.birth = birth;
         this.isDeleted = isDeleted;
+        this.profile = profile;
     }
 
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return List.of(new SimpleGrantedAuthority("user"));
-//    }
-//
-//    @Override
-//    public String getPassword() {
-//        return null;
-//    }
-//
-//    @Override
-//    public String getUsername() {
-//        return name;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonLocked() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isCredentialsNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isEnabled() {
-//        return true;
-//    }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("user"));
+    }
 
+    @Override
+    public String getPassword() {
+        return null;
+    }
+
+    @Override
+    public String getUsername() {
+        return name;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public Member update(String nickname){
+        this.nickname = nickname;
+        return this;
+    }
 }
