@@ -20,6 +20,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -29,7 +31,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
-    public static final String REDIRECT_PATH = "/test";
+    public static final String REDIRECT_PATH = "http://localhost:3000";
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -39,7 +41,18 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        Member member = memberService.findByEmail((String) oAuth2User.getAttributes().get("email"));
+
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        Member member = null;
+        //google
+        if(attributes.containsKey("sub")){
+            member = memberService.findByEmail((String) oAuth2User.getAttributes().get("email"));
+        //kakao
+        } else if(attributes.containsKey("id")) {
+            LinkedHashMap propertiesMap = (LinkedHashMap) oAuth2User.getAttributes().get("properties");
+            String nickname = (String) propertiesMap.get("nickname");
+            member = memberService.findByNickname(nickname);
+        }
 
         String refreshToken = tokenProvider.generateToken(member, REFRESH_TOKEN_DURATION);
         saveRefreshToken(member.getId(), refreshToken);

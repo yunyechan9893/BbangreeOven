@@ -22,4 +22,9 @@ public class MemberService {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("findByEmail() >>>> no Member by Email"));
     }
+
+    public Member findByNickname(String nickname){
+        return memberRepository.findByNickname(nickname)
+                .orElseThrow(() -> new IllegalArgumentException(("findByNickname() >>>>> no Member by Nickname")));
+    }
 }
