@@ -1,10 +1,7 @@
 package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.dto.*;
-import com.bbangle.bbangle.model.QBoard;
-import com.bbangle.bbangle.model.QProduct;
-import com.bbangle.bbangle.model.QStore;
-import com.bbangle.bbangle.model.TagEnum;
+import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.StoreQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -12,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Repository
@@ -38,7 +36,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 product.sugarFreeTag,
                 product.veganTag,
                 product.ketogenicTag,
-//                product.category,
+                product.category,
                 board.view
         ).from(product)
                 .join(product.board, board)
@@ -46,16 +44,17 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 .where(board.store.id.eq(storeId))
                 .orderBy(board.createdAt.desc())
                 .fetch();
-
         StoreDto storeDto = StoreDto.builder().build();
         List<BoardDto> boardDtos = new ArrayList<>();
 
         // TagDto 초기화
         List<String> tags = new ArrayList<>();
+        List<Category> categorys = new ArrayList<>();
 
         int resultSize = fetch.size();
-        Long curProductId = fetch.get(0).get(board.id);
         int index = 0;
+
+        int best_one_product_id = 0;
 
         for (Tuple tuple: fetch) {
             index++;
@@ -76,10 +75,16 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             if (!tags.contains(TagEnum.KETOGENIC.label()) && tuple.get(product.ketogenicTag))
                 tags.add(TagEnum.KETOGENIC.label());
 
+            categorys.add(tuple.get(product.category));
+
+
             // ProductId가 달라지거나 반복문 마지막 일 시 Board 데이터 추가
-            System.out.println(resultSize);
-            System.out.println(index);
             if ( resultSize > index &&  tuple.get(board.id) != fetch.get(index).get(board.id) || resultSize == index){
+                var is_categories = false;
+                if (categorys.stream().distinct().collect(Collectors.toList()).size() > 1){
+                    is_categories = true;
+                }
+
                 // 보드 리스트에 데이터 추가
                 boardDtos.add(BoardDto.builder()
                         .id(tuple.get(board.id))
@@ -87,12 +92,13 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
                         .isWished(true)
-                        .isBundled(false)
+                        .isBundled(is_categories)
                         .tags(tags)
                         .build());
 
                 // 태그 초기화
                 tags = new ArrayList<>();
+                categorys = new ArrayList<>();
             }
 
 
@@ -113,29 +119,36 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             // 내림차순으로 정렬하려는 값 선택 (여기서는 value1을 선택)
             return Integer.compare(t2.get(board.view), t1.get(board.view));
         });
+        index = 0;
 
-        curProductId = -1L;
 
-        List<BoardDto> bestBoardCollection = new ArrayList<>();
-        for (Tuple tuple: fetch){
-//            if curProductId !=
-//
-//            bestBoardCollection
+        List<BoardDto> bestBoards = new ArrayList<>();
+        for (Tuple tuple: fetch) {
+            index++;
+
+            categorys.add(tuple.get(product.category));
+
+            if ( resultSize > index &&  tuple.get(board.id) != fetch.get(index).get(board.id) || resultSize == index){
+                var is_categories = false;
+
+                if (categorys.stream().distinct().collect(Collectors.toList()).size() > 1){
+                    is_categories = true;
+                }
+                bestBoards.add(BoardDto.builder()
+                        .id(tuple.get(board.id))
+                        .profile(tuple.get(board.profile))
+                        .title(tuple.get(board.title))
+                        .price(tuple.get(board.price))
+                        .isBundled(is_categories)
+                        .build());
+
+                if (bestBoards.size() > 2) break;
+                categorys = new ArrayList<>();
+            }
+
+
         }
 
-        List<BoardDto> bestBoards = fetch.stream()
-                .map(
-                        tuple -> BoardDto.builder()
-                                .id(tuple.get(board.id))
-                                .profile(tuple.get(board.profile))
-                                .title(tuple.get(board.title))
-                                .price(tuple.get(board.price))
-                                .isBundled(false)
-                                .build()
-                )
-                .distinct()
-                .limit(3)
-                .toList();
 
         return StoreDetailResponseDto.builder()
                 .store(storeDto)
