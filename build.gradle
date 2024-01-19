@@ -36,10 +36,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'io.jsonwebtoken:jjwt:0.9.1' // JWT 라이브러리
 	implementation 'javax.xml.bind:jaxb-api:2.3.1' // xml 문서와 java 객체 간 매핑 자동화?
-	//	implementation 'org.springframework.boot:spring-boot-starter-security' # 너가 문제냐!?
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 	// https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
 	implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '3.2.0'
-	//	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
 	//QueryDSL 추가
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
