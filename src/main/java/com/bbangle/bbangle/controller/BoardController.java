@@ -21,7 +21,7 @@ public class BoardController {
 
     private final BoardServiceImpl boardService;
 
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<Slice<BoardResponseDto>> getList(
         @RequestParam(required = false) String sort,
         @RequestParam(required = false) Boolean glutenFreeTag,
