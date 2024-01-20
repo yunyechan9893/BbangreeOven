@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import com.bbangle.bbangle.dto.BoardAvailableDayDto;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardDto;
@@ -16,7 +15,9 @@ import com.bbangle.bbangle.dto.ProductDto;
 import com.bbangle.bbangle.dto.ProductTagDto;
 import com.bbangle.bbangle.dto.StoreDto;
 import com.bbangle.bbangle.exception.CategoryTypeException;
+import com.bbangle.bbangle.model.Board;
 import com.bbangle.bbangle.model.Category;
+import com.bbangle.bbangle.model.Product;
 import com.bbangle.bbangle.model.QBoard;
 import com.bbangle.bbangle.model.QProduct;
 import com.bbangle.bbangle.model.QProductImg;
@@ -26,8 +27,6 @@ import com.bbangle.bbangle.repository.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -39,9 +38,6 @@ import org.springframework.stereotype.Repository;
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private final JPAQueryFactory queryFactory;
-
-    @PersistenceContext
-    EntityManager entityManager;
 
     @Override
     public Slice<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
@@ -65,70 +61,41 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 product,
                 board);
 
-// Step 1: 페이징을 위한 서브쿼리
-        List<Long> pagedBoardIds = queryFactory
-            .select(board.id)
-            .from(board)
+
+// Step 2: 메인 쿼리
+        List<Board> boards = queryFactory
+            .selectFrom(board)
+            .leftJoin(board.productList, product).fetchJoin() // Product와의 연관 관계를 fetch join으로 가져옴
+            .leftJoin(board.store, store).fetchJoin()
             .where(filter)
-            .orderBy(board.createdAt.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize() + 1)
             .fetch();
 
-// Step 2: 메인 쿼리
-        List<Tuple> fetch = queryFactory
-            .select(
-                board.id,
-                store.id,
-                store.name,
-                board.profile,
-                board.title,
-                board.price,
-                product.glutenFreeTag,
-                product.highProteinTag,
-                product.sugarFreeTag,
-                product.veganTag,
-                product.ketogenicTag)
-            .from(board)
-            .leftJoin(product).on(product.board.eq(board))
-            .leftJoin(store).on(board.store.eq(store))
-            .where(board.id.in(pagedBoardIds))
-            .fetch();
-
-        Map<Long, List<ProductTagDto>> productTagsByBoardId = fetch.stream()
-            .collect(Collectors.groupingBy(
-                tuple -> tuple.get(board.id),
-                Collectors.mapping(tuple -> ProductTagDto.builder()
-                        .glutenFreeTag(Boolean.TRUE.equals(tuple.get(product.glutenFreeTag)))
-                        .highProteinTag(Boolean.TRUE.equals(tuple.get(product.highProteinTag)))
-                        .sugarFreeTag(Boolean.TRUE.equals(tuple.get(product.sugarFreeTag)))
-                        .veganTag(Boolean.TRUE.equals(tuple.get(product.veganTag)))
-                        .ketogenicTag(Boolean.TRUE.equals(tuple.get(product.ketogenicTag)))
-                        .build(),
-                    Collectors.toList())
-            ));
-
-        Set<Long> boardIds = new HashSet<>();
+        Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
+        for (Board board1 : boards) {
+            for (Product product1 : board1.getProductList()) {
+                productTagsByBoardId.put(board1.getId(),
+                    productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
+                productTagsByBoardId.get(board1.getId()).add(ProductTagDto.from(product1));
+            }
+        }
 
         List<BoardResponseDto> content = new ArrayList<>();
 
-        for (Tuple tuple : fetch) {
-            Long currentBoardId = tuple.get(board.id);
-            if (!boardIds.contains(currentBoardId)) {
-                boardIds.add(currentBoardId);
+        for (Board board1 : boards) {
+            // 결과를 DTO로 변환
+            content.add(BoardResponseDto.builder()
+                .boardId(board1.getId())
+                .storeId(board1.getStore().getId())
+                .storeName(board1.getStore().getName())
+                .thumbnail(board1.getProfile())
+                .title(board1.getTitle())
+                .price(board1.getPrice())
+                .isWished(true) // 이 값은 필요에 따라 설정
+                .tags(addList(productTagsByBoardId.get(board1.getId())))
+                .build());
 
-                // 결과를 DTO로 변환
-                content.add(BoardResponseDto.builder()
-                    .boardId(tuple.get(board.id))
-                    .storeId(tuple.get(store.id))
-                    .storeName(tuple.get(store.name))
-                    .thumbnail(tuple.get(board.profile))
-                    .title(tuple.get(board.title))
-                    .price(tuple.get(board.price))
-                    .isWished(true) // 이 값은 필요에 따라 설정
-                    .tags(addList(productTagsByBoardId.get(tuple.get(board.id))))
-                    .build());
-            }
         }
 
         // 다음 페이지 존재 여부 확인
@@ -179,11 +146,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private List<String> addList(List<ProductTagDto> dtos) {
+        List<String> tags = new ArrayList<>();
         boolean glutenFreeTag = false;
         boolean highProteinTag = false;
         boolean sugarFreeTag = false;
         boolean veganTag = false;
         boolean ketogenicTag = false;
+        if (dtos == null) {
+            return tags;
+        }
         for (ProductTagDto dto : dtos) {
             if (dto.glutenFreeTag()) {
                 glutenFreeTag = true;
@@ -201,7 +172,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 ketogenicTag = true;
             }
         }
-        List<String> tags = new ArrayList<>();
         if (glutenFreeTag) {
             tags.add(TagEnum.GLUTEN_FREE.label());
         }
