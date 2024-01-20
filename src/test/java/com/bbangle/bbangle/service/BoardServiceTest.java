@@ -22,6 +22,8 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 
 @SpringBootTest
 public class BoardServiceTest {
@@ -40,15 +42,21 @@ public class BoardServiceTest {
 
     Board board;
     Board board2;
+    Store store;
+    Store store2;
+    PageRequest defaultPage;
 
     @BeforeEach
     void setup() {
+        defaultPage = PageRequest.of(0, 10);
         productRepository.deleteAll();
         boardRepository.deleteAll();
         storeRepository.deleteAll();
 
-        Store store = storeGenerator();
+        store = storeGenerator();
         storeRepository.save(store);
+        store2 = storeGenerator();
+        storeRepository.save(store2);
 
         board = boardGenerator(store,
             true,
@@ -108,13 +116,13 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        List<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, noFilter,
-            noFilter, noFilter, noSort, null, null);
-        BoardResponseDto response1 = boardList.get(0);
-        BoardResponseDto response2 = boardList.get(1);
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, noFilter,
+            noFilter, noFilter, noSort, null, null, defaultPage);
+        BoardResponseDto response1 = boardList.getContent().get(0);
+        BoardResponseDto response2 = boardList.getContent().get(1);
 
         //then
-        assertThat(boardList).hasSize(2);
+        assertThat(boardList.getContent()).hasSize(2);
 
         assertThat(response1.tags().contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
         assertThat(response1.tags().contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
@@ -163,9 +171,9 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        List<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter, noFilter,
-            noFilter, noFilter, noSort, null, null);
-        BoardResponseDto response1 = boardList.get(0);
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter, noFilter,
+            noFilter, noFilter, noSort, null, null, defaultPage);
+        BoardResponseDto response1 = boardList.getContent().get(0);
 
         //then
         assertThat(boardList).hasSize(1);
@@ -212,11 +220,11 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        List<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter, noFilter,
-            noFilter, noFilter, noSort, null, null);
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter, noFilter,
+            noFilter, noFilter, noSort, null, null, defaultPage);
 
         //then
-        assertThat(boardList).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
     }
 
     @ParameterizedTest
@@ -253,11 +261,11 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        List<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, true, noFilter,
-            noFilter, noFilter, noSort, null, null);
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter, noFilter,
+            noFilter, noFilter, noSort, null, null, defaultPage);
 
         //then
-        assertThat(boardList).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
 
     }
 
@@ -295,11 +303,11 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        List<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, noFilter,
-            true, noFilter, noSort, null, null);
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, noFilter,
+            true, noFilter, noSort, null, null, defaultPage);
 
         //then
-        assertThat(boardList).hasSize(0);
+        assertThat(boardList.getContent()).hasSize(0);
 
     }
 
@@ -337,11 +345,11 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        List<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, true,
-            noFilter, noFilter, noSort, null, null);
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, noFilter,
+            noFilter, true, noSort, null, null, defaultPage);
 
         //then
-        assertThat(boardList).hasSize(2);
+        assertThat(boardList.getContent()).hasSize(2);
 
     }
 
@@ -388,11 +396,11 @@ public class BoardServiceTest {
         }
 
         //when
-        List<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, null,
-            null, null, realCategory, null, null);
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, null,
+            null, null, category, null, null, defaultPage);
 
         //then
-        assertThat(boardList).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(1);
 
     }
 
@@ -433,7 +441,7 @@ public class BoardServiceTest {
 
         //then
         Assertions.assertThatThrownBy(() -> boardService.getBoardList(noSort, null, null, null,
-                null, null, category, null, null))
+                null, null, category, null, null, defaultPage))
             .isInstanceOf(CategoryTypeException.class);
 
     }
@@ -473,9 +481,9 @@ public class BoardServiceTest {
         productRepository.save(product3);
         String noSort = "";
 
-        List<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, true,
-            null, null, category, null, null);
-        BoardResponseDto response1 = boardList.get(0);
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, true,
+            null, null, category, null, null, defaultPage);
+        BoardResponseDto response1 = boardList.getContent().get(0);
 
         //then
         assertThat(boardList).hasSize(1);
@@ -493,32 +501,111 @@ public class BoardServiceTest {
     public void showListFilterPrice() {
         //given, when
 
-        List<BoardResponseDto> boardList = boardService.getBoardList(null, null, null, null,
-            null, null, null, 5000, null);
-        List<BoardResponseDto> boardList2 = boardService.getBoardList(null, null, null, null,
-            null, null, null, 1000, null);
-        List<BoardResponseDto> boardList3 = boardService.getBoardList(null, null, null, null,
-            null, null, null, null, 10000);
-        List<BoardResponseDto> boardList4 = boardService.getBoardList(null, null, null, null,
-            null, null, null, null, 1000);
-        List<BoardResponseDto> boardList5 = boardService.getBoardList(null, null, null, null,
-            null, null, null, null, 900);
-        List<BoardResponseDto> boardList6 = boardService.getBoardList(null, null, null, null,
-            null, null, null, 1000, 10000);
-        List<BoardResponseDto> boardList7 = boardService.getBoardList(null, null, null, null,
-            null, null, null, 1001, 9999);
-        List<BoardResponseDto> boardList8 = boardService.getBoardList(null, null, null, null,
-            null, null, null, null, null);
+        Slice<BoardResponseDto> boardList =
+            boardService.getBoardList(null, null, null, null, null, null, null, 5000, null, defaultPage);
+        Slice<BoardResponseDto> boardList2 =
+            boardService.getBoardList(null, null, null, null, null, null, null, 1000, null, defaultPage);
+        Slice<BoardResponseDto> boardList3 =
+            boardService.getBoardList(null, null, null, null, null, null, null, null, 10000, defaultPage);
+        Slice<BoardResponseDto> boardList4 =
+            boardService.getBoardList(null, null, null, null, null, null, null, null, 1000, defaultPage);
+        Slice<BoardResponseDto> boardList5 =
+            boardService.getBoardList(null, null, null, null, null, null, null, null, 900, defaultPage);
+        Slice<BoardResponseDto> boardList6 =
+            boardService.getBoardList(null, null, null, null, null, null, null, 1000, 10000, defaultPage);
+        Slice<BoardResponseDto> boardList7 =
+            boardService.getBoardList(null, null, null, null, null, null, null, 1001, 9999, defaultPage);
+        Slice<BoardResponseDto> boardList8 =
+            boardService.getBoardList(null, null, null, null, null, null, null, null, null, defaultPage);
         List<Board> all = boardRepository.findAll();
 
         //then
-        assertThat(boardList).hasSize(1);
-        assertThat(boardList2).hasSize(2);
-        assertThat(boardList3).hasSize(2);
-        assertThat(boardList4).hasSize(1);
-        assertThat(boardList5).hasSize(0);
-        assertThat(boardList6).hasSize(2);
-        assertThat(boardList7).hasSize(0);
+        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList2.getContent()).hasSize(2);
+        assertThat(boardList3.getContent()).hasSize(2);
+        assertThat(boardList4.getContent()).hasSize(1);
+        assertThat(boardList5.getContent()).hasSize(0);
+        assertThat(boardList6.getContent()).hasSize(2);
+        assertThat(boardList7.getContent()).hasSize(0);
+
+    }
+
+
+    @Test
+    @DisplayName("성분과 카테고리를 한꺼번에 요청 시 정상적으로 필터링해서 반환한다.")
+    public void SliceTest() {
+        //given, when
+
+        Product product1 = productGenerator(board,
+            true,
+            true,
+            false,
+            true,
+            true,
+            Category.BREAD.name());
+
+        Product product2 = productGenerator(board2,
+            false,
+            false,
+            false,
+            false,
+            true,
+            Category.BREAD.name());
+
+        Product product3 = productGenerator(board2,
+            false,
+            false,
+            true,
+            false,
+            true,
+            Category.BREAD.name());
+
+        for(int i = 0; i < 12; i++) {
+            board = boardGenerator(store,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                1000);
+            boardRepository.save(board);
+
+            Product product5 = productGenerator(board2,
+                false,
+                false,
+                false,
+                false,
+                true,
+                Category.BREAD.name());
+
+            Product product4 = productGenerator(board,
+                false,
+                false,
+                true,
+                false,
+                true,
+                Category.BREAD.name());
+            productRepository.save(product5);
+            productRepository.save(product4);
+        }
+
+        productRepository.save(product1);
+        productRepository.save(product2);
+        productRepository.save(product3);
+
+        String noSort = "";
+
+        List<Board> all = boardRepository.findAll();
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, null,
+            null, null, null, null, null, defaultPage);
+        Slice<BoardResponseDto> boardList2 = boardService.getBoardList(noSort, null, null, null,
+            null, null, null, null, null, PageRequest.of(1, 10));
+
+        //then
+        assertThat(boardList.getContent()).hasSize(10);
+        assertThat(boardList2.getContent()).hasSize(4);
 
     }
 

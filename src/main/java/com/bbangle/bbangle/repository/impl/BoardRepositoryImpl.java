@@ -2,18 +2,36 @@ package com.bbangle.bbangle.repository.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.bbangle.bbangle.dto.*;
+import com.bbangle.bbangle.dto.BoardAvailableDayDto;
+import com.bbangle.bbangle.dto.BoardDetailResponseDto;
+import com.bbangle.bbangle.dto.BoardDto;
+import com.bbangle.bbangle.dto.BoardImgDto;
+import com.bbangle.bbangle.dto.BoardResponseDto;
+import com.bbangle.bbangle.dto.ProductDto;
+import com.bbangle.bbangle.dto.ProductTagDto;
+import com.bbangle.bbangle.dto.StoreDto;
 import com.bbangle.bbangle.exception.CategoryTypeException;
-import com.bbangle.bbangle.model.*;
+import com.bbangle.bbangle.model.Category;
+import com.bbangle.bbangle.model.QBoard;
+import com.bbangle.bbangle.model.QProduct;
+import com.bbangle.bbangle.model.QProductImg;
+import com.bbangle.bbangle.model.QStore;
+import com.bbangle.bbangle.model.TagEnum;
 import com.bbangle.bbangle.repository.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -22,10 +40,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private final JPAQueryFactory queryFactory;
 
+    @PersistenceContext
+    EntityManager entityManager;
+
     @Override
-    public List<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                      Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                      String category, Integer minPrice, Integer maxPrice) {
+    public Slice<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                                       Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                                       String category, Integer minPrice, Integer maxPrice,
+                                                       Pageable pageable) {
 
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
@@ -43,6 +65,17 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 product,
                 board);
 
+// Step 1: 페이징을 위한 서브쿼리
+        List<Long> pagedBoardIds = queryFactory
+            .select(board.id)
+            .from(board)
+            .where(filter)
+            .orderBy(board.createdAt.asc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize() + 1)
+            .fetch();
+
+// Step 2: 메인 쿼리
         List<Tuple> fetch = queryFactory
             .select(
                 board.id,
@@ -59,8 +92,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .from(board)
             .leftJoin(product).on(product.board.eq(board))
             .leftJoin(store).on(board.store.eq(store))
-            .where(filter)
-            .orderBy(board.createdAt.asc())
+            .where(board.id.in(pagedBoardIds))
             .fetch();
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = fetch.stream()
@@ -76,19 +108,38 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     Collectors.toList())
             ));
 
-        return fetch.stream()
-            .map(tuple -> BoardResponseDto.builder()
-                .boardId(tuple.get(board.id))
-                .storeId(tuple.get(store.id))
-                .storeName(tuple.get(store.name))
-                .thumbnail(tuple.get(board.profile))
-                .title(tuple.get(board.title))
-                .price(tuple.get(board.price))
-                .isWished(true)
-                .tags(addList(productTagsByBoardId.get(tuple.get(board.id))))
-                .build())
-            .distinct() // 중복 제거
-            .toList();
+        Set<Long> boardIds = new HashSet<>();
+
+        List<BoardResponseDto> content = new ArrayList<>();
+
+        for (Tuple tuple : fetch) {
+            Long currentBoardId = tuple.get(board.id);
+            if (!boardIds.contains(currentBoardId)) {
+                boardIds.add(currentBoardId);
+
+                // 결과를 DTO로 변환
+                content.add(BoardResponseDto.builder()
+                    .boardId(tuple.get(board.id))
+                    .storeId(tuple.get(store.id))
+                    .storeName(tuple.get(store.name))
+                    .thumbnail(tuple.get(board.profile))
+                    .title(tuple.get(board.title))
+                    .price(tuple.get(board.price))
+                    .isWished(true) // 이 값은 필요에 따라 설정
+                    .tags(addList(productTagsByBoardId.get(tuple.get(board.id))))
+                    .build());
+            }
+        }
+
+        // 다음 페이지 존재 여부 확인
+        boolean hasNext = content.size() > pageable.getPageSize();
+        if (hasNext) {
+            // 마지막 항목 제거
+            content.remove(content.size() - 1);
+        }
+
+        // Slice 객체 반환
+        return new SliceImpl<>(content, pageable, hasNext);
     }
 
     private static BooleanBuilder setFilteringCondition(Boolean glutenFreeTag, Boolean highProteinTag,
