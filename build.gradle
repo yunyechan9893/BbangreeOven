@@ -26,6 +26,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -56,6 +57,12 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	//	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.projectlombok:lombok'
+
+	// Redis 의존성 추가
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// 자연어 처리 - 형태소 분석기
+	implementation 'com.github.shin285:KOMORAN:3.3.4'
 }
 
 tasks.named('test') {
