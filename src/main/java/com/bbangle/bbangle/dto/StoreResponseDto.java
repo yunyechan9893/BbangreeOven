@@ -3,8 +3,8 @@ package com.bbangle.bbangle.dto;
 import com.bbangle.bbangle.model.Store;
 
 public record StoreResponseDto(
-        Long id,
-        String name,
+        Long storeId,
+        String storeName,
         String introduce,
         String profile,
         Boolean isWished
