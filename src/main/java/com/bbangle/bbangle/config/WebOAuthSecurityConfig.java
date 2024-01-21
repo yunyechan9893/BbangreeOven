@@ -40,12 +40,12 @@ public class WebOAuthSecurityConfig {
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
 
-        http.authorizeRequests()
-                .requestMatchers("/api/token").permitAll()
-                .requestMatchers("/api/**").authenticated()
-                //Test시 위 2줄을 주석처리하시고 밑에 주석을 풀어주세요
-                //.requestMatchers("/**").permitAll() //모든 경로에 인증 없이 접근
-                .anyRequest().permitAll();
+        http.authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/token").permitAll()
+                        //Test시 위 2줄을 주석처리하시고 밑에 주석을 풀어주세요
+                        //.requestMatchers("/**").permitAll() //모든 경로에 인증 없이 접근
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll());
 
         http.oauth2Login(oauth2 -> oauth2
                                 .authorizationEndpoint(authorization -> authorization
