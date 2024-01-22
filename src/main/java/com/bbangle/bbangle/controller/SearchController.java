@@ -1,9 +1,8 @@
 package com.bbangle.bbangle.controller;
 
-import com.bbangle.bbangle.dto.BoardResponseDto;
+import com.bbangle.bbangle.dto.SearchResponseDto;
 import com.bbangle.bbangle.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +14,10 @@ public class SearchController {
     SearchService searchService;
 
     @GetMapping
-    public ResponseEntity<Slice<BoardResponseDto>> getSearchedBoard(
+    public ResponseEntity<SearchResponseDto> getSearchedBoard(
             @RequestParam
-            String title
+            String keyword
     ){
-        return ResponseEntity.ok().body(searchService.getBoardIdes(title));
+        return ResponseEntity.ok().body(searchService.getSearchResult(keyword));
     }
 }
