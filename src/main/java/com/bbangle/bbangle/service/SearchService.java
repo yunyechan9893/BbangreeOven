@@ -1,10 +1,9 @@
 package com.bbangle.bbangle.service;
 
-import com.bbangle.bbangle.dto.BoardResponseDto;
-import org.springframework.data.domain.Slice;
+import com.bbangle.bbangle.dto.SearchResponseDto;
 
 public interface SearchService {
 
-    Slice<BoardResponseDto> getBoardIdes(String title);
+    SearchResponseDto getSearchResult(String keyword);
 
 }
