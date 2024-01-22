@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.service;
 
 import com.bbangle.bbangle.repository.InitRepository;
-import com.bbangle.bbangle.repository.SearchRepository;
 import com.bbangle.bbangle.util.KomoranUtil;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import kr.co.shineware.nlp.komoran.model.Token;
@@ -27,7 +26,7 @@ public class SearchServiceTest {
     }
     @Test
     public void getBoardIdesTest(){
-        searchService.getBoardIdes("비건 베이커리");
+        searchService.getSearchResult("비건 베이커리");
     }
 
     @Test

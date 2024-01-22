@@ -11,6 +11,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchRepository {
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public Boolean saveSearchKeyword(Long id, String keyword) {
+        QSearch search = QSearch.search;
+
+
+        try {
+//            queryFactory.insert(search)
+//                    .set(search.keyword, keyword)
+//                    .set(search.createdAt, LocalDateTime.now())
+//                    .set(search.member, ) // Assuming Member has a constructor that takes id
+//                    .execute();
+            return true;
+        } catch (Exception e){
+            System.out.println(e);
+            return false;
+        }
+    }
 
     @Override
     public Slice<BoardResponseDto> getSearchResult(List<Long> boardIdes, Pageable pageable) {
@@ -124,7 +143,4 @@ public class SearchRepositoryImpl implements SearchRepository {
         return tags;
     }
 
-    private void getSearchStore(List<Long> storeIdes){
-
-    }
 }
