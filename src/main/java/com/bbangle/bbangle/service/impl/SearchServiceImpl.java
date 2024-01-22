@@ -30,24 +30,27 @@ public class SearchServiceImpl implements SearchService {
     @Autowired
     RedisRepository redisRepository;
 
+    private final String BOARD="board";
+    private final String STORE="store";
+
     @Override
     public Slice<BoardResponseDto> getBoardIdes(String title) {
-        List<String> keys = getTokenizer(title);
-        System.out.println(keys);
-
+        List<String> keys = getAllTokenizer(title);
 
         // 검증 완료
         List<Long> boardIndexs = keys.stream()
-                .map(key -> redisRepository.get(key))
+                .map(key -> redisRepository.get(BOARD, key))
                 .filter(list -> list != null)  // Filter out null lists
                 .flatMap(List::stream)
                 .distinct()
                 .collect(Collectors.toList());
 
-
-        boardIndexs.stream().forEach(object ->
-                System.out.println(object)
-        );
+        List<Long> storeIndexs = keys.stream()
+                .map(key -> redisRepository.get(STORE, key))
+                .filter(list -> list != null)  // Filter out null lists
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
 
         int pageNumber = 0;  // 첫 번째 페이지
         int pageSize = 10;  // 페이지당 10개 아이템
@@ -55,12 +58,22 @@ public class SearchServiceImpl implements SearchService {
         // Pageable 객체 생성
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        return searchRepository.getSearchBoardResult(boardIndexs, pageable);
+        var searchBoardResult = searchRepository.getSearchResult(boardIndexs, pageable);
+
+
+        return searchBoardResult;
     }
 
-    private List<String> getTokenizer(String title){
+    private KomoranResult getTokenizer(String title) {
         var komoran = KomoranUtil.getInstance();
-        KomoranResult analyzeResultList = komoran.analyze(title);
-        return analyzeResultList.getMorphesByTags("NNG", "NNP", "NNB", "NP", "NR", "NA");
+        return komoran.analyze(title);
+    }
+
+    private List<String> getAllTokenizer(String title) {
+        System.out.println(getTokenizer(title).getTokenList());
+        return getTokenizer(title).getTokenList().stream().map(token-> {
+            System.out.println(token.getMorph());
+            return token.getMorph();
+        }).toList();
     }
 }

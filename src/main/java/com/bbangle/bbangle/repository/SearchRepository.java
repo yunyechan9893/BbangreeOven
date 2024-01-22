@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface SearchRepository {
 
-    Slice<BoardResponseDto> getSearchBoardResult(List<Long> boardIdes, Pageable pageable);
+    Slice<BoardResponseDto> getSearchResult(List<Long> boardIdes, Pageable pageable);
 }

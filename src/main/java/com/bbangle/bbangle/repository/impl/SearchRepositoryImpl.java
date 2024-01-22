@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.dto.BoardResponseDto;
-import com.bbangle.bbangle.dto.ProductTagDto;
+import com.bbangle.bbangle.dto.*;
 import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.SearchRepository;
 import com.querydsl.core.Tuple;
@@ -12,10 +11,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -23,7 +20,7 @@ public class SearchRepositoryImpl implements SearchRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<BoardResponseDto> getSearchBoardResult(List<Long> boardIdes, Pageable pageable) {
+    public Slice<BoardResponseDto> getSearchResult(List<Long> boardIdes, Pageable pageable) {
 
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
@@ -76,6 +73,8 @@ public class SearchRepositoryImpl implements SearchRepository {
             content.remove(content.size() - 1);
         }
 
+//        getSearchStore();
+
         //   Slice 객체 반환
         return new SliceImpl<>(content, pageable, hasNext);
     }
@@ -123,5 +122,9 @@ public class SearchRepositoryImpl implements SearchRepository {
             tags.add(TagEnum.KETOGENIC.label());
         }
         return tags;
+    }
+
+    private void getSearchStore(List<Long> storeIdes){
+
     }
 }
