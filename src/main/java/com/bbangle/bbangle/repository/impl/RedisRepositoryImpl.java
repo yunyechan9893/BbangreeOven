@@ -28,10 +28,11 @@ public class RedisRepositoryImpl implements RedisRepository {
     }
 
     @Override
-    public List<Long> get(String key) {
+    public List<Long> get(String namespace, String key) {
         try {
             // 가져온 값들을 List<Long>로 역직렬화
-            return redisTemplate.opsForList().range(key, 0, -1)
+            String master = namespace + ":" + key;
+            return redisTemplate.opsForList().range(master, 0, -1)
                     .stream()
                     .map(o ->Long.parseLong(o.toString()))
                     .toList();
@@ -42,9 +43,11 @@ public class RedisRepositoryImpl implements RedisRepository {
     }
 
     @Override
-    public Boolean set(String key, String... values) {
+    public Boolean set(String namespace, String key, String... values) {
         try {
-            redisTemplate.opsForList().rightPushAll(key, (Object[]) values);
+            String master = namespace + ":" + key;
+            System.out.println(master);
+            redisTemplate.opsForList().rightPushAll(master, (Object[]) values);
             return true;
         }catch (Exception e){
             System.out.println(e);

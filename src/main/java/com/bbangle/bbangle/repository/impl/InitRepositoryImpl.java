@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.model.QBoard;
+import com.bbangle.bbangle.model.QStore;
 import com.bbangle.bbangle.repository.InitRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -27,5 +28,20 @@ public class InitRepositoryImpl implements InitRepository {
         fetch.forEach((tuple) -> boardMap.put(tuple.get(board.id), tuple.get(board.title)));
 
         return boardMap;
+    }
+
+    @Override
+    public HashMap<Long, String> getAllStoreTitle() {
+        QStore store = QStore.store;
+
+        List<Tuple> fetch = queryFactory
+                .select(store.id, store.name)
+                .from(store)
+                .fetch();
+
+        HashMap<Long, String> storeMap = new HashMap<>();
+        fetch.forEach((tuple) -> storeMap.put(tuple.get(store.id), tuple.get(store.name)));
+
+        return storeMap;
     }
 }
