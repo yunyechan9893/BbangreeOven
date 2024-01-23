@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Slice<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                                 Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
                                                 String category, Integer minPrice, Integer maxPrice,
@@ -35,6 +37,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BoardDetailResponseDto getBoardDetailResponse(Long boardId) {
         return boardRepository.getBoardDetailResponseDto(boardId);
     }
