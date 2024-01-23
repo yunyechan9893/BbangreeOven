@@ -29,8 +29,8 @@ public class WishListStoreController {
      */
     @GetMapping("/stores")
     public ResponseEntity<List<WishListStoreResponseDto>> getWishListStores(){
-        WishListStoreResponseDto wishListStoreResponseDto = new WishListStoreResponseDto();
-        List<WishListStoreResponseDto> wishListStoreResList = new ArrayList<>();
+        Long memberId = Long.valueOf((int)SecurityUtils.getMemberId());
+        List<WishListStoreResponseDto> wishListStoreResList = wishlistStoreService.getWishListStoresRes(memberId);
         return ResponseEntity.ok().body(wishListStoreResList);
     }
 
