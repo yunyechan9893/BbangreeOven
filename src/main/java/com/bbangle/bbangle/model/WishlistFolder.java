@@ -35,4 +35,12 @@ public class WishlistFolder extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    public void updateTitle(String title) {
+        this.folderName = title;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
+
 }
