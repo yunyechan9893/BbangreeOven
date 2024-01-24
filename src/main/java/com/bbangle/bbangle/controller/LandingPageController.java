@@ -25,9 +25,10 @@ public class LandingPageController {
     public ResponseEntity<Map<String, String>> getUserEmail(@Valid @RequestBody RequestEmailDto requestEmailDto){
         String email = requestEmailDto.getEmail()+",";
 
-        //TODO 저장할 경로 생각하기
-        //TEST
-        String directoryPath = "C:\\Users\\Dongseok\\Desktop";
+        //for local
+        //String directoryPath = "C:\\Users\\Dongseok\\Desktop";
+        //for server
+        String directoryPath = "etc\\bbangle";
         String fileName = "landingPageUserEmail.txt";
 
         // 파일 오브젝트 생성하기
