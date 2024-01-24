@@ -5,8 +5,8 @@ import lombok.Builder;
 
 @Builder
 public record StoreDto(
-    Long id,
-    String name,
+    Long storeId,
+    String storeName,
     String profile,
     Boolean isWished,
 
