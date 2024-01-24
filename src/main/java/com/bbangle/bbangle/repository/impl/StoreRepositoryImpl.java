@@ -87,8 +87,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
                 // 보드 리스트에 데이터 추가
                 boardDtos.add(BoardDto.builder()
-                        .id(tuple.get(board.id))
-                        .profile(tuple.get(board.profile))
+                        .boardId(tuple.get(board.id))
+                        .thumbnail(tuple.get(board.profile))
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
                         .isWished(true)
@@ -105,9 +105,9 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             // 반복문 마지막에 스토어 Dto 추가
             if (index == resultSize){
                 storeDto = StoreDto.builder()
-                        .id(tuple.get(store.id))
+                        .storeId(tuple.get(store.id))
                         .profile(tuple.get(store.profile))
-                        .name(tuple.get(store.name))
+                        .storeName(tuple.get(store.name))
                         .introduce(tuple.get(store.introduce).isBlank() ? "": tuple.get(store.introduce))
                         .isWished(true)
                         .build();
@@ -135,8 +135,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                     is_categories = true;
                 }
                 bestBoards.add(BoardDto.builder()
-                        .id(tuple.get(board.id))
-                        .profile(tuple.get(board.profile))
+                        .boardId(tuple.get(board.id))
+                        .thumbnail(tuple.get(board.profile))
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
                         .isBundled(is_categories)

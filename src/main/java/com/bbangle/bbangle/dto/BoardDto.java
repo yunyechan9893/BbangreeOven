@@ -6,8 +6,8 @@ import java.util.List;
 
 @Builder
 public record BoardDto(
-    Long id,
-    String profile,
+    Long boardId,
+    String thumbnail,
     @JsonInclude(JsonInclude.Include.NON_NULL)
     List<BoardImgDto> images,
     String title,
