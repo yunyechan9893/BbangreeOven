@@ -295,8 +295,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             // 반복문 마지막 때 보드 및 스토어 추가
             if (index == resultSize) {
                 boardDto = BoardDto.builder()
-                    .id(tuple.get(board.id))
-                    .profile(tuple.get(board.profile))
+                    .boardId(tuple.get(board.id))
+                    .thumbnail(tuple.get(board.profile))
                     .images(boardImgDtos)
                     .title(tuple.get(board.title))
                     .price(tuple.get(board.price))
@@ -319,8 +319,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                     .build();
 
                 storeDto = StoreDto.builder()
-                    .id(tuple.get(store.id))
-                    .name(tuple.get(store.name))
+                    .storeId(tuple.get(store.id))
+                    .storeName(tuple.get(store.name))
                     .profile(tuple.get(store.profile))
                     .isWished(true)
                     .build();

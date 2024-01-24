@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -86,8 +85,9 @@ public class TokenProvider {
      */
     public Authentication getAuthentication(String token){
         Claims claims = getClaims(token);
+        Object memberId = claims.get("id");
         Set<SimpleGrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
-        return new UsernamePasswordAuthenticationToken(new User(claims.getSubject(), "", authorities), token, authorities);
+        return new UsernamePasswordAuthenticationToken(memberId, token, authorities);
     }
 
     /**
