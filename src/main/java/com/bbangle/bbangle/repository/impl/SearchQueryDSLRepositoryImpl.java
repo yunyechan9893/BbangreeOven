@@ -2,8 +2,7 @@ package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.dto.*;
 import com.bbangle.bbangle.model.*;
-import com.bbangle.bbangle.repository.SearchRepository;
-import com.querydsl.core.Tuple;
+import com.bbangle.bbangle.repository.SearchQueryDSLRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -11,32 +10,12 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class SearchRepositoryImpl implements SearchRepository {
+public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
-
-    @Override
-    public Boolean saveSearchKeyword(Long id, String keyword) {
-        QSearch search = QSearch.search;
-
-
-        try {
-//            queryFactory.insert(search)
-//                    .set(search.keyword, keyword)
-//                    .set(search.createdAt, LocalDateTime.now())
-//                    .set(search.member, ) // Assuming Member has a constructor that takes id
-//                    .execute();
-            return true;
-        } catch (Exception e){
-            System.out.println(e);
-            return false;
-        }
-    }
 
     @Override
     public Slice<BoardResponseDto> getSearchResult(List<Long> boardIdes, Pageable pageable) {
@@ -54,10 +33,6 @@ public class SearchRepositoryImpl implements SearchRepository {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();
-
-        boards.stream().forEach(a ->
-                System.out.println(a)
-        );
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
         for (Board board1 : boards) {
@@ -97,6 +72,8 @@ public class SearchRepositoryImpl implements SearchRepository {
         //   Slice 객체 반환
         return new SliceImpl<>(content, pageable, hasNext);
     }
+
+
 
     private List<String> addList(List<ProductTagDto> dtos) {
         List<String> tags = new ArrayList<>();
@@ -141,6 +118,20 @@ public class SearchRepositoryImpl implements SearchRepository {
             tags.add(TagEnum.KETOGENIC.label());
         }
         return tags;
+    }
+
+    @Override
+    public List<KeywordDto> getRecencyKeyword(Member member) {
+        QSearch search = QSearch.search;
+
+        return queryFactory.select(
+                new QKeywordDto(search.id, search.keyword))
+                .from(search)
+                .where(search.member.eq(member), search.isDeleted.eq(false))
+                .orderBy(search.createdAt.desc())
+                .groupBy(search.keyword)
+                .limit(7)
+                .fetch();
     }
 
 }

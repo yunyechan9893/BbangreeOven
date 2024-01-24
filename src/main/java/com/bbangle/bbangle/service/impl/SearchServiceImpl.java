@@ -1,7 +1,10 @@
 package com.bbangle.bbangle.service.impl;
 
+import com.bbangle.bbangle.dto.KeywordDto;
 import com.bbangle.bbangle.dto.SearchResponseDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
+import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.model.Search;
 import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.repository.RedisRepository;
 import com.bbangle.bbangle.repository.SearchRepository;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +42,17 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public SearchResponseDto getSearchResult(String keyword) {
         // 검색어 저장
-        System.out.println(searchRepository.saveSearchKeyword(0L, keyword));
+        Long memberId = 1L;
+
+        searchRepository.save(
+                Search.builder()
+                        .member(Member.builder()
+                                .id(memberId)
+                                .build())
+                        .keyword(keyword)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+
 
         // 검색어 토큰화
         List<String> keys = getAllTokenizer(keyword);
@@ -95,5 +109,32 @@ public class SearchServiceImpl implements SearchService {
             System.out.println(token.getMorph());
             return token.getMorph();
         }).toList();
+    }
+
+    @Override
+    public List<KeywordDto> getRecencyKeyword(Long memberId) {
+        return searchRepository.getRecencyKeyword(
+                Member.builder()
+                        .id(memberId)
+                        .build()
+        );
+    }
+
+    @Override
+    public Boolean deleteRecencyKeyword(Long keywordId) {
+        Long memberId = 1L;
+
+        try {
+            // UPDATE search SET search.isDeleted WHERE id=keywordId AND member = member;
+            searchRepository.markAsDeleted(keywordId,
+                    Member.builder().
+                            id(memberId).
+                            build());
+            return true;
+        } catch (Exception e){
+            e.getMessage();
+            return false;
+        }
+
     }
 }
