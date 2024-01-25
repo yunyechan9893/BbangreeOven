@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -19,8 +20,10 @@ import java.util.Map;
 
 @RestController
 @Slf4j
+@RequestMapping("/api/v1")
 public class LandingPageController {
-
+    private static final String DIRECTORY_PATH = "etc\\bbangle";
+    static final String FILE_NAME = "landingPageUserEmail.txt";
     @PostMapping("/landingPage")
     public ResponseEntity<Map<String, String>> getUserEmail(@Valid @RequestBody RequestEmailDto requestEmailDto){
         String email = requestEmailDto.getEmail()+",";
@@ -28,11 +31,9 @@ public class LandingPageController {
         //for local
         //String directoryPath = "C:\\Users\\Dongseok\\Desktop";
         //for server
-        String directoryPath = "etc\\bbangle";
-        String fileName = "landingPageUserEmail.txt";
 
         // 파일 오브젝트 생성하기
-        Path filePath = Paths.get(directoryPath, fileName);
+        Path filePath = Paths.get(DIRECTORY_PATH, FILE_NAME);
         Map<String, String> messageMap = new HashMap<>();
         try {
             //만약 경로가 없으면 생성하기
