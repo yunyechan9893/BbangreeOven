@@ -9,4 +9,5 @@ public record FolderUpdateDto(
     String title
 ){
     private static final String  INVALID_FOLDER_TITLE = "folder 제목을 확인해주십시오.";
+
 }
