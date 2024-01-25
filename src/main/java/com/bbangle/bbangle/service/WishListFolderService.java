@@ -26,7 +26,7 @@ public class WishListFolderService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(MemberNotFoundException::new);
 
-        if (wishListFolderRepository.getFolderCount(member) >= 10) {
+        if (wishListFolderRepository.getFolderCount(member) > 10) {
             throw new IllegalArgumentException(OVER_MAX_FOLDER);
         }
 
