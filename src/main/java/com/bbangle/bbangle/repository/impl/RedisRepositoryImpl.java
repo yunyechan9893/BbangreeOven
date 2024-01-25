@@ -43,11 +43,37 @@ public class RedisRepositoryImpl implements RedisRepository {
     }
 
     @Override
+    public List<String> getStringList(String namespace, String key) {
+        try {
+            // 가져온 값들을 List<Long>로 역직렬화
+            String master = namespace + ":" + key;
+            return redisTemplate.opsForList().range(master, 0, -1)
+                    .stream().map(Object::toString)
+                    .toList();
+        } catch (Exception e) {
+            System.out.println(e);
+            return null;
+        }
+    }
+
+
+    @Override
     public Boolean set(String namespace, String key, String... values) {
         try {
             String master = namespace + ":" + key;
-            System.out.println(master);
             redisTemplate.opsForList().rightPushAll(master, (Object[]) values);
+            return true;
+        }catch (Exception e){
+            System.out.println(e);
+            return false;
+        }
+    }
+
+    @Override
+    public Boolean delete(String namespace, String key) {
+        try {
+        String masterKey = namespace + ":" + key;
+        redisTemplate.delete(masterKey);
             return true;
         }catch (Exception e){
             System.out.println(e);
