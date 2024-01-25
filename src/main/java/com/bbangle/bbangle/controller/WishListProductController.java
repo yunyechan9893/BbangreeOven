@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.controller;
 
-import com.bbangle.bbangle.dto.WishRequestDto;
+import com.bbangle.bbangle.dto.WishProductRequestDto;
 import com.bbangle.bbangle.service.WishListProductService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class WishListProductController {
 
     @PatchMapping
     public ResponseEntity<Void> wish(@PathVariable Long boardId,
-                                     @RequestBody WishRequestDto wishRequest){
+                                     @RequestBody WishProductRequestDto wishRequest){
         Long memberId = SecurityUtils.getMemberId();
         wishListProductService.wish(memberId, boardId, wishRequest);
 
