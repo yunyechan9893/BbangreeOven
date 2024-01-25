@@ -2,6 +2,7 @@ package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.dto.WishListStoreResponseDto;
+import com.bbangle.bbangle.model.WishlistStore;
 import com.bbangle.bbangle.repository.WishListStoreQueryDSLRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -31,5 +32,14 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                 .leftJoin(wishlistStore.store, store)
                 .where(wishlistStore.member.id.eq(memberId))
                 .fetch();
+    }
+
+    @Override
+    public WishlistStore findWishListStore(Long memberId, Long storeId) {
+        return queryFactory
+                .selectFrom(wishlistStore)
+                .where(wishlistStore.member.id.eq(memberId)
+                        .and(wishlistStore.store.id.eq(storeId)))
+                .fetchOne();
     }
 }
