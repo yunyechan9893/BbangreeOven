@@ -22,6 +22,8 @@ import com.bbangle.bbangle.model.QBoard;
 import com.bbangle.bbangle.model.QProduct;
 import com.bbangle.bbangle.model.QProductImg;
 import com.bbangle.bbangle.model.QStore;
+import com.bbangle.bbangle.model.QWishlistFolder;
+import com.bbangle.bbangle.model.QWishlistProduct;
 import com.bbangle.bbangle.model.TagEnum;
 import com.bbangle.bbangle.repository.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
@@ -72,14 +74,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .limit(pageable.getPageSize() + 1)
             .fetch();
 
-        Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
-        for (Board board1 : boards) {
-            for (Product product1 : board1.getProductList()) {
-                productTagsByBoardId.put(board1.getId(),
-                    productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
-                productTagsByBoardId.get(board1.getId()).add(ProductTagDto.from(product1));
-            }
-        }
+        Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
 
         List<BoardResponseDto> content = new ArrayList<>();
 
@@ -107,6 +102,59 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         // Slice 객체 반환
         return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    @Override
+    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, List<Long> boardIds) {
+        QBoard board = QBoard.board;
+        QProduct product = QProduct.product;
+        QStore store = QStore.store;
+
+        List<Board> boards = queryFactory
+            .selectFrom(board)
+            .leftJoin(board.productList, product).fetchJoin()
+            .leftJoin(board.store, store).fetchJoin()
+            .where(board.id.in(boardIds))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize() + 1)
+            .fetch();
+
+        Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
+
+        List<BoardResponseDto> content = new ArrayList<>();
+
+        for (Board board1 : boards) {
+            content.add(BoardResponseDto.builder()
+                .boardId(board1.getId())
+                .storeId(board1.getStore().getId())
+                .storeName(board1.getStore().getName())
+                .thumbnail(board1.getProfile())
+                .title(board1.getTitle())
+                .price(board1.getPrice())
+                .isWished(true)
+                .tags(addList(productTagsByBoardId.get(board1.getId())))
+                .build());
+
+        }
+
+        boolean hasNext = content.size() > pageable.getPageSize();
+        if (hasNext) {
+            content.remove(content.size() - 1);
+        }
+
+        return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    private static Map<Long, List<ProductTagDto>> getLongListMap(List<Board> boards) {
+        Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
+        for (Board board1 : boards) {
+            for (Product product1 : board1.getProductList()) {
+                productTagsByBoardId.put(board1.getId(),
+                    productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
+                productTagsByBoardId.get(board1.getId()).add(ProductTagDto.from(product1));
+            }
+        }
+        return productTagsByBoardId;
     }
 
     private static BooleanBuilder setFilteringCondition(Boolean glutenFreeTag, Boolean highProteinTag,
@@ -188,12 +236,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             tags.add(TagEnum.KETOGENIC.label());
         }
         return tags;
-    }
-
-    private HashMap<String, Boolean> getTagHash(String tagName, Boolean isTrued) {
-        HashMap<String, Boolean> tagHash = new HashMap<>();
-        tagHash.put(tagName, isTrued);
-        return tagHash;
     }
 
     @Override
