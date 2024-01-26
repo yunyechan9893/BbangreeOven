@@ -10,12 +10,14 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
 public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
+    private final int ONEDAY = 24;
 
     @Override
     public Slice<BoardResponseDto> getSearchResult(List<Long> boardIdes, Pageable pageable) {
@@ -133,5 +135,27 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
                 .limit(7)
                 .fetch();
     }
+
+    @Override
+    public String[] getBestKeyword() {
+        QSearch search = QSearch.search;
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime beforeOneDayTime = currentTime.minusHours(ONEDAY);
+
+        // 현재시간
+        return queryFactory.select(search.keyword)
+                .from(search)
+                .where(search.createdAt.gt(beforeOneDayTime))
+                .groupBy(search.keyword)
+                .orderBy(search.count().desc())
+                .limit(7)
+                .fetch()
+                .stream()
+                .map(tuple -> tuple.toString())
+                .toList()
+                .toArray(new String[0]);
+    }
+
 
 }

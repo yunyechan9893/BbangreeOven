@@ -45,4 +45,11 @@ public class SearchController {
 
         return ResponseEntity.ok().body(isDeleted);
     }
+
+    @GetMapping("/best-keyword")
+    public ResponseEntity<List<String>> getBestKeyword(){
+        return ResponseEntity.ok().body(
+            searchService.getBestKeyword()
+        );
+    }
 }

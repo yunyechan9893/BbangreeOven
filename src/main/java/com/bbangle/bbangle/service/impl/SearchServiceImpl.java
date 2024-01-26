@@ -4,6 +4,7 @@ import com.bbangle.bbangle.dto.KeywordDto;
 import com.bbangle.bbangle.dto.SearchResponseDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
 import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.model.RedisEnum;
 import com.bbangle.bbangle.model.Search;
 import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.repository.RedisRepository;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SearchServiceImpl implements SearchService {
+    private final int ONE_HOUR = 3600000;
+    private final String BEST_KEYWORD_KEY = "keyword";
 
     @Autowired
     SearchRepository searchRepository;
@@ -34,10 +38,6 @@ public class SearchServiceImpl implements SearchService {
     StoreRepository storeRepository;
     @Autowired
     RedisRepository redisRepository;
-
-
-    private final String BOARD="board";
-    private final String STORE="store";
 
     @Override
     public SearchResponseDto getSearchResult(String keyword) {
@@ -59,7 +59,7 @@ public class SearchServiceImpl implements SearchService {
 
         // 토큰화된 검색어를 통해 게시판 아이디 가져오기
         List<Long> boardIndexs = keys.stream()
-                .map(key -> redisRepository.get(BOARD, key))
+                .map(key -> redisRepository.get(RedisEnum.BOARD.label(), key))
                 .filter(list -> list != null)  // Filter out null lists
                 .flatMap(List::stream)
                 .distinct()
@@ -67,7 +67,7 @@ public class SearchServiceImpl implements SearchService {
 
         // 토큰화된 검색어를 통해 스토어 아이디 가져오기
         List<Long> storeIndexs = keys.stream()
-                .map(key -> redisRepository.get(STORE, key))
+                .map(key -> redisRepository.get(RedisEnum.STORE.label(), key))
                 .filter(list -> list != null)  // Filter out null lists
                 .flatMap(List::stream)
                 .distinct()
@@ -136,5 +136,27 @@ public class SearchServiceImpl implements SearchService {
             return false;
         }
 
+    }
+
+    @Override
+    @Scheduled(fixedRate = ONE_HOUR)
+    public void updateRedisAtBestKeyword() {
+        String[] bestKeyword = searchRepository.getBestKeyword();
+
+        redisRepository.delete(RedisEnum.BEST_KEYWORD.label(),
+                BEST_KEYWORD_KEY);
+
+        redisRepository.set(
+                RedisEnum.BEST_KEYWORD.label(),
+                BEST_KEYWORD_KEY,
+                bestKeyword);
+    }
+
+    @Override
+    public List<String> getBestKeyword() {
+        return redisRepository.getStringList(
+                RedisEnum.BEST_KEYWORD.label(),
+                BEST_KEYWORD_KEY
+        );
     }
 }

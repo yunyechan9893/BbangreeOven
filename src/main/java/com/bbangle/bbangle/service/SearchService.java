@@ -13,4 +13,7 @@ public interface SearchService {
 
     Boolean deleteRecencyKeyword(Long keywordId);
 
+    void updateRedisAtBestKeyword();
+
+    List<String> getBestKeyword();
 }
