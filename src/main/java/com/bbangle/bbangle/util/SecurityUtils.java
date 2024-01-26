@@ -5,15 +5,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * 시큐리티 유틸 클래스
- *
  */
 public class SecurityUtils {
 
-    public static Object getMemberId() {
-        return SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+    public static Long getMemberId() {
+        return Long.valueOf(String.valueOf(SecurityContextHolder
+            .getContext()
+            .getAuthentication()
+            .getPrincipal()));
     }
 
     /*private static boolean isLogin() {
