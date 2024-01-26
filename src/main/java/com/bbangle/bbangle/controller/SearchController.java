@@ -52,4 +52,14 @@ public class SearchController {
             searchService.getBestKeyword()
         );
     }
+
+    @GetMapping("/auto-keyword")
+    public ResponseEntity<List<String>> getAutoKeyword(
+            @RequestParam
+            String keyword
+    ){
+        return ResponseEntity.ok().body(
+                searchService.getAutoKeyword(keyword)
+        );
+    }
 }
