@@ -46,12 +46,7 @@ public class WishListStoreController {
     @PatchMapping("/store/{storeId}")
     public ResponseEntity<MessageResDto> deleteWishListStore(@PathVariable Long storeId){
         Long memberId = Long.valueOf((int)SecurityUtils.getMemberId());
-         try{
-             wishlistStoreService.deleteStore(memberId, storeId);
-             return ResponseEntity.ok().body(new MessageResDto("스토어 찜을 해제했습니다"));
-         }catch (Exception e){
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                     .body(new MessageResDto("스토어 찜을 해제하지 못했습니다"));
-         }
+         wishlistStoreService.deleteStore(memberId, storeId);
+         return ResponseEntity.ok().body(new MessageResDto("스토어 찜을 해제했습니다"));
     }
 }

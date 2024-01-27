@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.service.impl;
 
 import com.bbangle.bbangle.dto.WishListStoreResponseDto;
+import com.bbangle.bbangle.exception.NoSuchMemberidOrStoreIdException;
 import com.bbangle.bbangle.model.Member;
 import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.model.WishlistStore;
@@ -44,7 +45,8 @@ public class WishListStoreServiceImpl implements WishListStoreService {
 
     @Transactional
     public void deleteStore(Long memberId, Long storeId) {
-        WishlistStore wishListStore = wishListStoreRepositoryImpl.findWishListStore(memberId, storeId);
+        WishlistStore wishListStore = wishListStoreRepositoryImpl.findWishListStore(memberId, storeId)
+                .orElseThrow(() -> new NoSuchMemberidOrStoreIdException());
         wishListStore.delete();
     }
 }
