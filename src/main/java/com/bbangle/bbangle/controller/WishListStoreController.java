@@ -26,14 +26,14 @@ public class WishListStoreController {
      */
     @GetMapping("/stores")
     public ResponseEntity<List<WishListStoreResponseDto>> getWishListStores(){
-        Long memberId = Long.valueOf((int)SecurityUtils.getMemberId());
+        Long memberId = SecurityUtils.getMemberId();
         List<WishListStoreResponseDto> wishListStoreResList = wishlistStoreService.getWishListStoresRes(memberId);
         return ResponseEntity.ok().body(wishListStoreResList);
     }
 
     @PostMapping("/store/{storeId}")
     public ResponseEntity<MessageResDto> addWishListStore(@PathVariable Long storeId){
-        Long memberId = Long.valueOf((int)SecurityUtils.getMemberId());
+        Long memberId = SecurityUtils.getMemberId();
         try {
             wishlistStoreService.save(memberId, storeId);
             return ResponseEntity.ok().body(new MessageResDto("스토어를 찜했습니다"));

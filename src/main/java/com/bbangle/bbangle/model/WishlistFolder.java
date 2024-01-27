@@ -12,10 +12,12 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Table(name = "Wishlist_folder")
 @Entity
+@Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -34,5 +36,13 @@ public class WishlistFolder extends BaseEntity {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
+
+    public void updateTitle(String title) {
+        this.folderName = title;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 
 }

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,6 +21,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+
 
 @RequiredArgsConstructor
 @Configuration
@@ -36,17 +39,19 @@ public class WebOAuthSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-
+        http.csrf(AbstractHttpConfigurer::disable);
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
 
 
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/token").permitAll()
-                        //Test시 위 2줄을 주석처리하시고 밑에 주석을 풀어주세요
-                        //.requestMatchers("/**").permitAll() //모든 경로에 인증 없이 접근
+
+                        .requestMatchers(HttpMethod.GET, "api/v1/boards/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "api/v1/boards/folders/**").authenticated()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll());
+
 
         http.oauth2Login(oauth2 -> oauth2
                 .authorizationEndpoint(authorization -> authorization
@@ -89,4 +94,5 @@ public class WebOAuthSecurityConfig {
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
 }
