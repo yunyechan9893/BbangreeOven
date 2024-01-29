@@ -3,11 +3,13 @@ package com.bbangle.bbangle.controller;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.service.impl.BoardServiceImpl;
+import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +46,14 @@ public class BoardController {
             minPrice,
             maxPrice,
             pageable));
+    }
+
+    @GetMapping("/folders/{folderId}")
+    public ResponseEntity<Slice<BoardResponseDto>> getPostInFolder(@RequestParam(required = false) String sort,
+                                                                   @PathVariable Long folderId,
+                                                                   @PageableDefault Pageable pageable){
+        Long memberId = SecurityUtils.getMemberId();
+        return ResponseEntity.ok(boardService.getPostInFolder(memberId, sort, folderId, pageable));
     }
 
     @GetMapping("/{id}")

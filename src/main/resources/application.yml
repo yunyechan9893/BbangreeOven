@@ -1,6 +1,11 @@
 server:
   port: 8000
 spring:
+  data:
+    redis:
+      host: localhost
+      port: ${REDIS_BINDING_PORT}
+      password:
   jpa:
     hibernate:
       ddl-auto: none
