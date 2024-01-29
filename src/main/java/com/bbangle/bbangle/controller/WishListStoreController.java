@@ -58,7 +58,7 @@ public class WishListStoreController {
      */
     @PatchMapping("/store/{storeId}")
     public ResponseEntity<MessageResDto> deleteWishListStore(@PathVariable Long storeId){
-        Long memberId = Long.valueOf((int)SecurityUtils.getMemberId());
+        Long memberId = SecurityUtils.getMemberId();
          wishlistStoreService.deleteStore(memberId, storeId);
          return ResponseEntity.ok().body(new MessageResDto("스토어 찜을 해제했습니다"));
     }
