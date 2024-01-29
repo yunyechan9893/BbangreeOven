@@ -22,7 +22,7 @@ public class WishListStoreController {
     /**
      * 스토어 위시리스트 조회
      *
-     * @return the response entity 메세지
+     * @return the response entity List<wishListStoreResDto>
      */
     @GetMapping("/stores")
     public ResponseEntity<List<WishListStoreResponseDto>> getWishListStores(){
@@ -31,6 +31,13 @@ public class WishListStoreController {
         return ResponseEntity.ok().body(wishListStoreResList);
     }
 
+    /**
+     * 스토어 위시리스트 추가
+     *
+     * @param storeId 스토어 id
+     * @hidden memberId 멤버 id
+     * @return 메세지
+     */
     @PostMapping("/store/{storeId}")
     public ResponseEntity<MessageResDto> addWishListStore(@PathVariable Long storeId){
         Long memberId = Long.valueOf((int)SecurityUtils.getMemberId());
@@ -43,6 +50,12 @@ public class WishListStoreController {
         }
     }
 
+    /**
+     * 스토어 위시리스트 삭제
+     *
+     * @param storeId the store id
+     * @return the response entity
+     */
     @PatchMapping("/store/{storeId}")
     public ResponseEntity<MessageResDto> deleteWishListStore(@PathVariable Long storeId){
         Long memberId = Long.valueOf((int)SecurityUtils.getMemberId());
