@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -33,7 +34,8 @@ public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
     }
 
     // 유저가 있으면 업데이트, 없으면 유저 생성
-    private Member saveOrUpdate(OAuthAttributes oAuthAttributes)  {
+    @Transactional
+    public Member saveOrUpdate(OAuthAttributes oAuthAttributes)  {
         String provider = oAuthAttributes.getProvider();
         String email = oAuthAttributes.getEmail();
         String nickname = oAuthAttributes.getNickname();
@@ -49,6 +51,7 @@ public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
                                 .name(name)
                                 .profile(profile)
                                 .build();
+                        memberRepository.save(newMember);
                         Long newMemberId = newMember.getId();
                         //기본 위시리스트 폴더 추가
                         folderService.create(newMemberId, new FolderRequestDto("default"));
@@ -63,13 +66,14 @@ public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
                                 .nickname(nickname)
                                 .profile(profile)
                                 .build();
+                        memberRepository.save(newMember);
                         Long newMemberId = newMember.getId();
                         //기본 위시리스트 폴더 추가
                         folderService.create(newMemberId, new FolderRequestDto("default"));
                         return newMember;
                     });
         }
-        return memberRepository.save(member);
+        return member;
     }
 }
 
