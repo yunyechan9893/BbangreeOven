@@ -9,14 +9,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Table(name = "Wishlist_store")
 @Entity
 @Builder
+@Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WishlistStore extends BaseEntity {
@@ -35,5 +33,9 @@ public class WishlistStore extends BaseEntity {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 
 }
