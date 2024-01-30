@@ -33,7 +33,10 @@ public class WishListProductService {
 
         wishListProductRepository.findByBoardAndFolderId(boardId, wishlistFolder)
             .ifPresentOrElse(
-                WishlistProduct::updateWishStatus,
+                product -> {
+                    boolean status = product.updateWishStatus();
+                    product.getBoard().updateWishCnt(status);
+                },
                 makeNewWish(boardId, wishlistFolder)
             );
     }
@@ -47,7 +50,8 @@ public class WishListProductService {
                 .board(board)
                 .isDeleted(false)
                 .build();
-            wishListProductRepository.save(wishlistProduct);
+            WishlistProduct save = wishListProductRepository.save(wishlistProduct);
+            save.getBoard().updateWishCnt(true);
         };
     }
 
