@@ -62,12 +62,7 @@ public class BoardServiceImpl implements BoardService {
             throw new IllegalArgumentException("존재하지 않는 폴더입니다.");
         }
 
-        List<Long> boardIds = wishListProductRepository.findAllByWishlistFolder(folder, sort)
-            .stream()
-            .map(product -> product.getBoard().getId())
-            .toList();
-
-        return boardRepository.getAllByFolder(sort, pageable, folderId, boardIds);
+        return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
     }
 
 }

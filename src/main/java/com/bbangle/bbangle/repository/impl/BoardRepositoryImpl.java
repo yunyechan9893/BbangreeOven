@@ -20,12 +20,17 @@ import com.bbangle.bbangle.model.QBoard;
 import com.bbangle.bbangle.model.QProduct;
 import com.bbangle.bbangle.model.QProductImg;
 import com.bbangle.bbangle.model.QStore;
+import com.bbangle.bbangle.model.QWishlistFolder;
+import com.bbangle.bbangle.model.QWishlistProduct;
 import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.TagEnum;
+import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -107,8 +112,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static OrderSpecifier<?> sortType(String sort, QBoard board) {
         OrderSpecifier<?> orderSpecifier;
         if(sort == null){
-            orderSpecifier = board.wishCnt.desc();
-            return orderSpecifier;
+            return null;
         }
         switch (SortType.fromString(sort)) {
             //TODO: 추후 추천순 반영 예정
@@ -125,17 +129,24 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, List<Long> boardIds) {
+    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, WishlistFolder selectedFolder) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
+        QWishlistProduct products = QWishlistProduct.wishlistProduct;
+        QWishlistFolder folder = QWishlistFolder.wishlistFolder;
+
+        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort, board, products);
 
         List<Board> boards = queryFactory
             .selectFrom(board)
             .leftJoin(board.productList, product).fetchJoin()
             .leftJoin(board.store, store).fetchJoin()
-            .where(board.id.in(boardIds))
+            .join(board).on(board.id.eq(products.board.id))
+            .join(products).on(products.wishlistFolder.eq(folder))
+            .where(products.wishlistFolder.eq(selectedFolder))
             .offset(pageable.getOffset())
+            .orderBy(orderSpecifier)
             .limit(pageable.getPageSize() + 1)
             .fetch();
 
@@ -163,6 +174,28 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         }
 
         return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    private static OrderSpecifier<?> sortTypeFolder(String sort, QBoard board, QWishlistProduct products) {
+        OrderSpecifier<?> orderSpecifier;
+        if(sort == null){
+            orderSpecifier = products.createdAt.desc();
+            return orderSpecifier;
+        }
+        switch (SortType.fromString(sort)) {
+            case RECENT:
+                orderSpecifier = products.createdAt.desc();
+                break;
+            case LOW_PRICE:
+                orderSpecifier = board.price.asc();
+                break;
+            case POPULAR:
+                orderSpecifier = board.wishCnt.desc();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid SortType");
+        }
+        return orderSpecifier;
     }
 
     private static Map<Long, List<ProductTagDto>> getLongListMap(List<Board> boards) {
