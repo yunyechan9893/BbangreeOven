@@ -21,14 +21,14 @@ import java.util.Map;
 @Slf4j
 public class LandingPageController {
 
-    @PostMapping("/landingPage")
+    @PostMapping("/api/v1/landingPage")
     public ResponseEntity<Map<String, String>> getUserEmail(@Valid @RequestBody RequestEmailDto requestEmailDto){
         String email = requestEmailDto.getEmail()+",";
 
-        //for local
-        //String directoryPath = "C:\\Users\\Dongseok\\Desktop";
-        //for server
-        String directoryPath = "etc\\bbangle";
+//        for local
+//        String directoryPath = "C:\\Users\\Dongseok\\Desktop";
+//        for server
+        String directoryPath = "/etc/bbangle";
         String fileName = "landingPageUserEmail.txt";
 
         // 파일 오브젝트 생성하기
