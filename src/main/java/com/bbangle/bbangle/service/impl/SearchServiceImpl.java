@@ -162,13 +162,8 @@ public class SearchServiceImpl implements SearchService {
     }
 
 
-
-
     @Override
-    public SearchResponseDto getSearchResult(String keyword) {
-        // 검색어 저장
-        Long memberId = 1L;
-
+    public void saveKeyword(Long memberId, String keyword){
         searchRepository.save(
                 Search.builder()
                         .member(Member.builder()
@@ -177,7 +172,10 @@ public class SearchServiceImpl implements SearchService {
                         .keyword(keyword)
                         .createdAt(LocalDateTime.now())
                         .build());
+    }
 
+    @Override
+    public SearchResponseDto getSearchResult(String keyword) {
 
         // 검색어 토큰화
         List<String> keys = getAllTokenizer(keyword);

@@ -12,6 +12,7 @@ public interface SearchService {
     void updateRedisAtBestKeyword();
 
     SearchResponseDto getSearchResult(String keyword);
+    void saveKeyword(Long memberId,String keyword);
 
     List<KeywordDto> getRecencyKeyword(Long accessToken);
 
