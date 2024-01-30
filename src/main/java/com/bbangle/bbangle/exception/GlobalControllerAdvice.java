@@ -25,6 +25,11 @@ public class GlobalControllerAdvice {
         return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
     }
 
+    @ExceptionHandler(NoSuchMemberidOrStoreIdException.class)
+    public ResponseEntity<ErrorResponse> handleFailFindWishListStoreException(NoSuchMemberidOrStoreIdException ex){
+        return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex){
         return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
