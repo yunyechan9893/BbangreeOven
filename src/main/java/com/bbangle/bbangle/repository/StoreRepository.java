@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.repository;
 
 import com.bbangle.bbangle.model.Store;
+import com.bbangle.bbangle.repository.queryDsl.StoreQueryDSLRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;

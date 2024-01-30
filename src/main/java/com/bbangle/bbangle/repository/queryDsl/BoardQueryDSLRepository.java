@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.repository;
+package com.bbangle.bbangle.repository.queryDsl;
 
 import java.util.List;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;

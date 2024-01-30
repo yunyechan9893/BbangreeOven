@@ -2,6 +2,7 @@ package com.bbangle.bbangle.repository;
 
 import com.bbangle.bbangle.model.Member;
 import com.bbangle.bbangle.model.Search;
+import com.bbangle.bbangle.repository.queryDsl.SearchQueryDSLRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
