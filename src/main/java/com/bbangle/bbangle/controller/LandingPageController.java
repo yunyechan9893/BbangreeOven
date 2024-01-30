@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 @RequestMapping("/api/v1")
 public class LandingPageController {
-    private static final String DIRECTORY_PATH = "etc\\bbangle";
+    private static final String DIRECTORY_PATH = "/etc/bbangle";
     static final String FILE_NAME = "landingPageUserEmail.txt";
     @PostMapping("/landingPage")
     public ResponseEntity<Map<String, String>> getUserEmail(@Valid @RequestBody RequestEmailDto requestEmailDto){
