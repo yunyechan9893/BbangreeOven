@@ -106,6 +106,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private static OrderSpecifier<?> sortType(String sort, QBoard board) {
         OrderSpecifier<?> orderSpecifier;
+        if(sort == null){
+            orderSpecifier = board.wishCnt.desc();
+            return orderSpecifier;
+        }
         switch (SortType.fromString(sort)) {
             //TODO: 추후 추천순 반영 예정
             case RECOMMEND:

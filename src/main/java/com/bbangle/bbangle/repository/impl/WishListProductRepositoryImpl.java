@@ -35,6 +35,10 @@ public class WishListProductRepositoryImpl implements WishListProductQueryDSLRep
 
     private static OrderSpecifier<?> sortType(String sort, QBoard board, QWishlistProduct products) {
         OrderSpecifier<?> orderSpecifier;
+        if(sort == null){
+            orderSpecifier = products.createdAt.desc();
+            return orderSpecifier;
+        }
         switch (SortType.fromString(sort)) {
             case RECENT:
                 orderSpecifier = products.createdAt.desc();
