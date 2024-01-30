@@ -11,4 +11,5 @@ import java.util.List;
 public interface SearchQueryDSLRepository {
     Slice<BoardResponseDto> getSearchResult(List<Long> boardIdes, Pageable pageable);
     List<KeywordDto> getRecencyKeyword(Member member);
+    String[] getBestKeyword();
 }

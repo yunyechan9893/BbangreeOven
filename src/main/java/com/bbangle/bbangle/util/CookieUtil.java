@@ -3,6 +3,7 @@ package com.bbangle.bbangle.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
 
 import java.util.Base64;
@@ -21,10 +22,18 @@ public class CookieUtil {
      * @param maxAge   the max age
      */
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge){
-        Cookie cookie = new Cookie(name, value);
+      /*  Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
+        response.addCookie(cookie);*/
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .maxAge(maxAge)
+                .value(value)
+                .sameSite("None")
+                .path("/")
+                .secure(true)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     /**
