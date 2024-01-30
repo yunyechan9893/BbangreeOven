@@ -2,10 +2,8 @@ package com.bbangle.bbangle.repository.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import com.bbangle.bbangle.dto.BoardAvailableDayDto;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardDto;
@@ -22,12 +20,12 @@ import com.bbangle.bbangle.model.QBoard;
 import com.bbangle.bbangle.model.QProduct;
 import com.bbangle.bbangle.model.QProductImg;
 import com.bbangle.bbangle.model.QStore;
-import com.bbangle.bbangle.model.QWishlistFolder;
-import com.bbangle.bbangle.model.QWishlistProduct;
+import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.TagEnum;
-import com.bbangle.bbangle.repository.BoardQueryDSLRepository;
+import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -63,16 +61,18 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 product,
                 board);
 
+        OrderSpecifier<?> orderSpecifier = sortType(sort, board);
 
-// Step 2: 메인 쿼리
         List<Board> boards = queryFactory
             .selectFrom(board)
-            .leftJoin(board.productList, product).fetchJoin() // Product와의 연관 관계를 fetch join으로 가져옴
+            .leftJoin(board.productList, product).fetchJoin()
             .leftJoin(board.store, store).fetchJoin()
             .where(filter)
+            .orderBy(orderSpecifier)
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize() + 1)
             .fetch();
+
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
 
@@ -87,7 +87,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .thumbnail(board1.getProfile())
                 .title(board1.getTitle())
                 .price(board1.getPrice())
-                .isWished(true) // 이 값은 필요에 따라 설정
+                .isWished(false)
                 .tags(addList(productTagsByBoardId.get(board1.getId())))
                 .build());
 
@@ -102,6 +102,22 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         // Slice 객체 반환
         return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    private static OrderSpecifier<?> sortType(String sort, QBoard board) {
+        OrderSpecifier<?> orderSpecifier;
+        switch (SortType.fromString(sort)) {
+            //TODO: 추후 추천순 반영 예정
+            case RECOMMEND:
+                orderSpecifier = board.wishCnt.desc();
+                break;
+            case POPULAR:
+                orderSpecifier = board.wishCnt.desc();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid SortType");
+        }
+        return orderSpecifier;
     }
 
     @Override
