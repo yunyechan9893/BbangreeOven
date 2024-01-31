@@ -26,7 +26,6 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
         QProduct product = QProduct.product;
         QStore store = QStore.store;
 
-
         List<Board> boards = queryFactory
                 .selectFrom(board)
                 .leftJoin(board.productList, product).fetchJoin() // Product와의 연관 관계를 fetch join으로 가져옴
@@ -69,7 +68,6 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
             content.remove(content.size() - 1);
         }
 
-//        getSearchStore();
 
         //   Slice 객체 반환
         return new SliceImpl<>(content, pageable, hasNext);
@@ -140,10 +138,11 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
     public String[] getBestKeyword() {
         QSearch search = QSearch.search;
 
+        // 현재시간과 하루전 시간을 가져옴
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime beforeOneDayTime = currentTime.minusHours(ONEDAY);
 
-        // 현재시간
+        // 현재시간으로부터 24시간 전 검색어를 검색수 내림 차순으로 7개 가져옴
         return queryFactory.select(search.keyword)
                 .from(search)
                 .where(search.createdAt.gt(beforeOneDayTime))
@@ -151,11 +150,6 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
                 .orderBy(search.count().desc())
                 .limit(7)
                 .fetch()
-                .stream()
-                .map(tuple -> tuple.toString())
-                .toList()
                 .toArray(new String[0]);
     }
-
-
 }
