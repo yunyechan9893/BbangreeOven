@@ -1,8 +1,9 @@
 package com.bbangle.bbangle.repository;
 
 import com.bbangle.bbangle.model.Board;
+import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDSLRepository{
+public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDSLRepository {
 
 }

@@ -1,8 +1,9 @@
-package com.bbangle.bbangle.repository;
+package com.bbangle.bbangle.repository.queryDsl;
 
 import java.util.List;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
+import com.bbangle.bbangle.model.WishlistFolder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
@@ -12,7 +13,7 @@ public interface BoardQueryDSLRepository {
                                                 Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
                                                 String category, Integer minPrice, Integer maxPrice, Pageable pageable);
 
-    Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, List<Long> boardIds);
+    Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, WishlistFolder wishlistFolder);
     BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
 
 }
