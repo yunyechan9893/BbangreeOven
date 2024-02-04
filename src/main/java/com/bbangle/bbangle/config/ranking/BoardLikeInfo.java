@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class BoardLikeInfo {
 
-    private final boolean isLike;
+    private final int score;
     private final LocalDateTime createdAt;
 
 }

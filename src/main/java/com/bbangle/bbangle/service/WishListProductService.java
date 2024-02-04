@@ -45,11 +45,11 @@ public class WishListProductService {
                     if(status){
                         redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, 1);
                         redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, boardId, 1);
-                        redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(true, LocalDateTime.now()));
+                        redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(1, LocalDateTime.now()));
                     } else {
                         redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, -1);
-                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, boardId, 1);
-                        redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(false, LocalDateTime.now()));
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, boardId, -1);
+                        redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(-1, LocalDateTime.now()));
                     }
                 },
                 makeNewWish(boardId, wishlistFolder)
@@ -60,7 +60,7 @@ public class WishListProductService {
         return () -> {
             redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, 1);
             redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, boardId, 1);
-            redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(true, LocalDateTime.now()));
+            redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(1, LocalDateTime.now()));
             Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
             WishlistProduct wishlistProduct = WishlistProduct.builder()
