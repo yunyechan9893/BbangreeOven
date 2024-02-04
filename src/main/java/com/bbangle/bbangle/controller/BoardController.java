@@ -3,14 +3,18 @@ package com.bbangle.bbangle.controller;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.service.impl.BoardServiceImpl;
+import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BoardController {
 
     private final BoardServiceImpl boardService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @GetMapping
     public ResponseEntity<Slice<BoardResponseDto>> getList(
@@ -65,6 +70,19 @@ public class BoardController {
             boardService.getBoardDetailResponse(boardId)
         );
     }
+
+    @PatchMapping("/{boardId}")
+    public ResponseEntity<Void> countView(@PathVariable Long boardId){
+        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, 0.1);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PatchMapping("/{boardId}/purchase")
+    public ResponseEntity<Void> movePurchasePage(@PathVariable Long boardId){
+        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, 1);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
 
 }
 
