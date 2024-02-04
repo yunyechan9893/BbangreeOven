@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.service;
 
+import java.time.LocalDateTime;
+import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.dto.WishProductRequestDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.model.Board;
@@ -10,7 +12,9 @@ import com.bbangle.bbangle.repository.BoardRepository;
 import com.bbangle.bbangle.repository.MemberRepository;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import com.bbangle.bbangle.repository.WishListProductRepository;
+import com.bbangle.bbangle.util.RedisKeyUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +26,7 @@ public class WishListProductService {
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListProductRepository wishListProductRepository;
     private final BoardRepository boardRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
     public void wish(Long memberId, Long boardId, WishProductRequestDto wishRequest) {
@@ -36,6 +41,16 @@ public class WishListProductService {
                 product -> {
                     boolean status = product.updateWishStatus();
                     product.getBoard().updateWishCnt(status);
+
+                    if(status){
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, 1);
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, boardId, 1);
+                        redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(true, LocalDateTime.now()));
+                    } else {
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, -1);
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, boardId, 1);
+                        redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(false, LocalDateTime.now()));
+                    }
                 },
                 makeNewWish(boardId, wishlistFolder)
             );
@@ -43,6 +58,9 @@ public class WishListProductService {
 
     private Runnable makeNewWish(Long boardId, WishlistFolder wishlistFolder) {
         return () -> {
+            redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, 1);
+            redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, boardId, 1);
+            redisTemplate.opsForList().rightPush(String.valueOf(boardId), new BoardLikeInfo(true, LocalDateTime.now()));
             Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
             WishlistProduct wishlistProduct = WishlistProduct.builder()
