@@ -76,6 +76,7 @@ CREATE TABLE product_board
     created_at   DATETIME(6),
     modified_at  DATETIME(6),
     is_deleted   TINYINT,
+    wish_cnt     INT,
     CONSTRAINT product_board_pk PRIMARY KEY (id),
     CONSTRAINT fk_store_product_board FOREIGN KEY (store_id) REFERENCES store (id)
 );
