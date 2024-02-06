@@ -18,8 +18,8 @@ public class BoardWishListConfig {
     public void init() {
         boardRepository.findAll()
             .forEach(board -> {
-                redisTemplate.opsForZSet().add(RedisKeyUtil.RECOMMEND_KEY, board.getId(), 0);
-                redisTemplate.opsForZSet().add(RedisKeyUtil.POPULAR_KEY, board.getId(), 0);
+                redisTemplate.opsForZSet().add(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(board.getId()), 0);
+                redisTemplate.opsForZSet().add(RedisKeyUtil.POPULAR_KEY, String.valueOf(board.getId()), 0);
             });
     }
 
