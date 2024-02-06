@@ -1,5 +1,9 @@
 package com.bbangle.bbangle.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
+import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.service.impl.BoardServiceImpl;
@@ -25,8 +29,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BoardController {
 
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
     private final BoardServiceImpl boardService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @GetMapping
     public ResponseEntity<Slice<BoardResponseDto>> getList(
@@ -73,13 +79,16 @@ public class BoardController {
 
     @PatchMapping("/{boardId}")
     public ResponseEntity<Void> countView(@PathVariable Long boardId){
-        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, 0.1);
+        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 0.1);
+        boardLikeInfoRedisTemplate.opsForList().rightPush(LocalDateTime.now().format(formatter), new BoardLikeInfo(boardId,0.1, LocalDateTime.now(), ScoreType.VIEW));
+
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/{boardId}/purchase")
     public ResponseEntity<Void> movePurchasePage(@PathVariable Long boardId){
-        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, boardId, 1);
+        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 1);
+        boardLikeInfoRedisTemplate.opsForList().rightPush(LocalDateTime.now().format(formatter), new BoardLikeInfo(boardId,1, LocalDateTime.now(), ScoreType.PURCHASE));
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
