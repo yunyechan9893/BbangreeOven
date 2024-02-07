@@ -2,6 +2,8 @@ package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.repository.RedisRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,72 +14,46 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Repository
+@RequiredArgsConstructor
 public class RedisRepositoryImpl implements RedisRepository {
     private final RedisTemplate<String, Object> redisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
 
-    public RedisRepositoryImpl(
-            RedisTemplate<String, Object> redisTemplate,
-            StringRedisTemplate stringRedisTemplate,
-            ObjectMapper objectMapper) {
-        this.redisTemplate = redisTemplate;
-        this.stringRedisTemplate = stringRedisTemplate;
-        this.objectMapper = objectMapper;
-    }
-
     @Override
     public List<Long> get(String namespace, String key) {
-        try {
-            // 가져온 값들을 List<Long>로 역직렬화
-            String master = namespace + ":" + key;
-            return redisTemplate.opsForList().range(master, 0, -1)
+            String multiKey =  String.format("%s:%s", namespace, key);
+            return redisTemplate.opsForList().range(multiKey, 0, -1)
                     .stream()
                     .map(o ->Long.parseLong(o.toString()))
                     .toList();
-        } catch (Exception e) {
-            System.out.println(e);
-            return null;
-        }
     }
 
     @Override
     public List<String> getStringList(String namespace, String key) {
-        try {
-            // 가져온 값들을 List<Long>로 역직렬화
-            String master = namespace + ":" + key;
-            return redisTemplate.opsForList().range(master, 0, -1)
+            // 네임스페이스와 키를 결합
+            String multiKey =  String.format("%s:%s", namespace, key);
+            // multiKey를 이용해 레디스 조회 후 값 반환
+            return redisTemplate.opsForList().range(multiKey, 0, -1)
                     .stream().map(Object::toString)
                     .toList();
-        } catch (Exception e) {
-            System.out.println(e);
-            return null;
-        }
     }
 
 
     @Override
-    public Boolean set(String namespace, String key, String... values) {
-        try {
-            String master = namespace + ":" + key;
-            redisTemplate.opsForList().rightPushAll(master, (Object[]) values);
-            return true;
-        }catch (Exception e){
-            System.out.println(e);
-            return false;
-        }
+    public void set(String namespace, String key, String... values) {
+            // 네임스페이스와 키를 결합
+            String multiKey =  String.format("%s:%s", namespace, key);
+            redisTemplate.opsForList().rightPushAll(multiKey, (Object[]) values);
+            log.info("[완료] 레디스 값 저장");
     }
 
     @Override
-    public Boolean delete(String namespace, String key) {
-        try {
-        String masterKey = namespace + ":" + key;
-        redisTemplate.delete(masterKey);
-            return true;
-        }catch (Exception e){
-            System.out.println(e);
-            return false;
-        }
+    public void delete(String namespace, String key) {
+        String multiKey =  String.format("%s:%s", namespace, key);
+        redisTemplate.delete(multiKey);
+        log.info("[완료] 레디스 값 삭제");
     }
 }

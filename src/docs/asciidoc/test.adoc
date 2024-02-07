@@ -1,0 +1,2 @@
+== SearchController
+operation::search-controller-test/get-searched-board[snippets="http-request,http-response"]
