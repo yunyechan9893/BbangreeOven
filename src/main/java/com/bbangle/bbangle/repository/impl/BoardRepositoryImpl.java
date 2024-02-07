@@ -91,25 +91,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
        return content;
     }
 
-    private static OrderSpecifier<?> sortType(String sort, QBoard board) {
-        OrderSpecifier<?> orderSpecifier;
-        if (sort == null) {
-            return null;
-        }
-        switch (SortType.fromString(sort)) {
-            //TODO: 추후 추천순 반영 예정
-            case RECOMMEND:
-                orderSpecifier = board.wishCnt.desc();
-                break;
-            case POPULAR:
-                orderSpecifier = board.wishCnt.desc();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid SortType");
-        }
-        return orderSpecifier;
-    }
-
     @Override
     public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId,
                                                   WishlistFolder selectedFolder) {
