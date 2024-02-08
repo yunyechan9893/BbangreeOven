@@ -46,8 +46,8 @@ public class WebOAuthSecurityConfig {
 
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/token").permitAll()
-
                         .requestMatchers(HttpMethod.GET, "api/v1/boards/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "api/v1/boards/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "api/v1/boards/folders/**").authenticated()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll());
