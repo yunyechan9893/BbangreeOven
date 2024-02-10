@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.controller;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -9,6 +10,7 @@ import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.service.impl.BoardServiceImpl;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -78,17 +80,32 @@ public class BoardController {
     }
 
     @PatchMapping("/{boardId}")
-    public ResponseEntity<Void> countView(@PathVariable Long boardId){
+    public ResponseEntity<Void> countView(@PathVariable Long boardId, HttpServletRequest request){
+        String ipAddress = request.getRemoteAddr();
+        String viewCountKey = "VIEW:" + boardId + ":" + ipAddress;
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))){
+            return ResponseEntity.badRequest().build();
+        }
+
         redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 0.1);
         boardLikeInfoRedisTemplate.opsForList().rightPush(LocalDateTime.now().format(formatter), new BoardLikeInfo(boardId,0.1, LocalDateTime.now(), ScoreType.VIEW));
+        redisTemplate.opsForValue().set(viewCountKey, true, Duration.ofMinutes(3));
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PatchMapping("/{boardId}/purchase")
-    public ResponseEntity<Void> movePurchasePage(@PathVariable Long boardId){
+    public ResponseEntity<Void> movePurchasePage(@PathVariable Long boardId, HttpServletRequest request){
+        String ipAddress = request.getRemoteAddr();
+        String purchaseCountKey = "PURCHASE:" + boardId + ":" + ipAddress;
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(purchaseCountKey))){
+            return ResponseEntity.badRequest().build();
+        }
+
         redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 1);
         boardLikeInfoRedisTemplate.opsForList().rightPush(LocalDateTime.now().format(formatter), new BoardLikeInfo(boardId,1, LocalDateTime.now(), ScoreType.PURCHASE));
+        redisTemplate.opsForValue().set(purchaseCountKey, true, Duration.ofMinutes(3));
+
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
