@@ -8,6 +8,7 @@ import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.BoardRepository;
 import com.bbangle.bbangle.repository.MemberRepository;
@@ -81,7 +82,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     private List<Long> getListAdaptingSort(List<Long> boardResponseDtoIdx, String sort) {
-        if (sort != null && sort.equals(RedisKeyUtil.POPULAR_KEY)) {
+        if (sort != null && sort.equals(SortType.POPULAR.getValue())) {
             return redisTemplate.opsForZSet().reverseRange(RedisKeyUtil.POPULAR_KEY, 0, -1)
                 .stream()
                 .map(idx -> Long.valueOf(String.valueOf(idx)))
