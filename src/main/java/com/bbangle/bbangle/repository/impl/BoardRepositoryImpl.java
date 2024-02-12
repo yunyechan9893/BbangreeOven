@@ -29,8 +29,6 @@ import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -45,10 +43,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                       Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                       String category, Integer minPrice, Integer maxPrice,
-                                                       Pageable pageable) {
+    public List<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                                      Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                                      String category, Integer minPrice, Integer maxPrice) {
 
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
@@ -66,16 +63,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 product,
                 board);
 
-        OrderSpecifier<?> orderSpecifier = sortType(sort, board);
-
         List<Board> boards = queryFactory
             .selectFrom(board)
             .leftJoin(board.productList, product).fetchJoin()
             .leftJoin(board.store, store).fetchJoin()
             .where(filter)
-            .orderBy(orderSpecifier)
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize() + 1)
             .fetch();
 
 
@@ -84,7 +76,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         List<BoardResponseDto> content = new ArrayList<>();
 
         for (Board board1 : boards) {
-            // 결과를 DTO로 변환
             content.add(BoardResponseDto.builder()
                 .boardId(board1.getId())
                 .storeId(board1.getStore().getId())
@@ -95,41 +86,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .isWished(false)
                 .tags(addList(productTagsByBoardId.get(board1.getId())))
                 .build());
-
         }
 
-        // 다음 페이지 존재 여부 확인
-        boolean hasNext = content.size() > pageable.getPageSize();
-        if (hasNext) {
-            // 마지막 항목 제거
-            content.remove(content.size() - 1);
-        }
-
-        // Slice 객체 반환
-        return new SliceImpl<>(content, pageable, hasNext);
-    }
-
-    private static OrderSpecifier<?> sortType(String sort, QBoard board) {
-        OrderSpecifier<?> orderSpecifier;
-        if(sort == null){
-            return null;
-        }
-        switch (SortType.fromString(sort)) {
-            //TODO: 추후 추천순 반영 예정
-            case RECOMMEND:
-                orderSpecifier = board.wishCnt.desc();
-                break;
-            case POPULAR:
-                orderSpecifier = board.wishCnt.desc();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid SortType");
-        }
-        return orderSpecifier;
+       return content;
     }
 
     @Override
-    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, WishlistFolder selectedFolder) {
+    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId,
+                                                  WishlistFolder selectedFolder) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
@@ -178,7 +142,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private static OrderSpecifier<?> sortTypeFolder(String sort, QBoard board, QWishlistProduct products) {
         OrderSpecifier<?> orderSpecifier;
-        if(sort == null){
+        if (sort == null) {
             orderSpecifier = products.createdAt.desc();
             return orderSpecifier;
         }

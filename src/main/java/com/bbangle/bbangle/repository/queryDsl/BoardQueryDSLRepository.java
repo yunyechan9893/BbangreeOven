@@ -9,9 +9,9 @@ import org.springframework.data.domain.Slice;
 
 public interface BoardQueryDSLRepository {
 
-    Slice<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                String category, Integer minPrice, Integer maxPrice, Pageable pageable);
+    List<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                               Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                               String category, Integer minPrice, Integer maxPrice);
 
     Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, WishlistFolder wishlistFolder);
     BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
