@@ -2,7 +2,8 @@ package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.dto.*;
 import com.bbangle.bbangle.model.*;
-import com.bbangle.bbangle.repository.SearchQueryDSLRepository;
+
+import com.bbangle.bbangle.repository.queryDsl.SearchQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -175,7 +176,7 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
                 .where(
                         search.member.eq(member)
                                 .and(search.keyword.eq(keyword))
-                        )
+                )
                 .execute();
     }
 
@@ -189,12 +190,12 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
 
         var subquery =
                 queryFactory
-                .select(board.id)
-                .from(board)
-                .where(board.id.in(boardIds))
-                .orderBy(board.price.desc())
-                .offset(0) // 2페이지의 시작점
-                .limit(2); // 2페이지의 크기
+                        .select(board.id)
+                        .from(board)
+                        .where(board.id.in(boardIds))
+                        .orderBy(board.price.desc())
+                        .offset(0) // 2페이지의 시작점
+                        .limit(2); // 2페이지의 크기
 
         var boards = queryFactory
                 .select(

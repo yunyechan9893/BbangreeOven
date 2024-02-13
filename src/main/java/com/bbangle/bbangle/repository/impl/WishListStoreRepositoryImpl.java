@@ -3,7 +3,7 @@ package com.bbangle.bbangle.repository.impl;
 import com.bbangle.bbangle.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.model.WishlistStore;
-import com.bbangle.bbangle.repository.WishListStoreQueryDSLRepository;
+import com.bbangle.bbangle.repository.queryDsl.WishListStoreQueryDSLRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;

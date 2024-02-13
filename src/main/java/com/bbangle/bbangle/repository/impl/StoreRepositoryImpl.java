@@ -2,7 +2,7 @@ package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.dto.*;
 import com.bbangle.bbangle.model.*;
-import com.bbangle.bbangle.repository.StoreQueryDSLRepository;
+import com.bbangle.bbangle.repository.queryDsl.StoreQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

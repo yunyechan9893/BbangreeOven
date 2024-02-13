@@ -51,6 +51,7 @@ public class WebOAuthSecurityConfig {
                         .requestMatchers("/api/v1/store/**").permitAll()
                         .requestMatchers("/api/v1/stores/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "api/v1/boards/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "api/v1/boards/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "api/v1/boards/folders/**").authenticated()
 
                         .requestMatchers("/api/**").authenticated()

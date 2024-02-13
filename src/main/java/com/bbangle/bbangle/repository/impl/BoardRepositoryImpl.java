@@ -2,10 +2,8 @@ package com.bbangle.bbangle.repository.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import com.bbangle.bbangle.dto.BoardAvailableDayDto;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardDto;
@@ -24,10 +22,13 @@ import com.bbangle.bbangle.model.QProductImg;
 import com.bbangle.bbangle.model.QStore;
 import com.bbangle.bbangle.model.QWishlistFolder;
 import com.bbangle.bbangle.model.QWishlistProduct;
+import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.TagEnum;
-import com.bbangle.bbangle.repository.BoardQueryDSLRepository;
+import com.bbangle.bbangle.model.WishlistFolder;
+import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -42,10 +43,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                       Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                       String category, Integer minPrice, Integer maxPrice,
-                                                       Pageable pageable) {
+    public List<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                                      Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                                      String category, Integer minPrice, Integer maxPrice) {
 
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
@@ -63,23 +63,19 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 product,
                 board);
 
-
-// Step 2: 메인 쿼리
         List<Board> boards = queryFactory
             .selectFrom(board)
-            .leftJoin(board.productList, product).fetchJoin() // Product와의 연관 관계를 fetch join으로 가져옴
+            .leftJoin(board.productList, product).fetchJoin()
             .leftJoin(board.store, store).fetchJoin()
             .where(filter)
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize() + 1)
             .fetch();
+
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
 
         List<BoardResponseDto> content = new ArrayList<>();
 
         for (Board board1 : boards) {
-            // 결과를 DTO로 변환
             content.add(BoardResponseDto.builder()
                 .boardId(board1.getId())
                 .storeId(board1.getStore().getId())
@@ -87,35 +83,34 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .thumbnail(board1.getProfile())
                 .title(board1.getTitle())
                 .price(board1.getPrice())
-                .isWished(true) // 이 값은 필요에 따라 설정
+                .isWished(false)
                 .tags(addList(productTagsByBoardId.get(board1.getId())))
                 .build());
-
         }
 
-        // 다음 페이지 존재 여부 확인
-        boolean hasNext = content.size() > pageable.getPageSize();
-        if (hasNext) {
-            // 마지막 항목 제거
-            content.remove(content.size() - 1);
-        }
-
-        // Slice 객체 반환
-        return new SliceImpl<>(content, pageable, hasNext);
+       return content;
     }
 
     @Override
-    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, List<Long> boardIds) {
+    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId,
+                                                  WishlistFolder selectedFolder) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
+        QWishlistProduct products = QWishlistProduct.wishlistProduct;
+        QWishlistFolder folder = QWishlistFolder.wishlistFolder;
+
+        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort, board, products);
 
         List<Board> boards = queryFactory
             .selectFrom(board)
             .leftJoin(board.productList, product).fetchJoin()
             .leftJoin(board.store, store).fetchJoin()
-            .where(board.id.in(boardIds))
+            .join(board).on(board.id.eq(products.board.id))
+            .join(products).on(products.wishlistFolder.eq(folder))
+            .where(products.wishlistFolder.eq(selectedFolder))
             .offset(pageable.getOffset())
+            .orderBy(orderSpecifier)
             .limit(pageable.getPageSize() + 1)
             .fetch();
 
@@ -143,6 +138,28 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         }
 
         return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    private static OrderSpecifier<?> sortTypeFolder(String sort, QBoard board, QWishlistProduct products) {
+        OrderSpecifier<?> orderSpecifier;
+        if (sort == null) {
+            orderSpecifier = products.createdAt.desc();
+            return orderSpecifier;
+        }
+        switch (SortType.fromString(sort)) {
+            case RECENT:
+                orderSpecifier = products.createdAt.desc();
+                break;
+            case LOW_PRICE:
+                orderSpecifier = board.price.asc();
+                break;
+            case POPULAR:
+                orderSpecifier = board.wishCnt.desc();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid SortType");
+        }
+        return orderSpecifier;
     }
 
     private static Map<Long, List<ProductTagDto>> getLongListMap(List<Board> boards) {
