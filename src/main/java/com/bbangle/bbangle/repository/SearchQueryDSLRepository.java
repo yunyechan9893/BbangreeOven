@@ -13,4 +13,6 @@ public interface SearchQueryDSLRepository {
     List<KeywordDto> getRecencyKeyword(Member member);
     String[] getBestKeyword();
     void markAsDeleted(String keyword, Member member);
+
+    void getTest();
 }

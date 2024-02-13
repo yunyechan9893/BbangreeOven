@@ -244,11 +244,11 @@ public class SearchRepositoryTest {
                     .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
                     .introduce("건강을 먹다-로썸")
                     .build();
-
+            var randomPrice = new Random().nextInt(1000, 1500);
             var board = Board.builder()
                     .store(store)
                     .title("비건 베이커리 로썸 비건빵")
-                    .price(5400)
+                    .price(5400 + randomPrice)
                     .status(true)
                     .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
                     .detail("test.txt")
@@ -299,5 +299,10 @@ public class SearchRepositoryTest {
             productRepository.save(product2);
             productRepository.save(product3);
         }
+    }
+
+    @Test
+    public void getTest(){
+        searchRepository.getTest();
     }
 }

@@ -42,7 +42,7 @@ public class SearchServiceTest {
     final String BOARD_NAMESPACE = RedisEnum.BOARD.name();
     final String SEARCH_KEYWORD = "비건 베이커리";
     final String SEARCH_KEYWORD_STORE = "RAWSOME";
-    final String[] BOARD_IDS = {"1","2","3","4","5"};
+    final String[] BOARD_IDS = {"1", "2", "3", "4", "5"};
     final int BOARD_PAGE = 0;
     final int STORE_PAGE = 0;
 
@@ -50,7 +50,7 @@ public class SearchServiceTest {
     private EntityManager entityManager;
 
     @BeforeEach
-    public void saveData(){
+    public void saveData() {
         createData(15);
         redisRepository.deleteAll();
         searchService.initSetting();
@@ -69,7 +69,7 @@ public class SearchServiceTest {
 
     @Test
     @DisplayName("자동완성 알고리즘에 값을 저장하면 정상적으로 저장한 값을 불러올 수 있다")
-    public void trieUtilTest(){
+    public void trieUtilTest() {
         TrieUtil trieUtil = new TrieUtil();
 
         trieUtil.insert("비건 베이커리");
@@ -78,25 +78,25 @@ public class SearchServiceTest {
         trieUtil.insert("초코송이");
 
         var resultOne = trieUtil.autoComplete("초", 1);
-        Assertions.assertEquals(resultOne,List.of("초코송이"));
-        Assertions.assertEquals(resultOne.size(),1);
+        Assertions.assertEquals(resultOne, List.of("초코송이"));
+        Assertions.assertEquals(resultOne.size(), 1);
 
         var resultTwo = trieUtil.autoComplete("비", 2);
-        Assertions.assertEquals(resultTwo,List.of("비건", "비건 베이커리"));
-        Assertions.assertEquals(resultTwo.size(),2);
+        Assertions.assertEquals(resultTwo, List.of("비건", "비건 베이커리"));
+        Assertions.assertEquals(resultTwo.size(), 2);
 
         var resultThree = trieUtil.autoComplete("비", 3);
-        Assertions.assertEquals(resultThree,List.of("비건", "비건 베이커리", "비건 베이커리 짱짱"));
-        Assertions.assertEquals(resultThree.size(),3);
+        Assertions.assertEquals(resultThree, List.of("비건", "비건 베이커리", "비건 베이커리 짱짱"));
+        Assertions.assertEquals(resultThree.size(), 3);
 
         var resultFour = trieUtil.autoComplete("바", 3);
-        Assertions.assertEquals(resultFour,List.of());
-        Assertions.assertEquals(resultFour.size(),0);
+        Assertions.assertEquals(resultFour, List.of());
+        Assertions.assertEquals(resultFour.size(), 0);
     }
 
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
-    public void getSearchBoard(){
+    public void getSearchBoard() {
         var result = searchService.getSearchResult(BOARD_PAGE, STORE_PAGE, SEARCH_KEYWORD);
 
         var searchBoardResult = result.getBoards();
@@ -119,7 +119,7 @@ public class SearchServiceTest {
         Assertions.assertEquals("비건 베이커리 로썸 비건빵", boards.get(0).title());
         Assertions.assertEquals(5400, boards.get(0).price());
         Assertions.assertEquals(true, boards.get(0).isWished());
-        Assertions.assertEquals(List.of("glutenFree","sugarFree","vegan"), boards.get(0).tags());
+        Assertions.assertEquals(List.of("glutenFree", "sugarFree", "vegan"), boards.get(0).tags());
 
         Assertions.assertEquals(2L, boards.get(1).boardId());
         Assertions.assertEquals(2L, boards.get(1).storeId());
@@ -129,12 +129,12 @@ public class SearchServiceTest {
         Assertions.assertEquals("비건 베이커리 로썸 비건빵", boards.get(1).title());
         Assertions.assertEquals(5400, boards.get(1).price());
         Assertions.assertEquals(true, boards.get(1).isWished());
-        Assertions.assertEquals(List.of("glutenFree","sugarFree","vegan"), boards.get(1).tags());
+        Assertions.assertEquals(List.of("glutenFree", "sugarFree", "vegan"), boards.get(1).tags());
     }
 
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
-    public void getSearchStore(){
+    public void getSearchStore() {
 
         var result = searchService.getSearchResult(BOARD_PAGE, STORE_PAGE, SEARCH_KEYWORD_STORE);
 
@@ -182,12 +182,11 @@ public class SearchServiceTest {
 
     @Test
 
-    public void getAllBoardTitleTest(){
+    public void getAllBoardTitleTest() {
 
         var result = boardRepository.getAllBoardTitle();
         System.out.println(result);
     }
-
 
 
     private List<String> komoranUtil(String title) {
@@ -198,7 +197,7 @@ public class SearchServiceTest {
     }
 
     @Test
-    public void getBestKeyword(){
+    public void getBestKeyword() {
         var result = redisRepository.getStringList(
                 RedisEnum.BEST_KEYWORD.name(),
                 BEST_KEYWORD_KEY
@@ -217,8 +216,8 @@ public class SearchServiceTest {
     }
 
 
-    private void createData(int count){
-        for(int i=0; i<count; i++){
+    private void createData(int count) {
+        for (int i = 0; i < count; i++) {
             var store = Store.builder()
                     .identifier("7962401222")
                     .name("RAWSOME")
