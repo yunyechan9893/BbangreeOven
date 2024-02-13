@@ -7,13 +7,18 @@ import java.util.List;
 
 public interface SearchService {
 
-    SearchResponseDto getSearchResult(String keyword);
-
-    List<KeywordDto> getRecencyKeyword(Long accessToken);
-
-    Boolean deleteRecencyKeyword(Long keywordId);
+    void loadData();
 
     void updateRedisAtBestKeyword();
 
+    SearchResponseDto getSearchResult(String keyword);
+    void saveKeyword(Long memberId,String keyword);
+
+    List<KeywordDto> getRecencyKeyword(Long memberId);
+
+    Boolean deleteRecencyKeyword(Long keywordId, Long memberId);
+
     List<String> getBestKeyword();
+
+    List<String> getAutoKeyword(String keyword);
 }

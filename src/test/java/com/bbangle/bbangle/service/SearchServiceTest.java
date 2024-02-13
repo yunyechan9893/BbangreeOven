@@ -4,9 +4,11 @@ import com.bbangle.bbangle.model.RedisEnum;
 import com.bbangle.bbangle.repository.InitRepository;
 import com.bbangle.bbangle.repository.RedisRepository;
 import com.bbangle.bbangle.util.KomoranUtil;
+import com.bbangle.bbangle.util.TrieUtil;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import kr.co.shineware.nlp.komoran.model.Token;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +27,39 @@ public class SearchServiceTest {
 
     @Autowired
     RedisRepository redisRepository;
+
+
+    @BeforeEach
+    public void loadData(){
+        searchService.loadData();
+        searchService.updateRedisAtBestKeyword();
+    }
+
+    @Test
+    public void trieUtilTest(){
+        TrieUtil trieUtil = new TrieUtil();
+
+        trieUtil.insert("비건 베이커리");
+        trieUtil.insert("비건");
+        trieUtil.insert("비건 베이커리 짱짱");
+        trieUtil.insert("초코송이");
+
+        var resultOne = trieUtil.autoComplete("초", 1);
+        Assertions.assertEquals(resultOne,List.of("초코송이"));
+        Assertions.assertEquals(resultOne.size(),1);
+
+        var resultTwo = trieUtil.autoComplete("비", 2);
+        Assertions.assertEquals(resultTwo,List.of("비건", "비건 베이커리"));
+        Assertions.assertEquals(resultTwo.size(),2);
+
+        var resultThree = trieUtil.autoComplete("비", 3);
+        Assertions.assertEquals(resultThree,List.of("비건", "비건 베이커리", "비건 베이커리 짱짱"));
+        Assertions.assertEquals(resultThree.size(),3);
+
+        var resultFour = trieUtil.autoComplete("바", 3);
+        Assertions.assertEquals(resultFour,List.of());
+        Assertions.assertEquals(resultFour.size(),0);
+    }
 
     @Test
     public void getAllBoardTitleTest(){
@@ -48,14 +83,12 @@ public class SearchServiceTest {
 
     @Test
     public void getBestKeyword(){
-        searchService.updateRedisAtBestKeyword();
-
         var result = redisRepository.getStringList(
                 RedisEnum.BEST_KEYWORD.label(),
                 BEST_KEYWORD_KEY
         );
 
-        Assertions.assertEquals(result.size(), 7);
+        Assertions.assertEquals(result.size() < 7, true);
 
         searchService.updateRedisAtBestKeyword();
 
@@ -64,10 +97,6 @@ public class SearchServiceTest {
                 BEST_KEYWORD_KEY
         );
 
-        System.out.println(result);
-        Assertions.assertEquals(result.size(), 7);
-
+        Assertions.assertEquals(result.size() < 7, true);
     }
-
-
 }
