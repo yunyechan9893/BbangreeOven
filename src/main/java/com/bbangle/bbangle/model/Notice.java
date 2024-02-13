@@ -27,7 +27,7 @@ public class Notice{
     private LocalDateTime createdAt;
 
 
-    public NoticeResponseDto toDto(Notice notice){
+    public static NoticeResponseDto toDto(Notice notice){
         return NoticeResponseDto.builder()
                 .id(notice.getId())
                 .title(notice.getTitle())

@@ -5,9 +5,15 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 
-@Builder
 public record NoticeDetailResponseDto(Long id,
                                        String title,
                                        String content,
-                                       LocalDateTime createdAt) {
+                                       String createdAt) {
+    @QueryProjection
+    public NoticeDetailResponseDto(Long id, String title, String content, String createdAt) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.createdAt = createdAt;
+    }
 }

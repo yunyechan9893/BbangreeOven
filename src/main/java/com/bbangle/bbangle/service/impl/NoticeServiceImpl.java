@@ -1,6 +1,9 @@
 package com.bbangle.bbangle.service.impl;
 
+import com.bbangle.bbangle.dto.NoticeDetailResponseDto;
 import com.bbangle.bbangle.dto.NoticePagingResponseDto;
+import com.bbangle.bbangle.dto.NoticeResponseDto;
+import com.bbangle.bbangle.model.Notice;
 import com.bbangle.bbangle.repository.impl.NoticeQueryDSLRepositoryImpl;
 import com.bbangle.bbangle.service.NoticeService;
 import lombok.RequiredArgsConstructor;
@@ -17,5 +20,10 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public NoticePagingResponseDto getNoticePagingList(Pageable pageable) {
        return NoticePagingResponseDto.of(noticeQueryDSLRepositoryImpl.getNoticeList(pageable));
+    }
+
+    @Override
+    public NoticeDetailResponseDto getNoticeDetail(Long id) {
+        return noticeQueryDSLRepositoryImpl.getNoticeDetail(id);
     }
 }
