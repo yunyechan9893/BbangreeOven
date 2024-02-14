@@ -1,5 +1,9 @@
 package com.bbangle.bbangle.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
+import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.dto.WishProductRequestDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.model.Board;
@@ -10,18 +14,28 @@ import com.bbangle.bbangle.repository.BoardRepository;
 import com.bbangle.bbangle.repository.MemberRepository;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import com.bbangle.bbangle.repository.WishListProductRepository;
+import com.bbangle.bbangle.util.RedisKeyUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class WishListProductService {
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
+
 
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListProductRepository wishListProductRepository;
     private final BoardRepository boardRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @Transactional
     public void wish(Long memberId, Long boardId, WishProductRequestDto wishRequest) {
@@ -33,13 +47,29 @@ public class WishListProductService {
 
         wishListProductRepository.findByBoardAndFolderId(boardId, wishlistFolder)
             .ifPresentOrElse(
-                WishlistProduct::updateWishStatus,
+                product -> {
+                    boolean status = product.updateWishStatus();
+                    product.getBoard().updateWishCnt(status);
+
+                    if(status){
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 1);
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(boardId), 1);
+                        boardLikeInfoRedisTemplate.opsForList().rightPush(LocalDateTime.now().format(formatter) ,new BoardLikeInfo(boardId,1, LocalDateTime.now(), ScoreType.WISH));
+                    } else {
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), -1);
+                        redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(boardId), -1);
+                        boardLikeInfoRedisTemplate.opsForList().rightPush(LocalDateTime.now().format(formatter) ,new BoardLikeInfo(boardId,1, LocalDateTime.now(), ScoreType.WISH));
+                    }
+                },
                 makeNewWish(boardId, wishlistFolder)
             );
     }
 
     private Runnable makeNewWish(Long boardId, WishlistFolder wishlistFolder) {
         return () -> {
+            redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 1);
+            redisTemplate.opsForZSet().incrementScore(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(boardId), 1);
+            boardLikeInfoRedisTemplate.opsForList().rightPush(LocalDateTime.now().format(formatter) ,new BoardLikeInfo(boardId,1, LocalDateTime.now(), ScoreType.WISH));
             Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
             WishlistProduct wishlistProduct = WishlistProduct.builder()
@@ -47,7 +77,8 @@ public class WishListProductService {
                 .board(board)
                 .isDeleted(false)
                 .build();
-            wishListProductRepository.save(wishlistProduct);
+            WishlistProduct save = wishListProductRepository.save(wishlistProduct);
+            save.getBoard().updateWishCnt(true);
         };
     }
 
