@@ -4,11 +4,8 @@ import com.bbangle.bbangle.dto.NoticeDetailResponseDto;
 import com.bbangle.bbangle.dto.NoticeResponseDto;
 import com.bbangle.bbangle.dto.QNoticeDetailResponseDto;
 import com.bbangle.bbangle.dto.QNoticeResponseDto;
-import com.bbangle.bbangle.model.Notice;
 import com.bbangle.bbangle.repository.NoticeQueryDSLRepository;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ConstantImpl;
-import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,7 +15,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.bbangle.bbangle.model.QNotice.notice;
@@ -29,7 +25,7 @@ public class NoticeQueryDSLRepositoryImpl implements NoticeQueryDSLRepository {
 
     private final JPAQueryFactory queryFactory;
     //날짜 변환
-    private final StringTemplate formattedDate = Expressions.stringTemplate(
+    private final StringTemplate FORMATTED_DATE = Expressions.stringTemplate(
             "DATE_FORMAT({0}, {1})"
                 , notice.createdAt
                 , ConstantImpl.create("%Y-%m-%d %H:%i"));
@@ -40,7 +36,7 @@ public class NoticeQueryDSLRepositoryImpl implements NoticeQueryDSLRepository {
                 .select(new QNoticeResponseDto(
                         notice.id,
                         notice.title,
-                        formattedDate
+                        FORMATTED_DATE
                 ))
                 .from(notice)
                 .orderBy(notice.createdAt.desc())
@@ -52,7 +48,7 @@ public class NoticeQueryDSLRepositoryImpl implements NoticeQueryDSLRepository {
                 .select(new QNoticeResponseDto(
                         notice.id,
                         notice.title,
-                        formattedDate
+                        FORMATTED_DATE
                 ))
                 .from(notice)
                 .orderBy(notice.createdAt.desc())
@@ -66,7 +62,7 @@ public class NoticeQueryDSLRepositoryImpl implements NoticeQueryDSLRepository {
                         notice.id,
                         notice.title,
                         notice.content,
-                        formattedDate
+                        FORMATTED_DATE
                 ))
                 .from(notice)
                 .where(notice.id.eq(id))
