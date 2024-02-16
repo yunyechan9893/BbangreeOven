@@ -16,6 +16,7 @@ import com.bbangle.bbangle.repository.WishListFolderRepository;
 import com.bbangle.bbangle.repository.WishListProductRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,7 +35,9 @@ public class WishListProductService {
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListProductRepository wishListProductRepository;
     private final BoardRepository boardRepository;
+    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
+    @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @Transactional

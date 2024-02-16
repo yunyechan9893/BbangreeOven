@@ -3,6 +3,7 @@ package com.bbangle.bbangle.repository.impl;
 import com.bbangle.bbangle.repository.RedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Repository
 @RequiredArgsConstructor
 public class RedisRepositoryImpl implements RedisRepository {
+    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
@@ -43,6 +45,8 @@ public class RedisRepositoryImpl implements RedisRepository {
         var value = redisTemplate.opsForValue();
         // 가져온 값이 null이 아닌 경우에만 문자열로 변환하여 반환
         try{
+            log.info(multiKey);
+            log.info((String) value.get(multiKey));
             return value.get(multiKey).toString();
         } catch (RedisSystemException e){
             System.out.println("[에러] 레디스 RedisSystemException 에러");

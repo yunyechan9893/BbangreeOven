@@ -15,7 +15,8 @@ import com.bbangle.bbangle.repository.MemberRepository;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import com.bbangle.bbangle.service.BoardService;
 import com.bbangle.bbangle.util.RedisKeyUtil;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -24,13 +25,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public BoardServiceImpl(
+            @Autowired BoardRepository boardRepository,
+            @Autowired MemberRepository memberRepository,
+            @Autowired WishListFolderRepository folderRepository,
+            @Autowired @Qualifier("defaultRedisTemplate")RedisTemplate<String, Object> redisTemplate) {
+        this.boardRepository = boardRepository;
+        this.memberRepository = memberRepository;
+        this.folderRepository = folderRepository;
+        this.redisTemplate = redisTemplate;
+    }
 
     @Override
     @Transactional(readOnly = true)
