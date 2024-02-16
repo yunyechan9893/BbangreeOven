@@ -5,8 +5,6 @@ import com.bbangle.bbangle.model.*;
 
 import com.bbangle.bbangle.repository.queryDsl.SearchQueryDSLRepository;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -17,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
+public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
     private final int ONEDAY = 24;
 
@@ -170,7 +168,6 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
     @Override
     public void markAsDeleted(String keyword, Member member) {
         QSearch search = QSearch.search;
-
         queryFactory.update(search)
                 .set(search.isDeleted, true)
                 .where(
@@ -188,39 +185,39 @@ public class SearchQueryDSLRepositoryImpl implements SearchQueryDSLRepository {
         QProduct product = QProduct.product;
         QStore store = QStore.store;
 
-        var subquery =
-                queryFactory
-                        .select(board.id)
-                        .from(board)
-                        .where(board.id.in(boardIds))
-                        .orderBy(board.price.desc())
-                        .offset(0) // 2페이지의 시작점
-                        .limit(2); // 2페이지의 크기
-
-        var boards = queryFactory
-                .select(
-                        store.id,
-                        store.name,
-                        board.id,
-                        board.profile,
-                        board.title,
-                        board.price,
-                        product.glutenFreeTag,
-                        product.highProteinTag,
-                        product.sugarFreeTag,
-                        product.veganTag,
-                        product.ketogenicTag
-                )
-                .from(product)
-                .join(product.board, board)
-                .join(board.store, store)
-                .where(product.board.id.in(subquery))
-                .orderBy(board.price.asc())
-                .fetch();
-
-        boards.forEach(tuple -> {
-            System.out.println(tuple.get(board.id));
-            System.out.println(tuple.get(board.price));
-        });
+//        var subquery =
+//                queryFactory
+//                        .select(board.id)
+//                        .from(board)
+//                        .where(board.id.in(boardIds))
+//                        .orderBy(board.price.desc())
+//                        .offset(0) // 2페이지의 시작점
+//                        .limit(2); // 2페이지의 크기
+//
+//        var boards = queryFactory
+//                .select(
+//                        store.id,
+//                        store.name,
+//                        board.id,
+//                        board.profile,
+//                        board.title,
+//                        board.price,
+//                        product.glutenFreeTag,
+//                        product.highProteinTag,
+//                        product.sugarFreeTag,
+//                        product.veganTag,
+//                        product.ketogenicTag
+//                )
+//                .from(product)
+//                .join(product.board, board)
+//                .join(board.store, store)
+//                .where(product.board.id.in(subquery))
+//                .orderBy(board.price.asc())
+//                .fetch();
+//
+//        boards.forEach(tuple -> {
+//            System.out.println(tuple.get(board.id));
+//            System.out.println(tuple.get(board.price));
+//        });
     }
 }
