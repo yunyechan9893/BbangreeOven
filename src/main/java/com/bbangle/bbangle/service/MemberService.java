@@ -1,11 +1,13 @@
 package com.bbangle.bbangle.service;
 
+import java.util.Optional;
 import com.bbangle.bbangle.model.Member;
 import com.bbangle.bbangle.repository.MemberRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -50,4 +52,9 @@ public class MemberService {
         return memberRepository.findByNickname(nickname)
                 .orElseThrow(() -> new IllegalArgumentException(("findByNickname() >>>>> no Member by Nickname")));
     }
+
+    public boolean checkingNickname(String nickname) {
+        return memberRepository.findByNickname(nickname).isEmpty();
+    }
+
 }
