@@ -49,6 +49,8 @@ public class WebOAuthSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "api/v1/boards/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "api/v1/boards/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "api/v1/boards/folders/**").authenticated()
+                        //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
+                        .requestMatchers(HttpMethod.GET, "api/v1/boards/notification/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll());
 
