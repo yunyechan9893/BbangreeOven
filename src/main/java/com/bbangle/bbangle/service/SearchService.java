@@ -9,7 +9,9 @@ public interface SearchService {
     void initSetting();
     void updateRedisAtBestKeyword();
 
-    SearchResponseDto getSearchResult(int storePage, int boarPage, String keyword);
+    SearchResponseDto getSearchResult(int storePage, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                      Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                      String category, Integer minPrice, Integer maxPrice);
     void saveKeyword(Long memberId,String keyword);
 
     RecencySearchResponse getRecencyKeyword(Long memberId);
