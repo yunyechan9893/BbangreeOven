@@ -12,13 +12,14 @@ import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +34,9 @@ public class BoardController {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
     private final BoardServiceImpl boardService;
+    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
+    @Autowired @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @GetMapping

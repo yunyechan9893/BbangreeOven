@@ -75,17 +75,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         List<BoardResponseDto> content = new ArrayList<>();
 
+        // isBundled 포함한 정리
         for (Board board1 : boards) {
-            content.add(BoardResponseDto.builder()
-                .boardId(board1.getId())
-                .storeId(board1.getStore().getId())
-                .storeName(board1.getStore().getName())
-                .thumbnail(board1.getProfile())
-                .title(board1.getTitle())
-                .price(board1.getPrice())
-                .isWished(false)
-                .tags(addList(productTagsByBoardId.get(board1.getId())))
-                .build());
+            List<String> tags = addList(productTagsByBoardId.get(board1.getId()));
+            content.add(BoardResponseDto.from(board1, tags));
         }
 
        return content;
@@ -118,18 +111,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         List<BoardResponseDto> content = new ArrayList<>();
 
-        for (Board board1 : boards) {
-            content.add(BoardResponseDto.builder()
-                .boardId(board1.getId())
-                .storeId(board1.getStore().getId())
-                .storeName(board1.getStore().getName())
-                .thumbnail(board1.getProfile())
-                .title(board1.getTitle())
-                .price(board1.getPrice())
-                .isWished(true)
-                .tags(addList(productTagsByBoardId.get(board1.getId())))
-                .build());
 
+        // isBundled 포함한 정리
+        for (Board board1 : boards) {
+            List<String> tags = addList(productTagsByBoardId.get(board1.getId()));
+            content.add(BoardResponseDto.from(board1, tags));
         }
 
         boolean hasNext = content.size() > pageable.getPageSize();
@@ -391,6 +377,21 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .store(storeDto)
             .board(boardDto)
             .build();
+    }
+
+    @Override
+    public HashMap<Long, String> getAllBoardTitle() {
+        QBoard board = QBoard.board;
+
+        List<Tuple> fetch = queryFactory
+                .select(board.id, board.title)
+                .from(board)
+                .fetch();
+
+        HashMap<Long, String> boardMap = new HashMap<>();
+        fetch.forEach((tuple) -> boardMap.put(tuple.get(board.id), tuple.get(board.title)));
+
+        return boardMap;
     }
 
 }
