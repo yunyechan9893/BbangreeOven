@@ -55,4 +55,14 @@ public class GlobalControllerAdvice {
             .body(errorResponse);
     }
 
+    @ExceptionHandler(ExceedNicknameLengthException.class)
+    public ResponseEntity<ErrorResponse> handle(ExceedNicknameLengthException e){
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateNicknameException.class)
+    public ResponseEntity<ErrorResponse> handle(DuplicateNicknameException e){
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+    }
+
 }
