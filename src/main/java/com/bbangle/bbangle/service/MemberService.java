@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.service;
 
-import java.util.Optional;
+import com.bbangle.bbangle.dto.MemberInfoRequest;
 import com.bbangle.bbangle.model.Member;
 import com.bbangle.bbangle.repository.MemberRepository;
 import jakarta.annotation.PostConstruct;
@@ -53,8 +53,19 @@ public class MemberService {
                 .orElseThrow(() -> new IllegalArgumentException(("findByNickname() >>>>> no Member by Nickname")));
     }
 
-    public boolean checkingNickname(String nickname) {
+    public boolean checkingNickname(String nickname, Long memberId) {
+        Member loginedMember = findById(memberId);
+        if (loginedMember.getNickname() != null && loginedMember.getNickname().equals(nickname)){
+            throw new IllegalArgumentException("이미 사용하고 있는 아이디로 변경하실 수 없습니다.");
+        }
+
         return memberRepository.findByNickname(nickname).isEmpty();
+    }
+
+    @Transactional
+    public void updateMemberInfo(MemberInfoRequest request, Long memberId) {
+        Member loginedMember = findById(memberId);
+        loginedMember.updateInfo(request);
     }
 
 }

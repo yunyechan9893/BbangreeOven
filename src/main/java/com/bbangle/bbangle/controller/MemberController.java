@@ -1,11 +1,15 @@
 package com.bbangle.bbangle.controller;
 
+import com.bbangle.bbangle.dto.MemberInfoRequest;
 import com.bbangle.bbangle.dto.NicknameCheckResponse;
 import com.bbangle.bbangle.service.MemberService;
+import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,10 +21,12 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @GetMapping
-    public ResponseEntity<NicknameCheckResponse> checkNickname(@RequestParam String nickname) {
+    @GetMapping("/nickname")
+    public ResponseEntity<NicknameCheckResponse> checkNickname(@RequestParam String request) {
+        Long memberId = SecurityUtils.getMemberId();
+
         NicknameCheckResponse result = NicknameCheckResponse.builder()
-            .isUsable(memberService.checkingNickname(nickname))
+            .isUsable(memberService.checkingNickname(request, memberId))
             .build();
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -28,4 +34,12 @@ public class MemberController {
 
     }
 
+    @PutMapping()
+    public ResponseEntity<Void> updateInfo(@RequestBody MemberInfoRequest request){
+        Long memberId = SecurityUtils.getMemberId();
+
+        memberService.updateMemberInfo(request, memberId);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }
