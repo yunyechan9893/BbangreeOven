@@ -4,6 +4,7 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,12 +26,19 @@ public class S3Config {
     @Value("${cloud.aws.s3.end-point}")
     private String endPoint;
 
-
     @Bean
-    public AmazonS3 s3() {
-        return AmazonS3ClientBuilder.standard()
+    public BasicAWSCredentials basicAWSCredentials() {
+        return new BasicAWSCredentials(accessKey, secretKey);
+    }
+
+    // 레퍼런스
+    // https://guide.ncloud-docs.com/docs/storage-storage-8-1
+    @Bean
+    public AmazonS3Client amazonS3Client() {
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey,secretKey);
+        return (AmazonS3Client) AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, region))
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
                 .build();
     }
 }

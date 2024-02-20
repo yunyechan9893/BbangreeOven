@@ -1,12 +1,14 @@
 package com.bbangle.bbangle.repository;
 
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 
 public interface ObjectStorageRepository {
     void downloadFile();
     void selectFile();
     void deleteFile();
     void deleteFolder();
-    void createFile(PutObjectRequest putObjectRequest);
+    Boolean createFile(String bucketName, String objectName, MultipartFile file);
     Boolean createFolder(String bucketName, String folderName);
 }

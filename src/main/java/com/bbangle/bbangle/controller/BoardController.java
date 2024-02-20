@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.controller;
 
+import org.springframework.web.multipart.MultipartFile;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,12 +21,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/boards")
@@ -110,6 +106,19 @@ public class BoardController {
         redisTemplate.opsForValue().set(purchaseCountKey, true, Duration.ofMinutes(3));
 
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PatchMapping(value = "/{boardId}/detail", consumes = {"multipart/form-data"})
+    public ResponseEntity<Object> putBoardDetailUrl(
+            @PathVariable("boardId")
+            Long boardId,
+            @RequestParam("htmlFile") MultipartFile htmlFile
+    ){
+        if (boardService.saveBoardDetailHtml(boardId, htmlFile)){
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
 
