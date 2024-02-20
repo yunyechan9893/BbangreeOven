@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +18,9 @@ import org.springframework.stereotype.Component;
 public class RankingUpdate {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
+    @Autowired @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
+    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Async
