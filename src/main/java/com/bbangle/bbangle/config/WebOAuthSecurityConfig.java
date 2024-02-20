@@ -47,10 +47,11 @@ public class WebOAuthSecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/token").permitAll()
                         .requestMatchers("/api/v1/search/**").permitAll()
-                        .requestMatchers("/api/v1/landingPage").permitAll()
+                        .requestMatchers("/api/v1/landingpage").permitAll()
                         .requestMatchers("/api/v1/store/**").permitAll()
                         .requestMatchers("/api/v1/stores/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "api/v1/boards/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "api/v1/notice/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "api/v1/boards/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "api/v1/boards/folders/**").authenticated()
                         //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
