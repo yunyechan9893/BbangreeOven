@@ -123,14 +123,16 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile) {
+    public Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile){
         Long storeId = boardRepository.findById(boardId).get().getStore().getId();
         String filePath = String.format("%s/%s/%s",storeId,boardId,DETAIL_HTML_FILE_NAME);
+        // Board DetailUrl FilePath로 수정
         if (boardRepository.updateDetailWhereStoreIdEqualsBoardId(
                 boardId,
                 filePath
         ) != 1) return false;
 
+        // ObjectStorage에 파일 생성
         return objectStorageRepository.createFile(BUCKET_NAME, filePath, htmlFile);
     }
 
