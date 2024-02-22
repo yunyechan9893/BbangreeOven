@@ -2,6 +2,7 @@ package com.bbangle.bbangle.controller;
 
 import com.bbangle.bbangle.dto.NoticeDetailResponseDto;
 import com.bbangle.bbangle.dto.NoticePagingResponseDto;
+import com.bbangle.bbangle.dto.NoticeSaveRequestDto;
 import com.bbangle.bbangle.service.impl.NoticeServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -24,5 +25,11 @@ public class NoticeController {
     @GetMapping("/{id}")
     public ResponseEntity<NoticeDetailResponseDto> getNoticeDetail(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(noticeServiceImpl.getNoticeDetail(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> saveNotice(@RequestBody NoticeSaveRequestDto noticeSaveRequestDto){
+        noticeServiceImpl.saveNotice(noticeSaveRequestDto);
+        return ResponseEntity.ok().build();
     }
 }
