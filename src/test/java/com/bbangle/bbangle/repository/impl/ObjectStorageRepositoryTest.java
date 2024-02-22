@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @SpringBootTest
 public class ObjectStorageRepositoryTest {
 
@@ -37,6 +39,7 @@ public class ObjectStorageRepositoryTest {
     @Test
     @DisplayName("ObjectStorage에 정상적으로 파일을 저장할 수 있다")
     public void createStorageFile(){
+        // https://green-bin.tistory.com/112 S3 Mock 테스트 미래에 참조
         byte[] content;
         try {
             content = Files.readAllBytes(Paths.get("src/test/resources/html/detail.html"));
@@ -52,7 +55,7 @@ public class ObjectStorageRepositoryTest {
                 content // 파일 내용
         );
 
-        objectStorageRepository.createFile(BUCKET_NAME, OBJECT_NAME, HTML_FILE);
+        var result = objectStorageRepository.createFile(BUCKET_NAME, OBJECT_NAME, HTML_FILE);
+        assertThat(result).isEqualTo(true);
     }
-
 }
