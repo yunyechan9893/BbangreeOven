@@ -3,7 +3,6 @@ package com.bbangle.bbangle.config;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +30,10 @@ public class S3Config {
         return new BasicAWSCredentials(accessKey, secretKey);
     }
 
-    // 레퍼런스
-    // https://guide.ncloud-docs.com/docs/storage-storage-8-1
+    // 레퍼런스 : https://guide.ncloud-docs.com/docs/storage-storage-8-1
     @Bean
     public AmazonS3Client amazonS3Client() {
+        // 권한 및 S3 환경설정
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey,secretKey);
         return (AmazonS3Client) AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
