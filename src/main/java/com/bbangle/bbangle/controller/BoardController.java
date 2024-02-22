@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.controller;
 
+import com.bbangle.bbangle.dto.MessageResDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -23,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/boards")
 @RequiredArgsConstructor
@@ -114,13 +117,20 @@ public class BoardController {
             Long boardId,
             @RequestParam("htmlFile") MultipartFile htmlFile
     ){
+        String successMessage = "파일 저장에 성공하셨습니다";
+        String failMessage = "파일 저장에 실패하셨습니다";
+
         if (boardService.saveBoardDetailHtml(boardId, htmlFile)){
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.ok().body(MessageResDto.builder()
+                            .message(successMessage)
+                            .build()
+            );
         }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        // 예상치 못한 에러 발생
+        return ResponseEntity.ok().body(MessageResDto.builder()
+                        .message(failMessage)
+                        .build());
     }
-
-
 }
 
