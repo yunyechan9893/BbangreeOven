@@ -96,13 +96,13 @@ public class BoardServiceImpl implements BoardService {
         if (sort != null && sort.equals(SortType.POPULAR.getValue())) {
             return redisTemplate.opsForZSet().reverseRange(RedisKeyUtil.POPULAR_KEY, 0, -1)
                 .stream()
-                .map(idx -> Long.valueOf(String.valueOf(idx)))
+                .map(idx -> Long.valueOf(idx.toString().replace("\"", "")))
                 .filter(boardResponseDtoIdx::contains)
                 .toList();
         }
         return redisTemplate.opsForZSet().reverseRange(RedisKeyUtil.RECOMMEND_KEY, 0, -1)
             .stream()
-            .map(idx -> Long.valueOf(String.valueOf(idx)))
+            .map(idx -> Long.valueOf(idx.toString().replace("\"", "")))
             .filter(boardResponseDtoIdx::contains)
             .toList();
     }

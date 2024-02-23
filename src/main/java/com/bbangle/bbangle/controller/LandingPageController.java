@@ -24,14 +24,13 @@ import java.util.Map;
 public class LandingPageController {
     private static final String DIRECTORY_PATH = "/etc/bbangle";
     static final String FILE_NAME = "landingPageUserEmail.txt";
-    @PostMapping("/landingPage")
+    @PostMapping("/landingpage")
     public ResponseEntity<Map<String, String>> getUserEmail(@Valid @RequestBody RequestEmailDto requestEmailDto){
         String email = requestEmailDto.getEmail()+",";
 
         //for local
         //String directoryPath = "C:\\Users\\Dongseok\\Desktop";
         //for server
-
         // 파일 오브젝트 생성하기
         Path filePath = Paths.get(DIRECTORY_PATH, FILE_NAME);
         Map<String, String> messageMap = new HashMap<>();
