@@ -116,11 +116,9 @@ public class BoardServiceImpl implements BoardService {
     public Slice<BoardResponseDto> getPostInFolder(Long memberId, String sort, Long folderId, Pageable pageable) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(MemberNotFoundException::new);
+
         WishlistFolder folder = folderRepository.findByMemberAndId(member, folderId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 폴더입니다."));
-        if (folder.isDeleted()) {
-            throw new IllegalArgumentException("존재하지 않는 폴더입니다.");
-        }
 
         return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
     }
