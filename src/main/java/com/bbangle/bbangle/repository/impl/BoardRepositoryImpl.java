@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.repository.impl;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.bbangle.bbangle.dto.BoardAvailableDayDto;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
@@ -168,6 +167,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                                                         Boolean veganTag, Boolean ketogenicTag, String category,
                                                         Integer minPrice, Integer maxPrice,
                                                         QProduct product, QBoard board) {
+
         BooleanBuilder filterBuilder = new BooleanBuilder();
         if (glutenFreeTag != null) {
             filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
@@ -292,11 +292,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(board.id.eq(boardId))
             .fetch();
 
-//        for (Tuple a:
-//             fetch) {
-//            System.out.println(a);
-//        }
-
         int index = 0;
         int resultSize = fetch.size();
         StoreDto storeDto = null;
@@ -305,18 +300,19 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         Set<BoardImgDto> boardImgDtos = new HashSet<>();
         Set<String> allTags = new HashSet<>();
         Set<Category> categories = new HashSet<>();
-
+        List<String> tags = new ArrayList<>();
 
         for (Tuple tuple:fetch) {
             index++;
 
-            List<String> tags = new ArrayList<>();
             if (tuple.get(product.glutenFreeTag)) tags.add(TagEnum.GLUTEN_FREE.label());
             if (tuple.get(product.highProteinTag)) tags.add(TagEnum.HIGH_PROTEIN.label());
             if (tuple.get(product.sugarFreeTag)) tags.add(TagEnum.SUGAR_FREE.label());
             if (tuple.get(product.veganTag)) tags.add(TagEnum.VEGAN.label());
             if (tuple.get(product.ketogenicTag)) tags.add(TagEnum.KETOGENIC.label());
+            categories.add(tuple.get(product.category));
             allTags.addAll(tags);
+            tags.clear();
 
             boardImgDtos.add(
                     BoardImgDto.builder()
@@ -333,9 +329,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                             .tags(tags)
                             .build()
             );
-
-            categories.add(tuple.get(product.category));
-
 
             if (index == resultSize) {
 

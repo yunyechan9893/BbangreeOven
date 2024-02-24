@@ -19,7 +19,8 @@ public record BoardDto(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     Boolean isWished,
     Boolean isBundled,
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    Integer view,
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String detail,
     @JsonInclude(JsonInclude.Include.NON_NULL)
