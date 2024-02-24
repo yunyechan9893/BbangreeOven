@@ -1,9 +1,8 @@
 package com.bbangle.bbangle.repository.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.bbangle.bbangle.dto.BoardAvailableDayDto;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardDto;
@@ -13,22 +12,12 @@ import com.bbangle.bbangle.dto.ProductDto;
 import com.bbangle.bbangle.dto.ProductTagDto;
 import com.bbangle.bbangle.dto.StoreDto;
 import com.bbangle.bbangle.exception.CategoryTypeException;
-import com.bbangle.bbangle.model.Board;
-import com.bbangle.bbangle.model.Category;
-import com.bbangle.bbangle.model.Product;
-import com.bbangle.bbangle.model.QBoard;
-import com.bbangle.bbangle.model.QProduct;
-import com.bbangle.bbangle.model.QProductImg;
-import com.bbangle.bbangle.model.QStore;
-import com.bbangle.bbangle.model.QWishlistFolder;
-import com.bbangle.bbangle.model.QWishlistProduct;
-import com.bbangle.bbangle.model.SortType;
-import com.bbangle.bbangle.model.TagEnum;
-import com.bbangle.bbangle.model.WishlistFolder;
+import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -262,6 +251,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QStore store = QStore.store;
         QProductImg productImg = QProductImg.productImg;
 
+        QWishlistFolder wishlistFolder = QWishlistFolder.wishlistFolder;
+        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+
         List<Tuple> fetch = queryFactory
             .select(
                 store.id,
@@ -286,11 +278,13 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 board.detail,
                 product.id,
                 product.title,
+                product.category,
                 product.glutenFreeTag,
                 product.highProteinTag,
                 product.sugarFreeTag,
                 product.veganTag,
-                product.ketogenicTag)
+                product.ketogenicTag
+            )
             .from(product)
             .join(product.board, board)
             .join(board.store, store)
@@ -298,94 +292,86 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(board.id.eq(boardId))
             .fetch();
 
-        StoreDto storeDto = StoreDto.builder().build();
-        BoardDto boardDto = BoardDto.builder().build();
-        List<ProductDto> productDtos = new ArrayList<>();
-        List<BoardImgDto> boardImgDtos = new ArrayList<>();
+//        for (Tuple a:
+//             fetch) {
+//            System.out.println(a);
+//        }
 
-        int resultSize = fetch.size();
         int index = 0;
+        int resultSize = fetch.size();
+        StoreDto storeDto = null;
+        BoardDto boardDto = null;
+        Set<ProductDto> productDtos = new HashSet<>();
+        Set<BoardImgDto> boardImgDtos = new HashSet<>();
+        Set<String> allTags = new HashSet<>();
+        Set<Category> categories = new HashSet<>();
 
-        List<Long> alreadyProductImgId = new ArrayList<>();
-        List<Long> alreadyProductId = new ArrayList<>();
 
-        for (Tuple tuple : fetch) {
+        for (Tuple tuple:fetch) {
             index++;
 
             List<String> tags = new ArrayList<>();
-            if (tuple.get(product.glutenFreeTag)) {
-                tags.add(TagEnum.GLUTEN_FREE.label());
-            }
-            if (tuple.get(product.highProteinTag)) {
-                tags.add(TagEnum.HIGH_PROTEIN.label());
-            }
-            if (tuple.get(product.sugarFreeTag)) {
-                tags.add(TagEnum.SUGAR_FREE.label());
-            }
-            if (tuple.get(product.veganTag)) {
-                tags.add(TagEnum.VEGAN.label());
-            }
-            if (tuple.get(product.ketogenicTag)) {
-                tags.add(TagEnum.KETOGENIC.label());
-            }
+            if (tuple.get(product.glutenFreeTag)) tags.add(TagEnum.GLUTEN_FREE.label());
+            if (tuple.get(product.highProteinTag)) tags.add(TagEnum.HIGH_PROTEIN.label());
+            if (tuple.get(product.sugarFreeTag)) tags.add(TagEnum.SUGAR_FREE.label());
+            if (tuple.get(product.veganTag)) tags.add(TagEnum.VEGAN.label());
+            if (tuple.get(product.ketogenicTag)) tags.add(TagEnum.KETOGENIC.label());
+            allTags.addAll(tags);
 
-            // 중복 제거 및 상품 추가
-            if (alreadyProductId.indexOf(tuple.get(product.id)) == -1) {
-                productDtos.add(
-                    ProductDto.builder()
-                        .title(tuple.get(product.title))
-                        .tags(tags).build());
-
-                alreadyProductId.add(tuple.get(product.id));
-            }
-
-            // 중복 제거 및 보드 이미지 추가
-            if (alreadyProductImgId.indexOf(tuple.get(productImg.id)) == -1 && tuple.get(productImg.id) != null) {
-                boardImgDtos.add(
+            boardImgDtos.add(
                     BoardImgDto.builder()
-                        .id(tuple.get(productImg.id))
-                        .url(tuple.get(productImg.url))
-                        .build()
-                );
-
-                alreadyProductImgId.add(tuple.get(productImg.id));
-            }
-
-            // 반복문 마지막 때 보드 및 스토어 추가
-            if (index == resultSize) {
-                boardDto = BoardDto.builder()
-                    .boardId(tuple.get(board.id))
-                    .thumbnail(tuple.get(board.profile))
-                    .images(boardImgDtos)
-                    .title(tuple.get(board.title))
-                    .price(tuple.get(board.price))
-                    .orderAvailableDays(
-                        BoardAvailableDayDto.builder()
-                            .mon(tuple.get(board.monday))
-                            .tue(tuple.get(board.tuesday))
-                            .wed(tuple.get(board.wednesday))
-                            .thu(tuple.get(board.thursday))
-                            .fri(tuple.get(board.friday))
-                            .sat(tuple.get(board.saturday))
-                            .sun(tuple.get(board.sunday))
+                            .id(tuple.get(productImg.id))
+                            .url(tuple.get(productImg.url))
                             .build()
-                    )
-                    .purchaseUrl(tuple.get(board.purchaseUrl))
-                    .isWished(true)
-                    .isBundled(false)
-                    .detail(tuple.get(board.detail))
-                    .products(productDtos)
-                    .build();
+            );
+
+            productDtos.add(
+                    ProductDto.builder()
+                            .id(tuple.get(product.id))
+                            .title(tuple.get(product.title))
+                            .category(tuple.get(product.category))
+                            .tags(tags)
+                            .build()
+            );
+
+            categories.add(tuple.get(product.category));
+
+
+            if (index == resultSize) {
 
                 storeDto = StoreDto.builder()
-                    .storeId(tuple.get(store.id))
-                    .storeName(tuple.get(store.name))
-                    .profile(tuple.get(store.profile))
-                    .isWished(true)
-                    .build();
+                        .storeId(tuple.get(store.id))
+                        .storeName(tuple.get(store.name))
+                        .profile(tuple.get(store.profile))
+                        .isWished(true)
+                        .build();
+
+                boardDto = BoardDto.builder()
+                        .boardId(tuple.get(board.id))
+                        .thumbnail(tuple.get(board.profile))
+                        .title(tuple.get(board.title))
+                        .price(tuple.get(board.price))
+                        .orderAvailableDays(
+                                BoardAvailableDayDto.builder()
+                                        .mon(tuple.get(board.monday))
+                                        .tue(tuple.get(board.tuesday))
+                                        .wed(tuple.get(board.wednesday))
+                                        .thu(tuple.get(board.thursday))
+                                        .fri(tuple.get(board.friday))
+                                        .sat(tuple.get(board.saturday))
+                                        .sun(tuple.get(board.sunday))
+                                        .build()
+                        )
+                        .purchaseUrl(tuple.get(board.purchaseUrl))
+                        .detail(tuple.get(board.detail))
+                        .products(productDtos.stream().toList())
+                        .images(boardImgDtos.stream().toList())
+                        .tags(allTags.stream().toList())
+                        .isWished(true)
+                        .isBundled(categories.size() > 1)
+                        .build();
             }
         }
-
 
         return BoardDetailResponseDto.builder()
             .store(storeDto)

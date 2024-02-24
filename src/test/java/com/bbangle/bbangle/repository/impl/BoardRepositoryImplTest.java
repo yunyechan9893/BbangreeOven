@@ -1,11 +1,10 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.model.Board;
-import com.bbangle.bbangle.model.Category;
-import com.bbangle.bbangle.model.Product;
-import com.bbangle.bbangle.model.Store;
+import com.bbangle.bbangle.dto.ProductDto;
+import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.*;
-import com.bbangle.bbangle.service.SearchService;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
@@ -16,8 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Random;
+
 
 @SpringBootTest
 @Transactional
@@ -34,6 +34,9 @@ public class BoardRepositoryImplTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private BoardImgRepository boardImgRepository;
 
     @BeforeEach
     public void saveData(){
@@ -57,8 +60,47 @@ public class BoardRepositoryImplTest {
 
     @Test
     public void getBoardResponseDtoTest(){
-        Long boardId = Long.valueOf(1);
-        boardRepository.getBoardDetailResponseDto(boardId);
+
+        Long boardId = 1L;
+        var result = boardRepository.getBoardDetailResponseDto(boardId);
+
+        System.out.println(result);
+        Assertions.assertEquals(1L,result.store().storeId());
+        Assertions.assertEquals("RAWSOME",result.store().storeName());
+        Assertions.assertEquals("비건 베이커리 로썸 비건빵",result.board().title());
+        assertThat(List.of("glutenFree", "sugarFree", "vegan"),containsInAnyOrder(result.board().tags().toArray()));
+
+        boolean isProduct1 = false;
+        boolean isProduct2 = false;
+        boolean isProduct3 = false;
+        for (ProductDto productDto:
+            result.board().products()) {
+                switch (productDto.title()){
+                    case "콩볼":
+                        assertThat(List.of("glutenFree", "sugarFree", "vegan"),containsInAnyOrder(productDto.tags().toArray()));
+                        isProduct1 = true;
+                        break;
+                    case "카카모카":
+                        assertThat(List.of("glutenFree", "vegan"),containsInAnyOrder(productDto.tags().toArray()));
+                        isProduct2 = true;
+                        break;
+                    case "로미넛쑥":
+                        assertThat(List.of("glutenFree", "sugarFree", "vegan"),containsInAnyOrder(productDto.tags().toArray()));
+                        isProduct3 = true;
+                        break;
+                }
+        }
+
+        Assertions.assertEquals(true, isProduct1);
+        Assertions.assertEquals(true, isProduct2);
+        Assertions.assertEquals(true, isProduct3);
+
+        boardRepository.getBoardDetailResponseDto(2L);
+        boardRepository.getBoardDetailResponseDto(3L);
+        boardRepository.getBoardDetailResponseDto(4L);
+        boardRepository.getBoardDetailResponseDto(5L);
+        boardRepository.getBoardDetailResponseDto(6L);
+        boardRepository.getBoardDetailResponseDto(7L);
     }
 
     @Test
@@ -138,13 +180,27 @@ public class BoardRepositoryImplTest {
                     .category(Category.BREAD)
                     .glutenFreeTag(true)
                     .highProteinTag(false)
-                    .sugarFreeTag(false)
+                    .sugarFreeTag(true)
                     .veganTag(true)
                     .ketogenicTag(false)
                     .build();
 
+            var boardImg = ProductImg.builder()
+                    .board(board)
+                            .url("www.naver.com")
+                            .build();
+
+            var boardImg2 = ProductImg.builder()
+                    .board(board)
+                    .url("www.naver.com")
+                    .build();
+
+
+
             storeRepository.save(store);
             boardRepository.save(board);
+            boardImgRepository.save(boardImg);
+            boardImgRepository.save(boardImg2);
             productRepository.save(product1);
             productRepository.save(product2);
             productRepository.save(product3);
