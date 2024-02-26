@@ -97,7 +97,22 @@ public class SearchServiceTest {
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
     public void getSearchBoard() {
-        var result = searchService.getSearchResult(BOARD_PAGE, STORE_PAGE, SEARCH_KEYWORD);
+        String sort = "LATEST";
+        Boolean glutenFreeTag = true;
+        Boolean highProteinTag = false;
+        Boolean sugarFreeTag = false;
+        Boolean veganTag = false;
+        Boolean ketogenicTag = false;
+        String category = "COOKIE";
+        Integer minPrice=0;
+        Integer maxPrice= 6000;
+        int page=0;
+
+        var result = searchService.getSearchResult(
+                STORE_PAGE, BOARD_PAGE, SEARCH_KEYWORD,
+                sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag,
+                category, minPrice, maxPrice);
 
         var searchBoardResult = result.getBoards();
         var boards = searchBoardResult.content();
@@ -135,8 +150,21 @@ public class SearchServiceTest {
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
     public void getSearchStore() {
+        String sort = "LATEST";
+        Boolean glutenFreeTag = true;
+        Boolean highProteinTag = false;
+        Boolean sugarFreeTag = false;
+        Boolean veganTag = false;
+        Boolean ketogenicTag = false;
+        String category = "COOKIE";
+        Integer minPrice=0;
+        Integer maxPrice= 6000;
 
-        var result = searchService.getSearchResult(BOARD_PAGE, STORE_PAGE, SEARCH_KEYWORD_STORE);
+        var result = searchService.getSearchResult(
+                STORE_PAGE, BOARD_PAGE, SEARCH_KEYWORD_STORE,
+                sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag,
+                category, minPrice, maxPrice);
 
         var searchStoreResult = result.getStores();
         var stores = searchStoreResult.content();
@@ -158,7 +186,11 @@ public class SearchServiceTest {
         Assertions.assertEquals(false, stores.get(1).isWished());
 
 
-        result = searchService.getSearchResult(BOARD_PAGE, STORE_PAGE + 1, SEARCH_KEYWORD_STORE);
+        result = searchService.getSearchResult(
+                STORE_PAGE + 1, BOARD_PAGE, SEARCH_KEYWORD_STORE,
+                sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag,
+                category, minPrice, maxPrice);
 
         searchStoreResult = result.getStores();
         stores = searchStoreResult.content();

@@ -119,6 +119,9 @@ dependencies {
 	testImplementation 'junit:junit:4.12'
 
 	// 임베디드 모드
-//	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'com.h2database:h2'
+
+	// 아마존 S3 API
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.11.238'
 }
 

@@ -1,5 +1,8 @@
 package com.bbangle.bbangle.controller;
 
+import com.bbangle.bbangle.dto.MessageResDto;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,13 +23,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/boards")
 @RequiredArgsConstructor
@@ -112,6 +111,26 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @PatchMapping(value = "/{boardId}/detail", consumes = {"multipart/form-data"})
+    public ResponseEntity<Object> putBoardDetailUrl(
+            @PathVariable("boardId")
+            Long boardId,
+            @RequestParam("htmlFile") MultipartFile htmlFile
+    ){
+        String successMessage = "파일 저장에 성공하셨습니다";
+        String failMessage = "파일 저장에 실패하셨습니다";
 
+        if (boardService.saveBoardDetailHtml(boardId, htmlFile)){
+            return ResponseEntity.ok().body(MessageResDto.builder()
+                            .message(successMessage)
+                            .build()
+            );
+        }
+
+        // 예상치 못한 에러 발생
+        return ResponseEntity.ok().body(MessageResDto.builder()
+                        .message(failMessage)
+                        .build());
+    }
 }
 

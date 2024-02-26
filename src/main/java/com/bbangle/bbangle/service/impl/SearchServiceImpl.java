@@ -174,7 +174,10 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public SearchResponseDto getSearchResult(int boardPage, int storePage, String keyword) {
+    public SearchResponseDto getSearchResult(int storePage, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                             Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                             String category, Integer minPrice, Integer maxPrice) {
+
         int startItem = (boardPage + 1) * DEFAULT_PAGE - DEFAULT_PAGE;
         int endItem   = (boardPage + 1) * DEFAULT_PAGE;
 
@@ -246,7 +249,12 @@ public class SearchServiceImpl implements SearchService {
             storeSliceList = storeIndexs.subList(storeStartItem, Math.min(storeIndexSize, storeEndItem));
         }
 
-        var searchBoardResult = searchRepository.getSearchResult(boardSliceList);
+
+
+        var searchBoardResult = searchRepository.getSearchResult(
+                boardSliceList, sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag,
+                category, minPrice, maxPrice, boardPage, DEFAULT_PAGE);
 
         //스토어 및 보드 검색 결과 가져오기
         var searchStoreResult = searchRepository.getSearchedStore(storeSliceList);

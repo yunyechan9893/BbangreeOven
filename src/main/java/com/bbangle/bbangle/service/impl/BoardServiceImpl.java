@@ -1,9 +1,8 @@
 package com.bbangle.bbangle.service.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+
+import java.util.*;
+
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
@@ -12,17 +11,20 @@ import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.BoardRepository;
 import com.bbangle.bbangle.repository.MemberRepository;
+import com.bbangle.bbangle.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import com.bbangle.bbangle.service.BoardService;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class BoardServiceImpl implements BoardService {
@@ -31,16 +33,22 @@ public class BoardServiceImpl implements BoardService {
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectStorageRepository objectStorageRepository;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String BUCKET_NAME;
+    private String DETAIL_HTML_FILE_NAME = "detail.html";
 
     public BoardServiceImpl(
             @Autowired BoardRepository boardRepository,
             @Autowired MemberRepository memberRepository,
             @Autowired WishListFolderRepository folderRepository,
-            @Autowired @Qualifier("defaultRedisTemplate")RedisTemplate<String, Object> redisTemplate) {
+            @Autowired @Qualifier("defaultRedisTemplate")RedisTemplate<String, Object> redisTemplate, ObjectStorageRepository objectStorageRepository) {
         this.boardRepository = boardRepository;
         this.memberRepository = memberRepository;
         this.folderRepository = folderRepository;
         this.redisTemplate = redisTemplate;
+        this.objectStorageRepository = objectStorageRepository;
     }
 
     @Override
@@ -111,6 +119,21 @@ public class BoardServiceImpl implements BoardService {
     @Transactional(readOnly = true)
     public BoardDetailResponseDto getBoardDetailResponse(Long boardId) {
         return boardRepository.getBoardDetailResponseDto(boardId);
+    }
+
+    @Override
+    @Transactional
+    public Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile){
+        Long storeId = boardRepository.findById(boardId).get().getStore().getId();
+        String filePath = String.format("%s/%s/%s",storeId,boardId,DETAIL_HTML_FILE_NAME);
+        // Board DetailUrl FilePath로 수정
+        if (boardRepository.updateDetailWhereStoreIdEqualsBoardId(
+                boardId,
+                filePath
+        ) != 1) return false;
+
+        // ObjectStorage에 파일 생성
+        return objectStorageRepository.createFile(BUCKET_NAME, filePath, htmlFile);
     }
 
     public Slice<BoardResponseDto> getPostInFolder(Long memberId, String sort, Long folderId, Pageable pageable) {
