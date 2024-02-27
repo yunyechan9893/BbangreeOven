@@ -20,20 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
     private final MemberService memberService;
-
-    @GetMapping("/nickname")
-    public ResponseEntity<NicknameCheckResponse> checkNickname(@RequestParam String request) {
-        Long memberId = SecurityUtils.getMemberId();
-
-        NicknameCheckResponse result = NicknameCheckResponse.builder()
-            .isUsable(memberService.checkingNickname(request, memberId))
-            .build();
-
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(result);
-
-    }
-
+    
     @PutMapping()
     public ResponseEntity<Void> updateInfo(@RequestBody MemberInfoRequest request){
         Long memberId = SecurityUtils.getMemberId();
