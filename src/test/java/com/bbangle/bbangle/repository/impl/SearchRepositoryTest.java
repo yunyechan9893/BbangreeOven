@@ -44,7 +44,7 @@ public class SearchRepositoryTest {
     private ProductRepository productRepository;
 
 
-    final List<Long> BOARD_IDS = Arrays.asList(1L,2L,3L,4L,5L);
+    final List<Long> BOARD_IDS = Arrays.asList(1L,2L,3L,4L,5L,6L,7L,8L,9L,10L,11L,12L);
     final List<Long> STORE_IDS = Arrays.asList(1L,2L);
 
     private final Long DEFAULT_MEMBER_ID = 2L;
@@ -81,8 +81,28 @@ public class SearchRepositoryTest {
 
     @Test
     public void getSearchBoard(){
+        String sort = "LATEST";
+        Boolean glutenFreeTag = true;
+        Boolean highProteinTag = false;
+        Boolean sugarFreeTag = false;
+        Boolean veganTag = false;
+        Boolean ketogenicTag = false;
+        String category = "BREAD";
+        Integer minPrice=0;
+        Integer maxPrice= 6000;
+        int page=0;
+        int limit=10;
         //스토어 및 보드 검색 결과 가져오기
-        var searchBoardResult = searchRepository.getSearchResult(BOARD_IDS);
+
+        var result = boardRepository.findAll();
+        var resultBoardIds = result.stream().map(board -> board.getId()).toList();
+        Assertions.assertEquals(15, resultBoardIds.size(), "전체 아이템 개수가 다릅니다");
+
+
+        var searchBoardResult = searchRepository.getSearchResult(
+                BOARD_IDS, sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag,
+                category, minPrice, maxPrice, page, limit);
 
         // 각 BoardResponseDto에 대한 처리
         Assertions.assertEquals(1L, searchBoardResult.get(0).boardId());
@@ -176,7 +196,6 @@ public class SearchRepositoryTest {
 
         // 많이 나오는 순 -> 글자 오름차순 정렬
         for (KeywordDto keyword:result){
-            System.out.println(String.format("%s, %s", expectList.get(expectList.size() - 1 - index), result));
             Assertions.assertEquals(expectList.get(expectList.size() - ++index), keyword.keyword(), "저장된 값이 다릅니다");
         }
     }
@@ -244,11 +263,11 @@ public class SearchRepositoryTest {
                     .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
                     .introduce("건강을 먹다-로썸")
                     .build();
-            var randomPrice = new Random().nextInt(1000, 1500);
+            var randomPrice = new Random().nextInt(400, 500);
             var board = Board.builder()
                     .store(store)
                     .title("비건 베이커리 로썸 비건빵")
-                    .price(5400 + randomPrice)
+                    .price(5400)
                     .status(true)
                     .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
                     .detail("test.txt")
@@ -299,10 +318,5 @@ public class SearchRepositoryTest {
             productRepository.save(product2);
             productRepository.save(product3);
         }
-    }
-
-    @Test
-    public void getTest(){
-        searchRepository.getTest();
     }
 }

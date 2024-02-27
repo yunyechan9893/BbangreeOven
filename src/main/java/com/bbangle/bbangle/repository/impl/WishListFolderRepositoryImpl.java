@@ -33,7 +33,9 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
             .from(folder)
             .leftJoin(wishedBoard).on(wishedBoard.wishlistFolder.eq(folder))
             .leftJoin(board).on(wishedBoard.board.eq(board))
-            .where(folder.member.eq(member).and(folder.isDeleted.eq(false)))
+            .where(folder.member.eq(member)
+                .and(folder.isDeleted.eq(false))
+                .and(wishedBoard.isDeleted.eq(false)))
             .fetch();
 
         Map<Long, List<Tuple>> groupedByFolderId = fetch.stream()
@@ -49,6 +51,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
                 List<String> productImages = tuples.stream()
                     .map(tuple -> tuple.get(board.profile))
                     .filter(Objects::nonNull)
+                    .limit(4)
                     .collect(Collectors.toList());
 
                 return new FolderResponseDto(folderId, title, count, productImages);

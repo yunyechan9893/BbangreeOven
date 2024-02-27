@@ -34,9 +34,34 @@ public class SearchController {
             @RequestParam(value = "storePage")
             int storePage,
             @RequestParam(value = "keyword")
-            String keyword
+            String keyword,
+            @RequestParam(value = "sort", required = false, defaultValue = "LATEST")
+            String sort,
+            @RequestParam(value = "glutenFreeTag", required = false, defaultValue = "false")
+            Boolean glutenFreeTag,
+            @RequestParam(value = "highProteinTag", required = false, defaultValue = "false")
+            Boolean highProteinTag,
+            @RequestParam(value = "sugarFreeTag", required = false, defaultValue = "false")
+            Boolean sugarFreeTag,
+            @RequestParam(value = "veganTag", required = false, defaultValue = "false")
+            Boolean veganTag,
+            @RequestParam(value = "ketogenicTag", required = false, defaultValue = "false")
+            Boolean ketogenicTag,
+            @RequestParam(value = "category", required = false, defaultValue = "")
+            String category,
+            @RequestParam(value = "minPrice", required = false, defaultValue = "0")
+            Integer minPrice,
+            @RequestParam(value = "maxPrice", required = false, defaultValue = "0")
+            Integer maxPrice
     ){
-        return ResponseEntity.ok().body(searchService.getSearchResult(boardPage, storePage, keyword));
+
+
+        return ResponseEntity.ok().body(searchService.getSearchResult(
+                storePage, boardPage, keyword,
+                sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag,
+                category, minPrice, maxPrice
+        ));
     }
 
     @PostMapping
