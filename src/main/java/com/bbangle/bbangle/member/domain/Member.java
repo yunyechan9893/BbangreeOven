@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.member.domain;
 
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.exception.UserValidator;
 import com.bbangle.bbangle.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -44,10 +45,12 @@ public class Member extends BaseEntity implements UserDetails {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
-  
+
     @Builder
-    public Member(Long id, String email, String phone, String name, String nickname,
-                  String birth, boolean isDeleted, String profile)  {
+    public Member(
+        Long id, String email, String phone, String name, String nickname,
+        String birth, boolean isDeleted, String profile
+    ) {
         this.id = id;
         this.email = email;
         this.phone = phone;
@@ -93,15 +96,25 @@ public class Member extends BaseEntity implements UserDetails {
         return true;
     }
 
-    public Member update(String nickname){
+    public Member update(String nickname) {
         this.nickname = nickname;
         return this;
     }
 
     public void updateInfo(MemberInfoRequest request) {
+        if (request.birthDate() != null) {
+            UserValidator.validateBirthDate(request.birthDate());
+        }
+        UserValidator.validatePhoneNumber(request.phoneNumber());
+        UserValidator.validateNickname(request.nickname());
+
         this.birth = request.birthDate();
         this.nickname = request.nickname();
-        this.phone = request.phone();
+        this.phone = request.phoneNumber();
+    }
+
+    public void updateProfile(String imgUrl) {
+        this.profile = imgUrl;
     }
 
 }

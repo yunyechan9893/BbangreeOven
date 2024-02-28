@@ -3,6 +3,8 @@ package com.bbangle.bbangle.member.domain;
 import com.bbangle.bbangle.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,8 +33,12 @@ public class SignatureAgreement {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(name = "name")
-    private String name;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "name", columnDefinition = "varchar(100)")
+    private Agreement name;
+
+    @Column(name = "date_of_signature")
+    private LocalDateTime dateOfSignature;
 
     @Column(name = "agreement_status", columnDefinition = "tinyint")
     private boolean agreementStatus;
