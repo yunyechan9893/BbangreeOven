@@ -21,12 +21,12 @@ public class MemberController {
 
     @PutMapping("additional-information")
     public ResponseEntity<Void> updateInfo(
-        @RequestPart MemberInfoRequest request,
+        @RequestPart MemberInfoRequest additionalInfo,
         @RequestPart(required = false) MultipartFile profileImage
     ) {
         Long memberId = SecurityUtils.getMemberId();
 
-        memberService.updateMemberInfo(request, memberId, profileImage);
+        memberService.updateMemberInfo(additionalInfo, memberId, profileImage);
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
