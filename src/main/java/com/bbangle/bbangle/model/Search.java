@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.model;
 
+import com.bbangle.bbangle.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.service;
 
 import com.bbangle.bbangle.config.jwt.TokenProvider;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

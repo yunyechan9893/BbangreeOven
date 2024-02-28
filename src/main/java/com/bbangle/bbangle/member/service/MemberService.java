@@ -1,13 +1,14 @@
-package com.bbangle.bbangle.service;
+package com.bbangle.bbangle.member.service;
 
-import com.bbangle.bbangle.dto.MemberInfoRequest;
-import com.bbangle.bbangle.model.Member;
-import com.bbangle.bbangle.repository.MemberRepository;
+import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +55,9 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateMemberInfo(MemberInfoRequest request, Long memberId) {
+    public void updateMemberInfo(MemberInfoRequest request, Long memberId,
+        MultipartFile profileImage
+    ) {
         Member loginedMember = findById(memberId);
         loginedMember.updateInfo(request);
     }

@@ -1,6 +1,7 @@
-package com.bbangle.bbangle.model;
+package com.bbangle.bbangle.member.domain;
 
-import com.bbangle.bbangle.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

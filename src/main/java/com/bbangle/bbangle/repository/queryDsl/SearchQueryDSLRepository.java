@@ -3,7 +3,7 @@ package com.bbangle.bbangle.repository.queryDsl;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.dto.KeywordDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 
 import java.util.List;
 

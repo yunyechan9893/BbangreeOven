@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.repository;
 
 
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
