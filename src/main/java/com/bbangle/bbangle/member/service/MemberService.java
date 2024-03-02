@@ -81,7 +81,7 @@ public class MemberService {
             String profileImgUrl = imageService.saveImage(profileImage);
             loginedMember.updateProfile(profileImgUrl);
         }
-        loginedMember.updateInfo(request);
+        loginedMember.updateFirst(request);
 
         checkingConsent(request);
         saveConsent(request, loginedMember);
