@@ -35,7 +35,7 @@ public class ProfileController {
      * @param nickname 닉네임
      * @return 메세지
      */
-    @PostMapping("/doublecheck")
+    @GetMapping("/doublecheck")
     public ResponseEntity<MessageResDto> doubleCheckNickname(@RequestParam String nickname){
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
