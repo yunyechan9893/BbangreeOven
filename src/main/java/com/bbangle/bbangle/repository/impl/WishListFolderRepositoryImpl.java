@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepository {
+
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -35,7 +36,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
             .leftJoin(board).on(wishedBoard.board.eq(board))
             .where(folder.member.eq(member)
                 .and(folder.isDeleted.eq(false))
-                .and(wishedBoard.isDeleted.eq(false)))
+                .and(wishedBoard.isDeleted.eq(false).or(wishedBoard.isNull())))
             .fetch();
 
         Map<Long, List<Tuple>> groupedByFolderId = fetch.stream()
