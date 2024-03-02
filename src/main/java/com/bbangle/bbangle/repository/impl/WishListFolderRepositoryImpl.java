@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import com.bbangle.bbangle.dto.FolderResponseDto;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.QBoard;
 import com.bbangle.bbangle.model.QWishlistFolder;
 import com.bbangle.bbangle.model.QWishlistProduct;

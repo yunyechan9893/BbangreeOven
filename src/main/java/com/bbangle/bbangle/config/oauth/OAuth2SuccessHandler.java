@@ -1,17 +1,14 @@
 package com.bbangle.bbangle.config.oauth;
 
 import com.bbangle.bbangle.config.jwt.TokenProvider;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.RefreshToken;
 import com.bbangle.bbangle.repository.RefreshTokenRepository;
-import com.bbangle.bbangle.service.MemberService;
+import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.util.CookieUtil;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;

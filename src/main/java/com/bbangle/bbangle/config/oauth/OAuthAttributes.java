@@ -1,10 +1,8 @@
 package com.bbangle.bbangle.config.oauth;
 
-import com.bbangle.bbangle.model.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 

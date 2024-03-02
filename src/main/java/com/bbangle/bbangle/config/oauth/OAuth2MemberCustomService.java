@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.config.oauth;
 
 import com.bbangle.bbangle.dto.FolderRequestDto;
-import com.bbangle.bbangle.model.Member;
-import com.bbangle.bbangle.repository.MemberRepository;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.service.WishListFolderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;

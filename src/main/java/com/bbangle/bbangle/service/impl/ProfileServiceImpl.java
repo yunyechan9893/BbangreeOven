@@ -4,7 +4,7 @@ import com.bbangle.bbangle.dto.MessageResDto;
 import com.bbangle.bbangle.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.exception.DuplicateNicknameException;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.repository.ProfileRepository;
 import com.bbangle.bbangle.service.ProfileService;
 import lombok.RequiredArgsConstructor;
