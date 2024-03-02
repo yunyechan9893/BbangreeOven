@@ -44,7 +44,7 @@ public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
         Member member = null;
         if(provider.equals("google")){
             member = memberRepository.findByEmail(email)
-                    .map(entity -> entity.update(name))
+                    .map(entity -> entity.updateNickname(name))
                     .orElseGet(() -> {
                         Member newMember = Member.builder()
                                 .email(email)
@@ -60,7 +60,7 @@ public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
         }else if(provider.equals("kakao")) {
             //FIXME 닉네임은 중복될 가능성 높음, 추후 이메일과 이름의 권한 승인을 받아야 할 것으로 보임
             member = memberRepository.findByNickname(nickname)
-                    .map(entity -> entity.update(nickname))
+                    .map(entity -> entity.updateNickname(nickname))
                     .orElseGet(() -> {
                         Member newMember = Member.builder()
                                 .nickname(nickname)
