@@ -3,6 +3,7 @@ package com.bbangle.bbangle.controller;
 import com.bbangle.bbangle.dto.MessageResDto;
 import com.bbangle.bbangle.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.exception.ExceedNicknameLengthException;
+import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.service.impl.ProfileServiceImpl;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -45,5 +46,13 @@ public class ProfileController {
         }
         profileService.doubleCheckNickname(nickname);
         return ResponseEntity.ok().body(new MessageResDto("사용가능한 닉네임이에요!"));
+    }
+
+    @PutMapping
+    public ResponseEntity<Void> update(@RequestBody
+    InfoUpdateRequest request){
+        Long memberId = SecurityUtils.getMemberId();
+        profileService.updateProfileInfo(request, memberId);
+        return ResponseEntity.ok().build();
     }
 }
