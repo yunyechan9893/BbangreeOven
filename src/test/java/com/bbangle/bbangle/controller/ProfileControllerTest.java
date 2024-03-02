@@ -43,24 +43,24 @@ public class ProfileControllerTest {
     private final String AUTHORIZATION = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiYmFuZ2xlYmJhbmdsZSIsImlhdCI6MTcwOTM5MDUwOSwiZXhwIjoxNzA5NDAxMzA5LCJpZCI6MTB9.CjmhZpxDVa2QTsUpQBwxOo8QCoF31uK8SIzlK9EgWVA";
     @DisplayName("닉네임 중복 검사를 시행한다")
     @ParameterizedTest(name = "{index} : {0}")
-    @ValueSource(strings = {"nickname"})
+    @ValueSource(strings = {"test"})
     public void checkNickname(String nickname) throws Exception {
         //given
         mockMvc.perform(get("/api/v1/profile/doublecheck")
-                        .param(nickname, "test")
-                        .header("Authorization", String.format("%s %s",BEARER, AUTHORIZATION)))
+                        .header("Authorization", String.format("%s %s",BEARER, AUTHORIZATION))
+                        .param("nickname", nickname))
                         .andExpect(status().isOk())
                         .andDo(print());
     }
 
-    @DisplayName("닉네임이 20자 이하인지 확인한다")
+    @DisplayName("닉네임이 20자 이하이거나 비어 있는지 확인한다")
     @ParameterizedTest
-    @ValueSource(strings = {"nickname"})
+    @ValueSource(strings = {"thisnicknameisexceed20characterright", " ", "", "\t", "\n"})
     public void isExceed20Charcter(String nickname) throws Exception{
         //given
         mockMvc.perform(get("/api/v1/profile/doublecheck")
-                        .param(nickname, "thisnicknameisexceed20characterright")
-                        .header("Authorization", String.format("%s %s", BEARER, AUTHORIZATION)))
+                        .header("Authorization", String.format("%s %s", BEARER, AUTHORIZATION))
+                        .param("nickname", nickname))
                         .andExpect(status().isBadRequest())
                         .andDo(print());
 
