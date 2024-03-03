@@ -4,6 +4,7 @@ import com.bbangle.bbangle.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
 import com.bbangle.bbangle.service.StoreService;
+import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -29,7 +30,10 @@ public class StoreController {
             @PathVariable("id")
             Long storeId
     ){
-        StoreDetailResponseDto storeDetailResponse = storeService.getStoreDetailResponse(storeId);
+        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
+        memberId = (memberId != null) ? memberId : 1L;
+
+        StoreDetailResponseDto storeDetailResponse = storeService.getStoreDetailResponse(memberId, storeId);
         ResponseEntity<StoreDetailResponseDto> response = ResponseEntity.ok().body(storeDetailResponse);
         return response;
     }
@@ -41,7 +45,10 @@ public class StoreController {
             @PathVariable("id")
             Long storeId
     ){
-        SliceImpl<StoreAllBoardDto> storeAllBoardDtos = storeService.getAllBoard(page,storeId);
+        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
+        memberId = (memberId != null) ? memberId : 1L;
+
+        SliceImpl<StoreAllBoardDto> storeAllBoardDtos = storeService.getAllBoard(page, memberId, storeId);
         return ResponseEntity.ok().body(storeAllBoardDtos);
     }
 }

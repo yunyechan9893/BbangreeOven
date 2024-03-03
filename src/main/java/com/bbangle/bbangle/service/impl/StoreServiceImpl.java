@@ -22,16 +22,20 @@ public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
 
     @Override
-    public StoreDetailResponseDto getStoreDetailResponse(Long StoreId) {
-        return storeRepository.getStoreDetailResponseDto(StoreId);
+    public StoreDetailResponseDto getStoreDetailResponse(Long memberId, Long storeId) {
+        return memberId > 1L ?
+                storeRepository.getStoreDetailResponseDtoWithLike(memberId, storeId) :
+                storeRepository.getStoreDetailResponseDto(storeId);
+
     }
 
     @Override
-    public SliceImpl<StoreAllBoardDto> getAllBoard(int page, Long StoreId) {
+    public SliceImpl<StoreAllBoardDto> getAllBoard(int page, Long memberId, Long storeId) {
         int PAGE_SIZE = 10;
-        return storeRepository.getAllBoard(
-                PageRequest.of(page, PAGE_SIZE),
-                StoreId);
+
+        return memberId > 1L ?
+                storeRepository.getAllBoardWithLike(PageRequest.of(page, PAGE_SIZE), memberId, storeId) :
+                storeRepository.getAllBoard(PageRequest.of(page, PAGE_SIZE),storeId);
     }
 
     @Override
