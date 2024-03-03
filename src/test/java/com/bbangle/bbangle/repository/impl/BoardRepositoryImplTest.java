@@ -7,10 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
@@ -23,6 +20,9 @@ import java.util.Optional;
 @Transactional
 @Rollback
 public class BoardRepositoryImplTest {
+
+    @Autowired
+    private MemberRepository memberRepository;
     @Autowired
     private StoreRepository storeRepository;
 
@@ -37,6 +37,15 @@ public class BoardRepositoryImplTest {
 
     @Autowired
     private BoardImgRepository boardImgRepository;
+
+    @Autowired
+    private WishListFolderRepository wishListFolderRepository;
+
+    @Autowired
+    private WishListProductRepository wishListProductRepository;
+
+    @Autowired
+    private WishListStoreRepository wishListStoreRepository;
 
     @BeforeEach
     public void saveData(){
@@ -56,15 +65,44 @@ public class BoardRepositoryImplTest {
         this.entityManager
                 .createNativeQuery("ALTER TABLE member ALTER COLUMN `id` RESTART WITH 2")
                 .executeUpdate();
+
+        this.entityManager
+                .createNativeQuery("ALTER TABLE wishlist_folder ALTER COLUMN `id` RESTART WITH 1")
+                .executeUpdate();
+
+        this.entityManager
+                .createNativeQuery("ALTER TABLE wishlist_product ALTER COLUMN `id` RESTART WITH 1")
+                .executeUpdate();
+
+        this.entityManager
+                .createNativeQuery("ALTER TABLE wishlist_store ALTER COLUMN `id` RESTART WITH 1")
+                .executeUpdate();
     }
 
     @Test
     public void getBoardResponseDtoTest(){
 
+        Long memberId = 2L;
+        Long storeId = 1L;
         Long boardId = 1L;
-        var result = boardRepository.getBoardDetailResponseDto(boardId);
 
-        System.out.println(result);
+        Member member = Member.builder().id(memberId).email("dd@ex.com").nickname("test").name("testName").birth("99999").phone("01023299893").build();
+        Store store = Store.builder().id(storeId).build();
+        Board board = Board.builder().id(boardId).build();
+        WishlistFolder wishlistFolder = WishlistFolder.builder().folderName("Test").member(member).build();
+        WishlistProduct wishlistProduct = WishlistProduct.builder().board(board)
+                .memberId(memberId)
+                .wishlistFolder(wishlistFolder)
+                .build();
+        WishlistStore wishlistStore = WishlistStore.builder().store(store).member(member).build();
+
+        memberRepository.save(member);
+        wishListFolderRepository.save(wishlistFolder);
+        wishListProductRepository.save(wishlistProduct);
+        wishListStoreRepository.save(wishlistStore);
+
+        var result = boardRepository.getBoardDetailResponseDtoWithLike(memberId, boardId);
+
         Assertions.assertEquals(1L,result.store().storeId());
         Assertions.assertEquals("RAWSOME",result.store().storeName());
         Assertions.assertEquals("비건 베이커리 로썸 비건빵",result.board().title());
@@ -94,13 +132,44 @@ public class BoardRepositoryImplTest {
         Assertions.assertEquals(true, isProduct1);
         Assertions.assertEquals(true, isProduct2);
         Assertions.assertEquals(true, isProduct3);
+    }
 
-        boardRepository.getBoardDetailResponseDto(2L);
-        boardRepository.getBoardDetailResponseDto(3L);
-        boardRepository.getBoardDetailResponseDto(4L);
-        boardRepository.getBoardDetailResponseDto(5L);
-        boardRepository.getBoardDetailResponseDto(6L);
-        boardRepository.getBoardDetailResponseDto(7L);
+    @Test
+    @DisplayName("Wished Product 테이블에 값들이 존재해도, 내 데이터가 아니면 isWished는 false가 된다")
+    public void getBoardResponseDtoLikeTest(){
+        Long memberId = 3L;
+        Long storeId = 1L;
+        Long boardId = 1L;
+
+        createLikeData(2L, storeId + 1L, boardId + 1L);
+        for (int i = 0; i < 10; i++) {
+            memberId ++;
+            storeId ++;
+            boardId ++;
+            createLikeData(memberId, storeId, boardId);
+        }
+
+        Long testMemberId = 2L;
+        var result = boardRepository.getBoardDetailResponseDtoWithLike(testMemberId, boardId);
+    
+        Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 true 입니다");
+        Assertions.assertEquals(false, result.board().isWished(), "보드 Like가 true 입니다");
+    }
+
+    @Test
+    @DisplayName("Wished Productm isWished는 true가 된다")
+    public void getBoardLikeTrueTest(){
+        Long memberId = 2L;
+        Long storeId = 1L;
+        Long boardId = 1L;
+
+        createLikeData(memberId, storeId, boardId);
+
+        Long testMemberId = 2L;
+        var result = boardRepository.getBoardDetailResponseDtoWithLike(testMemberId, boardId);
+
+        Assertions.assertEquals(true, result.store().isWished(), "스토어 Like가 true 입니다");
+        Assertions.assertEquals(true, result.board().isWished(), "보드 Like가 true 입니다");
     }
 
 
@@ -206,5 +275,22 @@ public class BoardRepositoryImplTest {
             productRepository.save(product2);
             productRepository.save(product3);
         }
+    }
+
+    private void createLikeData(Long memberId, Long storeId, Long boardId){
+        Member member = Member.builder().id(memberId).email("dd@ex.com").nickname("test").name("testName").birth("99999").phone("01023299893").build();
+        Store store = Store.builder().id(storeId).build();
+        Board board = Board.builder().id(boardId).build();
+        WishlistFolder wishlistFolder = WishlistFolder.builder().folderName("Test").member(member).build();
+        WishlistProduct wishlistProduct = WishlistProduct.builder().board(board)
+                .memberId(memberId)
+                .wishlistFolder(wishlistFolder)
+                .build();
+        WishlistStore wishlistStore = WishlistStore.builder().store(store).member(member).build();
+
+        memberRepository.save(member);
+        wishListFolderRepository.save(wishlistFolder);
+        wishListProductRepository.save(wishlistProduct);
+        wishListStoreRepository.save(wishlistStore);
     }
 }
