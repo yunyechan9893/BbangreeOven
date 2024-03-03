@@ -118,8 +118,10 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional(readOnly = true)
     public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
-        memberId = 4L;
-        return memberId > 1 ? boardRepository.getBoardDetailResponseDto(memberId, boardId) : null;
+
+        return memberId > 1L ?
+                boardRepository.getBoardDetailResponseDtoWithLike(memberId, boardId) :
+                boardRepository.getBoardDetailResponseDto(boardId);
     }
 
     @Override

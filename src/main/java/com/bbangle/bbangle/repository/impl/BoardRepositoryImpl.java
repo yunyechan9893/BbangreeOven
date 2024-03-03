@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -245,7 +244,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public BoardDetailResponseDto getBoardDetailResponseDto(Long memberId, Long boardId) {
+    public BoardDetailResponseDto getBoardDetailResponseDtoWithLike(Long memberId, Long boardId) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
@@ -296,9 +295,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(wishlistStore).on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId), wishlistStore.isDeleted.eq(false))
             .fetch();
 
-        for (Tuple tuple : fetch) {
-            System.out.println(tuple.get(wishlistStore.id));
-        }
 
         int index = 0;
         int resultSize = fetch.size();
@@ -379,6 +375,132 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .store(storeDto)
             .board(boardDto)
             .build();
+    }
+
+    @Override
+    public BoardDetailResponseDto getBoardDetailResponseDto(Long boardId) {
+        QBoard board = QBoard.board;
+        QProduct product = QProduct.product;
+        QStore store = QStore.store;
+        QProductImg productImg = QProductImg.productImg;
+
+        List<Tuple> fetch = queryFactory
+                .select(
+                        store.id,
+                        store.name,
+                        store.profile,
+                        board.id,
+                        board.profile,
+                        board.title,
+                        board.price,
+                        productImg.id,
+                        productImg.url,
+                        board.title,
+                        board.price,
+                        board.monday,
+                        board.tuesday,
+                        board.wednesday,
+                        board.thursday,
+                        board.friday,
+                        board.saturday,
+                        board.sunday,
+                        board.purchaseUrl,
+                        board.detail,
+                        product.id,
+                        product.title,
+                        product.category,
+                        product.glutenFreeTag,
+                        product.highProteinTag,
+                        product.sugarFreeTag,
+                        product.veganTag,
+                        product.ketogenicTag
+                )
+                .from(product)
+                .where(board.id.eq(boardId))
+                .join(product.board, board)
+                .join(board.store, store)
+                .leftJoin(productImg).on(board.id.eq(productImg.board.id))
+                .fetch();
+
+        int index = 0;
+        int resultSize = fetch.size();
+        StoreDto storeDto = null;
+        BoardDto boardDto = null;
+        List<ProductDto> productDtos = new ArrayList<>();
+        Set<BoardImgDto> boardImgDtos = new HashSet<>();
+        Set<String> allTags = new HashSet<>();
+        Set<Category> categories = new HashSet<>();
+        List<String> tags = new ArrayList<>();
+
+        for (Tuple tuple:fetch) {
+            index++;
+
+            if (tuple.get(product.glutenFreeTag)) tags.add(TagEnum.GLUTEN_FREE.label());
+            if (tuple.get(product.highProteinTag)) tags.add(TagEnum.HIGH_PROTEIN.label());
+            if (tuple.get(product.sugarFreeTag)) tags.add(TagEnum.SUGAR_FREE.label());
+            if (tuple.get(product.veganTag)) tags.add(TagEnum.VEGAN.label());
+            if (tuple.get(product.ketogenicTag)) tags.add(TagEnum.KETOGENIC.label());
+            categories.add(tuple.get(product.category));
+            allTags.addAll(tags);
+
+
+            boardImgDtos.add(
+                    BoardImgDto.builder()
+                            .id(tuple.get(productImg.id))
+                            .url(tuple.get(productImg.url))
+                            .build()
+            );
+
+            productDtos.add(
+                    ProductDto.builder()
+                            .id(tuple.get(product.id))
+                            .title(tuple.get(product.title))
+                            .category(tuple.get(product.category))
+                            .tags(new ArrayList<>(tags))
+                            .build()
+            );
+
+            tags.clear();
+
+            if (index == resultSize) {
+                storeDto = StoreDto.builder()
+                        .storeId(tuple.get(store.id))
+                        .storeName(tuple.get(store.name))
+                        .profile(tuple.get(store.profile))
+                        .isWished(false)
+                        .build();
+
+                boardDto = BoardDto.builder()
+                        .boardId(tuple.get(board.id))
+                        .thumbnail(tuple.get(board.profile))
+                        .title(tuple.get(board.title))
+                        .price(tuple.get(board.price))
+                        .orderAvailableDays(
+                                BoardAvailableDayDto.builder()
+                                        .mon(tuple.get(board.monday))
+                                        .tue(tuple.get(board.tuesday))
+                                        .wed(tuple.get(board.wednesday))
+                                        .thu(tuple.get(board.thursday))
+                                        .fri(tuple.get(board.friday))
+                                        .sat(tuple.get(board.saturday))
+                                        .sun(tuple.get(board.sunday))
+                                        .build()
+                        )
+                        .purchaseUrl(tuple.get(board.purchaseUrl))
+                        .detail(tuple.get(board.detail))
+                        .products(productDtos)
+                        .images(boardImgDtos.stream().toList())
+                        .tags(allTags.stream().toList())
+                        .isWished(false)
+                        .isBundled(categories.size() > 1)
+                        .build();
+            }
+        }
+
+        return BoardDetailResponseDto.builder()
+                .store(storeDto)
+                .board(boardDto)
+                .build();
     }
 
 

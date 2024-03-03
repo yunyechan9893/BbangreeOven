@@ -17,6 +17,8 @@ public interface BoardQueryDSLRepository {
     Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId, WishlistFolder wishlistFolder);
     BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
 
+    BoardDetailResponseDto getBoardDetailResponseDtoWithLike(Long memberId, Long boardId);
+
     HashMap<Long, String> getAllBoardTitle();
 }
 
