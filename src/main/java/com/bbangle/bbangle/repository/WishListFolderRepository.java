@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface WishListFolderRepository extends JpaRepository<WishlistFolder, Long>, WishListFolderQueryDSLRepository {
 
-    @Query(value = "select count(folder) from WishlistFolder folder where folder.member = :member")
+    @Query(value = "select count(folder) from WishlistFolder folder where folder.member = :member and folder.isDeleted = false ")
     int getFolderCount(@Param("member") Member member);
 
     Optional<WishlistFolder> findByMemberAndId(Member member, Long folderId);

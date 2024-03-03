@@ -61,6 +61,16 @@ public class GlobalControllerAdvice {
             .body(errorResponse);
     }
 
+    @ExceptionHandler(ExceedNicknameLengthException.class)
+    public ResponseEntity<ErrorResponse> handle(ExceedNicknameLengthException e){
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateNicknameException.class)
+    public ResponseEntity<ErrorResponse> handle(DuplicateNicknameException e){
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+    }
+
     //아마존 S3 ACL 권한 설정 안했을 시 에러 발생
     @ExceptionHandler(value = AmazonS3Exception.class)
     public ResponseEntity<ErrorResponse> amazonS3Exception(Exception e){
