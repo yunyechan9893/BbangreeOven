@@ -33,6 +33,8 @@ public class QWishlistProduct extends EntityPathBase<WishlistProduct> {
 
     public final BooleanPath isDeleted = createBoolean("isDeleted");
 
+    public final NumberPath<Long> memberId = createNumber("memberId", Long.class);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
 

@@ -76,8 +76,9 @@ public class BoardController {
         @PathVariable("id")
         Long boardId
     ) {
+        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
         return ResponseEntity.ok().body(
-            boardService.getBoardDetailResponse(boardId)
+            boardService.getBoardDetailResponse(memberId, boardId)
         );
     }
 

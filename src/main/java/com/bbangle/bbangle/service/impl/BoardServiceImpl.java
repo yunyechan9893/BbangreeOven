@@ -117,8 +117,9 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public BoardDetailResponseDto getBoardDetailResponse(Long boardId) {
-        return boardRepository.getBoardDetailResponseDto(boardId);
+    public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
+        memberId = 4L;
+        return memberId > 1 ? boardRepository.getBoardDetailResponseDto(memberId, boardId) : null;
     }
 
     @Override

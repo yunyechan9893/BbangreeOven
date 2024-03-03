@@ -16,12 +16,12 @@ import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -245,20 +245,21 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public BoardDetailResponseDto getBoardDetailResponseDto(Long boardId) {
+    public BoardDetailResponseDto getBoardDetailResponseDto(Long memberId, Long boardId) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
         QProductImg productImg = QProductImg.productImg;
 
-        QWishlistFolder wishlistFolder = QWishlistFolder.wishlistFolder;
         QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+        QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
 
         List<Tuple> fetch = queryFactory
             .select(
                 store.id,
                 store.name,
                 store.profile,
+                wishlistStore.id,
                 board.id,
                 board.profile,
                 board.title,
@@ -276,6 +277,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 board.sunday,
                 board.purchaseUrl,
                 board.detail,
+                wishlistProduct.id,
                 product.id,
                 product.title,
                 product.category,
@@ -286,17 +288,23 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 product.ketogenicTag
             )
             .from(product)
+            .where(board.id.eq(boardId))
             .join(product.board, board)
             .join(board.store, store)
             .leftJoin(productImg).on(board.id.eq(productImg.board.id))
-            .where(board.id.eq(boardId))
+            .leftJoin(wishlistProduct).on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId), wishlistProduct.isDeleted.eq(false))
+            .leftJoin(wishlistStore).on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId), wishlistStore.isDeleted.eq(false))
             .fetch();
+
+        for (Tuple tuple : fetch) {
+            System.out.println(tuple.get(wishlistStore.id));
+        }
 
         int index = 0;
         int resultSize = fetch.size();
         StoreDto storeDto = null;
         BoardDto boardDto = null;
-        Set<ProductDto> productDtos = new HashSet<>();
+        List<ProductDto> productDtos = new ArrayList<>();
         Set<BoardImgDto> boardImgDtos = new HashSet<>();
         Set<String> allTags = new HashSet<>();
         Set<Category> categories = new HashSet<>();
@@ -312,7 +320,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             if (tuple.get(product.ketogenicTag)) tags.add(TagEnum.KETOGENIC.label());
             categories.add(tuple.get(product.category));
             allTags.addAll(tags);
-            tags.clear();
+
 
             boardImgDtos.add(
                     BoardImgDto.builder()
@@ -326,17 +334,18 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                             .id(tuple.get(product.id))
                             .title(tuple.get(product.title))
                             .category(tuple.get(product.category))
-                            .tags(tags)
+                            .tags(new ArrayList<>(tags))
                             .build()
             );
 
-            if (index == resultSize) {
+            tags.clear();
 
+            if (index == resultSize) {
                 storeDto = StoreDto.builder()
                         .storeId(tuple.get(store.id))
                         .storeName(tuple.get(store.name))
                         .profile(tuple.get(store.profile))
-                        .isWished(true)
+                        .isWished(tuple.get(wishlistStore.id)!=null?true:false)
                         .build();
 
                 boardDto = BoardDto.builder()
@@ -357,10 +366,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                         )
                         .purchaseUrl(tuple.get(board.purchaseUrl))
                         .detail(tuple.get(board.detail))
-                        .products(productDtos.stream().toList())
+                        .products(productDtos)
                         .images(boardImgDtos.stream().toList())
                         .tags(allTags.stream().toList())
-                        .isWished(true)
+                        .isWished(tuple.get(wishlistProduct.id)!=null?true:false)
                         .isBundled(categories.size() > 1)
                         .build();
             }
@@ -371,6 +380,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .board(boardDto)
             .build();
     }
+
 
     @Override
     public HashMap<Long, String> getAllBoardTitle() {
