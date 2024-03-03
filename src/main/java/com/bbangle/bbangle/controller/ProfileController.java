@@ -56,11 +56,11 @@ public class ProfileController {
 
     @PutMapping
     public ResponseEntity<Void> update(
-        @RequestPart InfoUpdateRequest request,
-        @RequestPart MultipartFile profileImg
+        @RequestPart(required = false) InfoUpdateRequest infoUpdateRequest,
+        @RequestPart(required = false) MultipartFile profileImg
     ) {
         Long memberId = SecurityUtils.getMemberId();
-        profileService.updateProfileInfo(request, memberId, profileImg);
+        profileService.updateProfileInfo(infoUpdateRequest, memberId, profileImg);
         return ResponseEntity.ok()
             .build();
     }

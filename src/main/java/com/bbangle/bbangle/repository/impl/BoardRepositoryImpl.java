@@ -1,5 +1,10 @@
 package com.bbangle.bbangle.repository.impl;
 
+import com.bbangle.bbangle.exception.MemberNotFoundException;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.util.SecurityUtils;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,15 +46,20 @@ import org.springframework.stereotype.Repository;
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final MemberRepository memberRepository;
 
     @Override
-    public List<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                      Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                      String category, Integer minPrice, Integer maxPrice) {
+    public List<BoardResponseDto> getBoardResponseDto(
+        String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+        String category, Integer minPrice, Integer maxPrice
+    ) {
 
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
+        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+        QWishlistFolder folder = QWishlistFolder.wishlistFolder;
 
         BooleanBuilder filter =
             setFilteringCondition(glutenFreeTag,
@@ -65,11 +75,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         List<Board> boards = queryFactory
             .selectFrom(board)
-            .leftJoin(board.productList, product).fetchJoin()
-            .leftJoin(board.store, store).fetchJoin()
+            .leftJoin(board.productList, product)
+            .fetchJoin()
+            .leftJoin(board.store, store)
+            .fetchJoin()
             .where(filter)
             .fetch();
-
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
 
@@ -81,12 +92,18 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             content.add(BoardResponseDto.from(board1, tags));
         }
 
-       return content;
+        List<Long> idList = boards.stream()
+            .map(Board::getId)
+            .toList();
+
+        return content;
     }
 
     @Override
-    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId,
-                                                  WishlistFolder selectedFolder) {
+    public Slice<BoardResponseDto> getAllByFolder(
+        String sort, Pageable pageable, Long wishListFolderId,
+        WishlistFolder selectedFolder
+    ) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
@@ -97,10 +114,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         List<Board> boards = queryFactory
             .selectFrom(board)
-            .leftJoin(board.productList, product).fetchJoin()
-            .leftJoin(board.store, store).fetchJoin()
-            .join(board).on(board.id.eq(products.board.id))
-            .join(products).on(products.wishlistFolder.eq(folder))
+            .leftJoin(board.productList, product)
+            .fetchJoin()
+            .leftJoin(board.store, store)
+            .fetchJoin()
+            .join(board)
+            .on(board.id.eq(products.board.id))
+            .join(products)
+            .on(products.wishlistFolder.eq(folder))
             .where(products.wishlistFolder.eq(selectedFolder)
                 .and(products.isDeleted.eq(false)))
             .offset(pageable.getOffset())
@@ -111,7 +132,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
 
         List<BoardResponseDto> content = new ArrayList<>();
-
 
         // isBundled 포함한 정리
         for (Board board1 : boards) {
@@ -127,7 +147,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return new SliceImpl<>(content, pageable, hasNext);
     }
 
-    private static OrderSpecifier<?> sortTypeFolder(String sort, QBoard board, QWishlistProduct products) {
+    private static OrderSpecifier<?> sortTypeFolder(
+        String sort,
+        QBoard board,
+        QWishlistProduct products
+    ) {
         OrderSpecifier<?> orderSpecifier;
         if (sort == null) {
             orderSpecifier = products.createdAt.desc();
@@ -155,17 +179,20 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             for (Product product1 : board1.getProductList()) {
                 productTagsByBoardId.put(board1.getId(),
                     productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
-                productTagsByBoardId.get(board1.getId()).add(ProductTagDto.from(product1));
+                productTagsByBoardId.get(board1.getId())
+                    .add(ProductTagDto.from(product1));
             }
         }
         return productTagsByBoardId;
     }
 
-    private static BooleanBuilder setFilteringCondition(Boolean glutenFreeTag, Boolean highProteinTag,
-                                                        Boolean sugarFreeTag,
-                                                        Boolean veganTag, Boolean ketogenicTag, String category,
-                                                        Integer minPrice, Integer maxPrice,
-                                                        QProduct product, QBoard board) {
+    private static BooleanBuilder setFilteringCondition(
+        Boolean glutenFreeTag, Boolean highProteinTag,
+        Boolean sugarFreeTag,
+        Boolean veganTag, Boolean ketogenicTag, String category,
+        Integer minPrice, Integer maxPrice,
+        QProduct product, QBoard board
+    ) {
         BooleanBuilder filterBuilder = new BooleanBuilder();
         if (glutenFreeTag != null) {
             filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
@@ -281,12 +308,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .from(product)
             .join(product.board, board)
             .join(board.store, store)
-            .leftJoin(productImg).on(board.id.eq(productImg.board.id))
+            .leftJoin(productImg)
+            .on(board.id.eq(productImg.board.id))
             .where(board.id.eq(boardId))
             .fetch();
 
-        StoreDto storeDto = StoreDto.builder().build();
-        BoardDto boardDto = BoardDto.builder().build();
+        StoreDto storeDto = StoreDto.builder()
+            .build();
+        BoardDto boardDto = BoardDto.builder()
+            .build();
         List<ProductDto> productDtos = new ArrayList<>();
         List<BoardImgDto> boardImgDtos = new ArrayList<>();
 
@@ -321,13 +351,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 productDtos.add(
                     ProductDto.builder()
                         .title(tuple.get(product.title))
-                        .tags(tags).build());
+                        .tags(tags)
+                        .build());
 
                 alreadyProductId.add(tuple.get(product.id));
             }
 
             // 중복 제거 및 보드 이미지 추가
-            if (alreadyProductImgId.indexOf(tuple.get(productImg.id)) == -1 && tuple.get(productImg.id) != null) {
+            if (alreadyProductImgId.indexOf(tuple.get(productImg.id)) == -1
+                && tuple.get(productImg.id) != null) {
                 boardImgDtos.add(
                     BoardImgDto.builder()
                         .id(tuple.get(productImg.id))
@@ -373,7 +405,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             }
         }
 
-
         return BoardDetailResponseDto.builder()
             .store(storeDto)
             .board(boardDto)
@@ -385,9 +416,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QBoard board = QBoard.board;
 
         List<Tuple> fetch = queryFactory
-                .select(board.id, board.title)
-                .from(board)
-                .fetch();
+            .select(board.id, board.title)
+            .from(board)
+            .fetch();
 
         HashMap<Long, String> boardMap = new HashMap<>();
         fetch.forEach((tuple) -> boardMap.put(tuple.get(board.id), tuple.get(board.title)));
