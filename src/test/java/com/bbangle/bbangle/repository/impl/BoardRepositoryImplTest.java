@@ -103,6 +103,7 @@ public class BoardRepositoryImplTest {
         boardRepository.getBoardDetailResponseDto(7L);
     }
 
+
     @Test
     public void updateBoardDetailTest(){
         String defaultURL = "https://bbangree-oven.cdn.ntruss.com";
