@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.dto.BoardDto;
+import com.bbangle.bbangle.dto.StoreAllBoardDto;
+import com.bbangle.bbangle.dto.StoreBestBoardDto;
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.BoardRepository;
@@ -13,6 +15,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +49,7 @@ public class StoreRepositoryImplTest {
 
     @BeforeEach
     public void saveData(){
-        createData(5, 4);
+        createData(5, 20);
     }
 
     @AfterEach
@@ -63,7 +68,7 @@ public class StoreRepositoryImplTest {
     }
 
     @Test
-    public void getStoreDetailResponseDtoTest(){
+    public void getAllBoardTest(){
         String storeName = "RAWSOME";
         String storeProfile = "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e";
         boolean storeIsWished = true;
@@ -84,43 +89,38 @@ public class StoreRepositoryImplTest {
 
         String boardTitle3 = "빵빵이네";
 
-        Long storeId = Long.valueOf(1);
-        StoreDetailResponseDto result = storeRepository.getStoreDetailResponseDto(storeId);
-
-        var store = result.store();
-        Assertions.assertEquals(storeName, store.storeName());
-        Assertions.assertEquals(storeProfile, store.profile());
-        Assertions.assertEquals(storeIsWished, store.isWished());
-        Assertions.assertEquals(storeIntroduce, store.introduce());
-
+        Long storeId = 1L;
+        Pageable pageable = PageRequest.of(0,10);
+        var result = storeRepository.getAllBoard(pageable, storeId);
+        List<StoreAllBoardDto> actualContent = result.getContent();
         boolean isBoard1 = false;
         boolean isBoard2 = false;
         boolean isBoard3 = false;
-        var allProducts = result.allProducts();
-        for (BoardDto boardDto:allProducts) {
-            if (boardDto.boardId() == 1L) {
-                Assertions.assertEquals(boardProfile, boardDto.thumbnail());
-                Assertions.assertEquals(boardTitle, boardDto.title());
-                Assertions.assertEquals(boardPrice, boardDto.price());
-                Assertions.assertEquals(boardIsWished, boardDto.isWished());
-                Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
-                assertThat(allTags,containsInAnyOrder(boardDto.tags().toArray()));
+
+        for (StoreAllBoardDto storeAllBoardDto:actualContent) {
+            if (storeAllBoardDto.boardId() % 4 == 1L) {
+                Assertions.assertEquals(boardProfile, storeAllBoardDto.thumbnail());
+                Assertions.assertEquals(boardTitle, storeAllBoardDto.title());
+                Assertions.assertEquals(boardPrice, storeAllBoardDto.price());
+                Assertions.assertEquals(boardIsWished, storeAllBoardDto.isWished());
+                Assertions.assertEquals(boardIsBundled, storeAllBoardDto.isBundled());
+                assertThat(allTags,containsInAnyOrder(storeAllBoardDto.tags().toArray()));
                 isBoard1 = true;
-            } else if (boardDto.boardId() == 2L) {
-                Assertions.assertEquals(boardProfile2, boardDto.thumbnail());
-                Assertions.assertEquals(boardTitle2, boardDto.title());
-                Assertions.assertEquals(boardPrice2, boardDto.price());
-                Assertions.assertEquals(boardIsWished2, boardDto.isWished());
-                Assertions.assertEquals(boardIsBundled2, boardDto.isBundled());
-                assertThat(allTags,containsInAnyOrder(boardDto.tags().toArray()));
+            } else if (storeAllBoardDto.boardId() % 4 == 2L) {
+                Assertions.assertEquals(boardProfile2, storeAllBoardDto.thumbnail());
+                Assertions.assertEquals(boardTitle2, storeAllBoardDto.title());
+                Assertions.assertEquals(boardPrice2, storeAllBoardDto.price());
+                Assertions.assertEquals(boardIsWished2, storeAllBoardDto.isWished());
+                Assertions.assertEquals(boardIsBundled2, storeAllBoardDto.isBundled());
+                assertThat(allTags,containsInAnyOrder(storeAllBoardDto.tags().toArray()));
                 isBoard2 = true;
-            } else if (boardDto.boardId() == 3L) {
-                Assertions.assertEquals(boardProfile2, boardDto.thumbnail());
-                Assertions.assertEquals(boardTitle3, boardDto.title());
-                Assertions.assertEquals(boardPrice2, boardDto.price());
-                Assertions.assertEquals(boardIsWished2, boardDto.isWished());
-                Assertions.assertEquals(boardIsBundled2, boardDto.isBundled());
-                assertThat(allTags,containsInAnyOrder(boardDto.tags().toArray()));
+            } else if (storeAllBoardDto.boardId() % 4 == 3L) {
+                Assertions.assertEquals(boardProfile2, storeAllBoardDto.thumbnail());
+                Assertions.assertEquals(boardTitle3, storeAllBoardDto.title());
+                Assertions.assertEquals(boardPrice2, storeAllBoardDto.price());
+                Assertions.assertEquals(boardIsWished2, storeAllBoardDto.isWished());
+                Assertions.assertEquals(boardIsBundled2, storeAllBoardDto.isBundled());
+                assertThat(allTags,containsInAnyOrder(storeAllBoardDto.tags().toArray()));
                 isBoard3 = true;
             }
         }
@@ -128,12 +128,32 @@ public class StoreRepositoryImplTest {
         Assertions.assertEquals(true, isBoard1);
         Assertions.assertEquals(true, isBoard2);
         Assertions.assertEquals(true, isBoard3);
+    }
+
+    @Test
+    public void getStoreDetailResponseDtoTest(){
+        String storeName = "RAWSOME";
+        String storeProfile = "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e";
+        boolean storeIsWished = true;
+        String storeIntroduce = "건강을 먹다-로썸";
+
+        String boardProfile = "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203";
+        int boardPrice = 5400;
+        boolean boardIsBundled = true;
 
 
+        Long storeId = Long.valueOf(1);
+        StoreDetailResponseDto result = storeRepository.getStoreDetailResponseDto(storeId);
+        System.out.println(result);
+        var store = result.store();
+        Assertions.assertEquals(storeName, store.storeName());
+        Assertions.assertEquals(storeProfile, store.profile());
+        Assertions.assertEquals(storeIsWished, store.isWished());
+        Assertions.assertEquals(storeIntroduce, store.introduce());
 
         int index = 0;
         var bestProducts = result.bestProducts();
-        for (BoardDto boardDto:bestProducts) {
+        for (StoreBestBoardDto boardDto:bestProducts) {
             index ++;
 
             if (index == 1) {
@@ -141,33 +161,25 @@ public class StoreRepositoryImplTest {
                 Assertions.assertEquals(boardProfile, boardDto.thumbnail());
                 Assertions.assertEquals("비건 베이커리", boardDto.title());
                 Assertions.assertEquals(boardPrice, boardDto.price());
-                Assertions.assertEquals(boardIsWished, boardDto.isWished());
                 Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
-                assertThat(allTags, containsInAnyOrder(boardDto.tags().toArray()));
             } else if (index == 2) {
                 Assertions.assertEquals(2L, boardDto.boardId());
                 Assertions.assertEquals(boardProfile, boardDto.thumbnail());
                 Assertions.assertEquals("콩볼 베이커리", boardDto.title());
                 Assertions.assertEquals(boardPrice, boardDto.price());
-                Assertions.assertEquals(boardIsWished, boardDto.isWished());
                 Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
-                assertThat(allTags, containsInAnyOrder(boardDto.tags().toArray()));
             } else if (index == 3) {
                 Assertions.assertEquals(3L, boardDto.boardId());
                 Assertions.assertEquals(boardProfile, boardDto.thumbnail());
                 Assertions.assertEquals("빵빵이네", boardDto.title());
                 Assertions.assertEquals(boardPrice, boardDto.price());
-                Assertions.assertEquals(boardIsWished, boardDto.isWished());
                 Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
-                assertThat(allTags, containsInAnyOrder(boardDto.tags().toArray()));
             } else if (index == 4) {
                 Assertions.assertEquals(4L, boardDto.boardId());
                 Assertions.assertEquals(boardProfile, boardDto.thumbnail());
                 Assertions.assertEquals("레오마켓", boardDto.title());
                 Assertions.assertEquals(boardPrice, boardDto.price());
-                Assertions.assertEquals(boardIsWished, boardDto.isWished());
                 Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
-                assertThat(allTags, containsInAnyOrder(boardDto.tags().toArray()));
             }
         }
     }
@@ -194,7 +206,7 @@ public class StoreRepositoryImplTest {
             for(int j=0; j<boardCount; j++){
                 createBoard(
                         store,
-                        boardNames.get(j),
+                        boardNames.get(j % 4),
                         100-j
                         );
             }
