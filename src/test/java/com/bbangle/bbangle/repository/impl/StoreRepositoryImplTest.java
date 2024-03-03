@@ -5,9 +5,7 @@ import com.bbangle.bbangle.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.dto.StoreBestBoardDto;
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.model.*;
-import com.bbangle.bbangle.repository.BoardRepository;
-import com.bbangle.bbangle.repository.ProductRepository;
-import com.bbangle.bbangle.repository.StoreRepository;
+import com.bbangle.bbangle.repository.*;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +31,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 public class StoreRepositoryImplTest {
 
     @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
     private StoreRepository storeRepository;
 
     @Autowired
@@ -46,6 +47,15 @@ public class StoreRepositoryImplTest {
 
     @Autowired
     private BoardImgRepository boardImgRepository;
+
+    @Autowired
+    private WishListFolderRepository wishListFolderRepository;
+
+    @Autowired
+    private WishListProductRepository wishListProductRepository;
+
+    @Autowired
+    private WishListStoreRepository wishListStoreRepository;
 
     @BeforeEach
     public void saveData(){
@@ -184,6 +194,68 @@ public class StoreRepositoryImplTest {
         }
     }
 
+    @Test
+    public void getStoreDetailResponseDtoWithLikeTest(){
+        String storeName = "RAWSOME";
+        String storeProfile = "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e";
+        boolean storeIsWished = true;
+        String storeIntroduce = "건강을 먹다-로썸";
+
+        String boardProfile = "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203";
+        int boardPrice = 5400;
+        boolean boardIsBundled = true;
+
+        Long memberId = 2L;
+        Long storeId = 1L;
+        Long boardId = 1L;
+        createLikeData(memberId,storeId,boardId);
+
+        StoreDetailResponseDto result = storeRepository.getStoreDetailResponseDtoWithLike(memberId, storeId);
+        System.out.println(result);
+        var store = result.store();
+        Assertions.assertEquals(storeName, store.storeName());
+        Assertions.assertEquals(storeProfile, store.profile());
+        Assertions.assertEquals(storeIsWished, store.isWished());
+        Assertions.assertEquals(storeIntroduce, store.introduce());
+
+        int index = 0;
+        var bestProducts = result.bestProducts();
+
+        var storeDto = result.store();
+
+        Assertions.assertEquals(true, storeDto.isWished());
+
+        for (StoreBestBoardDto boardDto:bestProducts) {
+            index ++;
+
+            if (index == 1) {
+                Assertions.assertEquals(1L, boardDto.boardId());
+                Assertions.assertEquals(boardProfile, boardDto.thumbnail());
+                Assertions.assertEquals("비건 베이커리", boardDto.title());
+                Assertions.assertEquals(boardPrice, boardDto.price());
+                Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
+            } else if (index == 2) {
+                Assertions.assertEquals(2L, boardDto.boardId());
+                Assertions.assertEquals(boardProfile, boardDto.thumbnail());
+                Assertions.assertEquals("콩볼 베이커리", boardDto.title());
+                Assertions.assertEquals(boardPrice, boardDto.price());
+                Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
+            } else if (index == 3) {
+                Assertions.assertEquals(3L, boardDto.boardId());
+                Assertions.assertEquals(boardProfile, boardDto.thumbnail());
+                Assertions.assertEquals("빵빵이네", boardDto.title());
+                Assertions.assertEquals(boardPrice, boardDto.price());
+                Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
+            } else if (index == 4) {
+                Assertions.assertEquals(4L, boardDto.boardId());
+                Assertions.assertEquals(boardProfile, boardDto.thumbnail());
+                Assertions.assertEquals("레오마켓", boardDto.title());
+                Assertions.assertEquals(boardPrice, boardDto.price());
+                Assertions.assertEquals(boardIsBundled, boardDto.isBundled());
+            }
+        }
+    }
+
     private void createData(int storeCount, int boardCount){
         for(int i=0; i<storeCount; i++){
             var store = Store.builder()
@@ -281,5 +353,22 @@ public class StoreRepositoryImplTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
+    }
+
+    private void createLikeData(Long memberId, Long storeId, Long boardId){
+        Member member = Member.builder().id(memberId).email("dd@ex.com").nickname("test").name("testName").birth("99999").phone("01023299893").build();
+        Store store = Store.builder().id(storeId).build();
+        Board board = Board.builder().id(boardId).build();
+        WishlistFolder wishlistFolder = WishlistFolder.builder().folderName("Test").member(member).build();
+        WishlistProduct wishlistProduct = WishlistProduct.builder().board(board)
+                .memberId(memberId)
+                .wishlistFolder(wishlistFolder)
+                .build();
+        WishlistStore wishlistStore = WishlistStore.builder().store(store).member(member).build();
+
+        memberRepository.save(member);
+        wishListFolderRepository.save(wishlistFolder);
+        wishListProductRepository.save(wishlistProduct);
+        wishListStoreRepository.save(wishlistStore);
     }
 }

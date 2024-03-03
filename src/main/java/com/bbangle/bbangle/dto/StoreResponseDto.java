@@ -1,7 +1,9 @@
 package com.bbangle.bbangle.dto;
 
 import com.bbangle.bbangle.model.Store;
+import lombok.Builder;
 
+@Builder
 public record StoreResponseDto(
         Long storeId,
         String storeName,

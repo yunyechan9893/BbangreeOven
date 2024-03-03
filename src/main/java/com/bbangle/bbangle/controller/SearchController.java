@@ -55,9 +55,11 @@ public class SearchController {
             Integer maxPrice
     ){
 
+        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
+        memberId = (memberId != null) ? memberId : 1L;
 
         return ResponseEntity.ok().body(searchService.getSearchResult(
-                storePage, boardPage, keyword,
+                memberId, storePage, boardPage, keyword,
                 sort, glutenFreeTag, highProteinTag,
                 sugarFreeTag, veganTag, ketogenicTag,
                 category, minPrice, maxPrice

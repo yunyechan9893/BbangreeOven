@@ -174,7 +174,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public SearchResponseDto getSearchResult(int storePage, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+    public SearchResponseDto getSearchResult(Long memberId, int storePage, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                              Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
                                              String category, Integer minPrice, Integer maxPrice) {
 
@@ -251,13 +251,22 @@ public class SearchServiceImpl implements SearchService {
 
 
 
-        var searchBoardResult = searchRepository.getSearchResult(
-                boardSliceList, sort, glutenFreeTag, highProteinTag,
-                sugarFreeTag, veganTag, ketogenicTag,
-                category, minPrice, maxPrice, boardPage, DEFAULT_PAGE);
+        var searchBoardResult =
+                memberId > 1L ?
+                        searchRepository.getSearchResultWithLike(
+                                memberId, boardSliceList, sort, glutenFreeTag, highProteinTag,
+                                sugarFreeTag, veganTag, ketogenicTag,
+                                category, minPrice, maxPrice, boardPage, DEFAULT_PAGE) :
+                        searchRepository.getSearchResult(
+                            boardSliceList, sort, glutenFreeTag, highProteinTag,
+                            sugarFreeTag, veganTag, ketogenicTag,
+                            category, minPrice, maxPrice, boardPage, DEFAULT_PAGE);
 
         //스토어 및 보드 검색 결과 가져오기
-        var searchStoreResult = searchRepository.getSearchedStore(storeSliceList);
+        var searchStoreResult =
+                memberId > 1L ?
+                        searchRepository.getSearchedStoreWithLike(memberId, storeSliceList):
+                        searchRepository.getSearchedStore(storeSliceList);
 
         return new SearchResponseDto(
                 SearchBoardDto.builder()

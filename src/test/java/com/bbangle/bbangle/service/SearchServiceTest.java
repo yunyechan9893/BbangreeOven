@@ -97,6 +97,7 @@ public class SearchServiceTest {
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
     public void getSearchBoard() {
+        Long memberId = 1L;
         String sort = "LATEST";
         Boolean glutenFreeTag = true;
         Boolean highProteinTag = false;
@@ -109,7 +110,7 @@ public class SearchServiceTest {
         int page=0;
 
         var result = searchService.getSearchResult(
-                STORE_PAGE, BOARD_PAGE, SEARCH_KEYWORD,
+                memberId, STORE_PAGE, BOARD_PAGE, SEARCH_KEYWORD,
                 sort, glutenFreeTag, highProteinTag,
                 sugarFreeTag, veganTag, ketogenicTag,
                 category, minPrice, maxPrice);
@@ -150,6 +151,7 @@ public class SearchServiceTest {
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
     public void getSearchStore() {
+        Long memberId = 1L;
         String sort = "LATEST";
         Boolean glutenFreeTag = true;
         Boolean highProteinTag = false;
@@ -161,7 +163,7 @@ public class SearchServiceTest {
         Integer maxPrice= 6000;
 
         var result = searchService.getSearchResult(
-                STORE_PAGE, BOARD_PAGE, SEARCH_KEYWORD_STORE,
+                memberId, STORE_PAGE, BOARD_PAGE, SEARCH_KEYWORD_STORE,
                 sort, glutenFreeTag, highProteinTag,
                 sugarFreeTag, veganTag, ketogenicTag,
                 category, minPrice, maxPrice);
@@ -187,7 +189,7 @@ public class SearchServiceTest {
 
 
         result = searchService.getSearchResult(
-                STORE_PAGE + 1, BOARD_PAGE, SEARCH_KEYWORD_STORE,
+                memberId,STORE_PAGE + 1, BOARD_PAGE, SEARCH_KEYWORD_STORE,
                 sort, glutenFreeTag, highProteinTag,
                 sugarFreeTag, veganTag, ketogenicTag,
                 category, minPrice, maxPrice);
