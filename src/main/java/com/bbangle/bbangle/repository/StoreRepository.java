@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.repository;
 
+import com.bbangle.bbangle.dto.BoardDto;
 import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.repository.queryDsl.StoreQueryDSLRepository;
 import org.springframework.data.domain.Page;

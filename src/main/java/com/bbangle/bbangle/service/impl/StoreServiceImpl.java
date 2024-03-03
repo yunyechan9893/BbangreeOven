@@ -2,12 +2,15 @@ package com.bbangle.bbangle.service.impl;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.bbangle.bbangle.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
 import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.repository.StoreRepository;
 import com.bbangle.bbangle.service.StoreService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -21,6 +24,14 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public StoreDetailResponseDto getStoreDetailResponse(Long StoreId) {
         return storeRepository.getStoreDetailResponseDto(StoreId);
+    }
+
+    @Override
+    public SliceImpl<StoreAllBoardDto> getAllBoard(int page, Long StoreId) {
+        int PAGE_SIZE = 10;
+        return storeRepository.getAllBoard(
+                PageRequest.of(page, PAGE_SIZE),
+                StoreId);
     }
 
     @Override
