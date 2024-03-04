@@ -2,15 +2,7 @@ package com.bbangle.bbangle.repository.impl;
 
 import java.util.*;
 
-import com.bbangle.bbangle.dto.BoardAvailableDayDto;
-import com.bbangle.bbangle.dto.BoardDetailResponseDto;
-import com.bbangle.bbangle.dto.BoardDto;
-import com.bbangle.bbangle.dto.BoardImgDto;
-import com.bbangle.bbangle.dto.BoardResponseDto;
-import com.bbangle.bbangle.dto.ProductBoardLikeStatus;
-import com.bbangle.bbangle.dto.ProductDto;
-import com.bbangle.bbangle.dto.ProductTagDto;
-import com.bbangle.bbangle.dto.StoreDto;
+import com.bbangle.bbangle.dto.*;
 import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
@@ -39,84 +31,6 @@ import org.springframework.stereotype.Repository;
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final MemberRepository memberRepository;
-
-    private static OrderSpecifier<?> sortTypeFolder(
-        String sort,
-        QBoard board,
-        QWishlistProduct products
-    ) {
-        OrderSpecifier<?> orderSpecifier;
-        if (sort == null) {
-            orderSpecifier = products.createdAt.desc();
-            return orderSpecifier;
-        }
-        switch (SortType.fromString(sort)) {
-            case RECENT:
-                orderSpecifier = products.createdAt.desc();
-                break;
-            case LOW_PRICE:
-                orderSpecifier = board.price.asc();
-                break;
-            case POPULAR:
-                orderSpecifier = board.wishCnt.desc();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid SortType");
-        }
-        return orderSpecifier;
-    }
-
-    private static Map<Long, List<ProductTagDto>> getLongListMap(List<Board> boards) {
-        Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
-        for (Board board1 : boards) {
-            for (Product product1 : board1.getProductList()) {
-                productTagsByBoardId.put(board1.getId(),
-                    productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
-                productTagsByBoardId.get(board1.getId())
-                    .add(ProductTagDto.from(product1));
-            }
-        }
-        return productTagsByBoardId;
-    }
-
-    private static BooleanBuilder setFilteringCondition(
-        Boolean glutenFreeTag, Boolean highProteinTag,
-        Boolean sugarFreeTag,
-        Boolean veganTag, Boolean ketogenicTag, String category,
-        Integer minPrice, Integer maxPrice,
-        QProduct product, QBoard board
-    ) {
-        BooleanBuilder filterBuilder = new BooleanBuilder();
-        if (glutenFreeTag != null) {
-            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
-        }
-        if (highProteinTag != null) {
-            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
-        }
-        if (sugarFreeTag != null) {
-            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
-        }
-        if (veganTag != null) {
-            filterBuilder.and(product.veganTag.eq(veganTag));
-        }
-        if (ketogenicTag != null) {
-            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
-        }
-        if (category != null && !category.isBlank()) {
-            if (!Category.checkCategory(category)) {
-                throw new CategoryTypeException();
-            }
-            filterBuilder.and(product.category.eq(Category.valueOf(category)));
-        }
-        if (minPrice != null) {
-            filterBuilder.and(board.price.goe(minPrice));
-        }
-        if (maxPrice != null) {
-            filterBuilder.and(board.price.loe(maxPrice));
-        }
-        return filterBuilder;
-    }
 
     @Override
     public List<BoardResponseDto> getBoardResponseDto(
@@ -384,7 +298,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         int index = 0;
         int resultSize = fetch.size();
         StoreDto storeDto = null;
-        BoardDto boardDto = null;
+        BoardDetailDto boardDto = null;
         List<ProductDto> productDtos = new ArrayList<>();
         Set<BoardImgDto> boardImgDtos = new HashSet<>();
         Set<String> allTags = new HashSet<>();
@@ -429,9 +343,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                         .isWished(tuple.get(wishlistStore.id)!=null?true:false)
                         .build();
 
-                boardDto = BoardDto.builder()
-                        .id(tuple.get(board.id))
-                        .profile(tuple.get(board.profile))
+                boardDto = BoardDetailDto.builder()
+                        .boardId(tuple.get(board.id))
+                        .thumbnail(tuple.get(board.profile))
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
                         .orderAvailableDays(
@@ -510,7 +424,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         int index = 0;
         int resultSize = fetch.size();
         StoreDto storeDto = null;
-        BoardDto boardDto = null;
+        BoardDetailDto boardDto = null;
         Set<ProductDto> productDtos = new HashSet<>();
         Set<BoardImgDto> boardImgDtos = new HashSet<>();
         Set<String> allTags = new HashSet<>();
@@ -555,9 +469,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                         .isWished(false)
                         .build();
 
-                boardDto = BoardDto.builder()
-                        .id(tuple.get(board.id))
-                        .profile(tuple.get(board.profile))
+                boardDto = BoardDetailDto.builder()
+                        .boardId(tuple.get(board.id))
+                        .thumbnail(tuple.get(board.profile))
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
                         .orderAvailableDays(
@@ -648,43 +562,4 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         }
         return content;
     }
-
-    @Override
-    public BoardDetailResponseDto getDetailLikeUpdate(BoardDetailResponseDto content) {
-        QBoard board = QBoard.board;
-        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
-
-        Long memberId = SecurityUtils.getMemberId();
-
-        BooleanExpression isLikedExpression = wishlistProduct.isDeleted.isFalse();
-
-        ProductBoardLikeStatus likeFetch = queryFactory
-            .select(Projections.bean(
-                ProductBoardLikeStatus.class,
-                board.id.as("boardId"),
-                isLikedExpression.as("isLike")
-            ))
-            .from(board)
-            .leftJoin(wishlistProduct)
-            .on(board.id.eq(wishlistProduct.board.id)
-                .and(wishlistProduct.memberId.eq(memberId)))
-            .where(board.id.eq(content.board()
-                .boardId()))
-            .fetch()
-            .stream()
-            .peek(result -> {
-                if (result.getIsLike() == null) {
-                    result.setIsLike(false);
-                }
-            })
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
-
-        if(content.board().boardId().equals(likeFetch.getBoardId()) && likeFetch.getIsLike()){
-            content.board().updateLike(true);
-        }
-
-        return content;
-    }
-
 }

@@ -21,8 +21,9 @@ public class ObjectStorageRepositoryTest {
 //    private String IMAGE = "img";
     private final String BOARD_ID = "2";
     private final String FOLDER_PATH = String.format("%s/%s/", STORE_ID, BOARD_ID);
-    private final String OBJECT_NAME = FOLDER_PATH + HTML_FILE_NAME;
     private final String HTML_FILE_NAME = "detail.html";
+    private final String OBJECT_NAME = FOLDER_PATH + HTML_FILE_NAME;
+
 
     public ObjectStorageRepositoryTest(
         @Autowired

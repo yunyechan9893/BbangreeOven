@@ -15,13 +15,13 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultSupertypeSerializer")
 public class QBaseEntity extends EntityPathBase<BaseEntity> {
 
-    public static final QBaseEntity baseEntity = new QBaseEntity("baseEntity");
     private static final long serialVersionUID = -1437748772L;
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt",
-        java.time.LocalDateTime.class);
 
-    public final DateTimePath<java.time.LocalDateTime> modifiedAt = createDateTime("modifiedAt",
-        java.time.LocalDateTime.class);
+    public static final QBaseEntity baseEntity = new QBaseEntity("baseEntity");
+
+    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = createDateTime("modifiedAt", java.time.LocalDateTime.class);
 
     public QBaseEntity(String variable) {
         super(BaseEntity.class, forVariable(variable));

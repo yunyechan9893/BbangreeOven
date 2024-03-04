@@ -1,13 +1,7 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.dto.BoardDto;
-import com.bbangle.bbangle.dto.StoreDetailResponseDto;
-import com.bbangle.bbangle.dto.StoreDto;
-import com.bbangle.bbangle.model.Category;
-import com.bbangle.bbangle.model.QBoard;
-import com.bbangle.bbangle.model.QProduct;
-import com.bbangle.bbangle.model.QStore;
-import com.bbangle.bbangle.model.TagEnum;
+import com.bbangle.bbangle.dto.*;
+import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.queryDsl.StoreQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;

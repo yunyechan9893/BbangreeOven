@@ -16,11 +16,13 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QSearch extends EntityPathBase<Search> {
 
-    public static final QSearch search = new QSearch("search");
     private static final long serialVersionUID = -245201552L;
+
     private static final PathInits INITS = PathInits.DIRECT2;
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt",
-        java.time.LocalDateTime.class);
+
+    public static final QSearch search = new QSearch("search");
+
+    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
@@ -28,7 +30,7 @@ public class QSearch extends EntityPathBase<Search> {
 
     public final StringPath keyword = createString("keyword");
 
-    public final QMember member;
+    public final com.bbangle.bbangle.member.domain.QMember member;
 
     public QSearch(String variable) {
         this(Search.class, forVariable(variable), INITS);
@@ -48,7 +50,7 @@ public class QSearch extends EntityPathBase<Search> {
 
     public QSearch(Class<? extends Search> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.member = inits.isInitialized("member") ? new QMember(forProperty("member")) : null;
+        this.member = inits.isInitialized("member") ? new com.bbangle.bbangle.member.domain.QMember(forProperty("member")) : null;
     }
 
 }

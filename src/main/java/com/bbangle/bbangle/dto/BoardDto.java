@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import java.util.List;
 import java.util.Objects;
@@ -10,44 +11,44 @@ public final class BoardDto {
 
     private final Long boardId;
     private final String thumbnail;
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final List<BoardImgDto> images;
     private final String title;
     private final int price;
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final BoardAvailableDayDto orderAvailableDays;
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String purchaseUrl;
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isWished;
     private final Boolean isBundled;
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String detail;
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final List<String> tags;
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final List<ProductDto> products;
 
     public BoardDto(
         Long boardId,
         String thumbnail,
-        @JsonInclude(Include.NON_NULL)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         List<BoardImgDto> images,
         String title,
         int price,
-        @JsonInclude(Include.NON_NULL)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         BoardAvailableDayDto orderAvailableDays,
-        @JsonInclude(Include.NON_NULL)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         String purchaseUrl,
-        @JsonInclude(Include.NON_NULL)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         Boolean isWished,
         Boolean isBundled,
 
-        @JsonInclude(Include.NON_NULL)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         String detail,
-        @JsonInclude(Include.NON_NULL)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         List<String> tags,
-        @JsonInclude(Include.NON_NULL)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         List<ProductDto> products
     ) {
         this.boardId = boardId;
@@ -76,7 +77,7 @@ public final class BoardDto {
         return thumbnail;
     }
 
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<BoardImgDto> images() {
         return images;
     }
@@ -89,17 +90,17 @@ public final class BoardDto {
         return price;
     }
 
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public BoardAvailableDayDto orderAvailableDays() {
         return orderAvailableDays;
     }
 
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String purchaseUrl() {
         return purchaseUrl;
     }
 
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean isWished() {
         return isWished;
     }
@@ -108,17 +109,17 @@ public final class BoardDto {
         return isBundled;
     }
 
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String detail() {
         return detail;
     }
 
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<String> tags() {
         return tags;
     }
 
-    @JsonInclude(Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<ProductDto> products() {
         return products;
     }

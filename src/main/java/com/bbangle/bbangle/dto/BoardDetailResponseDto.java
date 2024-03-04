@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record BoardDetailResponseDto(
     StoreDto store,
-    BoardDto board
+    BoardDetailDto board
 ) {
 
 }

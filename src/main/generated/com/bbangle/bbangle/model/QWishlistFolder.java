@@ -16,9 +16,12 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QWishlistFolder extends EntityPathBase<WishlistFolder> {
 
-    public static final QWishlistFolder wishlistFolder = new QWishlistFolder("wishlistFolder");
     private static final long serialVersionUID = 556101211L;
+
     private static final PathInits INITS = PathInits.DIRECT2;
+
+    public static final QWishlistFolder wishlistFolder = new QWishlistFolder("wishlistFolder");
+
     public final QBaseEntity _super = new QBaseEntity(this);
 
     //inherited
@@ -30,7 +33,7 @@ public class QWishlistFolder extends EntityPathBase<WishlistFolder> {
 
     public final BooleanPath isDeleted = createBoolean("isDeleted");
 
-    public final QMember member;
+    public final com.bbangle.bbangle.member.domain.QMember member;
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
@@ -51,13 +54,9 @@ public class QWishlistFolder extends EntityPathBase<WishlistFolder> {
         this(WishlistFolder.class, metadata, inits);
     }
 
-    public QWishlistFolder(
-        Class<? extends WishlistFolder> type,
-        PathMetadata metadata,
-        PathInits inits
-    ) {
+    public QWishlistFolder(Class<? extends WishlistFolder> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.member = inits.isInitialized("member") ? new QMember(forProperty("member")) : null;
+        this.member = inits.isInitialized("member") ? new com.bbangle.bbangle.member.domain.QMember(forProperty("member")) : null;
     }
 
 }

@@ -16,9 +16,12 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QProduct extends EntityPathBase<Product> {
 
-    public static final QProduct product = new QProduct("product");
     private static final long serialVersionUID = -1289116121L;
+
     private static final PathInits INITS = PathInits.DIRECT2;
+
+    public static final QProduct product = new QProduct("product");
+
     public final QBoard board;
 
     public final EnumPath<Category> category = createEnum("category", Category.class);
@@ -57,8 +60,7 @@ public class QProduct extends EntityPathBase<Product> {
 
     public QProduct(Class<? extends Product> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.board = inits.isInitialized("board") ? new QBoard(forProperty("board"),
-            inits.get("board")) : null;
+        this.board = inits.isInitialized("board") ? new QBoard(forProperty("board"), inits.get("board")) : null;
     }
 
 }
