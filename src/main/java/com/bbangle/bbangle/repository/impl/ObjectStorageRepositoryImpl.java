@@ -1,17 +1,14 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.bbangle.bbangle.repository.ObjectStorageRepository;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
 @Repository
 @RequiredArgsConstructor
@@ -41,9 +38,9 @@ public class ObjectStorageRepositoryImpl implements ObjectStorageRepository {
 
     @Override
     public Boolean createFile(String bucketName, String objectName, MultipartFile file) {
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentType(file.getContentType()); // 콘텐츠 타입 설정
-            objectMetadata.setContentLength(file.getSize()); // 파일 크기 설정
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(file.getContentType()); // 콘텐츠 타입 설정
+        objectMetadata.setContentLength(file.getSize()); // 파일 크기 설정
         try {
             s3.putObject(bucketName, objectName, file.getInputStream(), objectMetadata); // S3 저장
         } catch (IOException e) {
@@ -59,8 +56,9 @@ public class ObjectStorageRepositoryImpl implements ObjectStorageRepository {
         objectMetadata.setContentLength(0L);
         objectMetadata.setContentType("application/x-directory");
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, folderName,
-                new ByteArrayInputStream(new byte[0]), objectMetadata);
+            new ByteArrayInputStream(new byte[0]), objectMetadata);
         s3.putObject(putObjectRequest);
         return true;
     }
+
 }

@@ -15,5 +15,7 @@ public interface BoardService {
     @Transactional(readOnly = true)
     BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId);
 
+
     Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile);
+
 }

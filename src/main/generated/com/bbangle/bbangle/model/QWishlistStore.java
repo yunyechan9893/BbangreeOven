@@ -16,12 +16,9 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QWishlistStore extends EntityPathBase<WishlistStore> {
 
-    private static final long serialVersionUID = 2108306772L;
-
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QWishlistStore wishlistStore = new QWishlistStore("wishlistStore");
-
+    private static final long serialVersionUID = 2108306772L;
+    private static final PathInits INITS = PathInits.DIRECT2;
     public final QBaseEntity _super = new QBaseEntity(this);
 
     //inherited
@@ -54,7 +51,11 @@ public class QWishlistStore extends EntityPathBase<WishlistStore> {
         this(WishlistStore.class, metadata, inits);
     }
 
-    public QWishlistStore(Class<? extends WishlistStore> type, PathMetadata metadata, PathInits inits) {
+    public QWishlistStore(
+        Class<? extends WishlistStore> type,
+        PathMetadata metadata,
+        PathInits inits
+    ) {
         super(type, metadata, inits);
         this.member = inits.isInitialized("member") ? new QMember(forProperty("member")) : null;
         this.store = inits.isInitialized("store") ? new QStore(forProperty("store")) : null;

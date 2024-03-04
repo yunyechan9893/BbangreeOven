@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.controller;
 
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -113,9 +113,12 @@ class BoardControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"glutenFreeTag", "highProteinTag", "sugarFreeTag", "veganTag", "ketogenicTag"})
+    @ValueSource(
+        strings = {"glutenFreeTag", "highProteinTag", "sugarFreeTag", "veganTag", "ketogenicTag"}
+    )
     @DisplayName("순서가 없고 필터링 조건이 있어도 정상적으로 조회한다.")
-    public void getBoardListSuccessWithIngredientFilteringCondition(String ingredient) throws Exception {
+    public void getBoardListSuccessWithIngredientFilteringCondition(String ingredient)
+        throws Exception {
         //given, when, then
         mockMvc.perform(get("/api/v1/boards")
                 .param(ingredient, "true"))
@@ -137,7 +140,8 @@ class BoardControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT", "ETC"})
     @DisplayName("순서가 없고 필터링 조건 둘 이상 있어도 정상적으로 조회한다.")
-    public void getBoardListSuccessWithCategoryAndIngredientCondition(String ingredient) throws Exception {
+    public void getBoardListSuccessWithCategoryAndIngredientCondition(String ingredient)
+        throws Exception {
         // given
         MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
         info.add(ingredient, "true");
@@ -163,14 +167,16 @@ class BoardControllerTest {
     }
 
 
-    private Board boardGenerator(Store store,
-                                 boolean sunday,
-                                 boolean monday,
-                                 boolean tuesday,
-                                 boolean wednesday,
-                                 boolean thursday,
-                                 boolean friday,
-                                 boolean saturday) {
+    private Board boardGenerator(
+        Store store,
+        boolean sunday,
+        boolean monday,
+        boolean tuesday,
+        boolean wednesday,
+        boolean thursday,
+        boolean friday,
+        boolean saturday
+    ) {
         return Board.builder()
             .store(store)
             .title("title")
@@ -201,12 +207,14 @@ class BoardControllerTest {
             .build();
     }
 
-    private Product productGenerator(Board board,
-                                     boolean glutenFreeTag,
-                                     boolean highProteinTag,
-                                     boolean sugarFreeTag,
-                                     boolean veganTag,
-                                     boolean ketogenicTag) {
+    private Product productGenerator(
+        Board board,
+        boolean glutenFreeTag,
+        boolean highProteinTag,
+        boolean sugarFreeTag,
+        boolean veganTag,
+        boolean ketogenicTag
+    ) {
         return Product.builder()
             .board(board)
             .title("title")

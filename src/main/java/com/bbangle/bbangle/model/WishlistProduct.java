@@ -41,6 +41,9 @@ public class WishlistProduct extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    @Column(name = "member_id")
+    private Long memberId;
+
     public boolean updateWishStatus() {
         isDeleted = !isDeleted;
         return isDeleted;

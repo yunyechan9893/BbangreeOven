@@ -16,10 +16,8 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QStore extends EntityPathBase<Store> {
 
-    private static final long serialVersionUID = -1254375399L;
-
     public static final QStore store = new QStore("store");
-
+    private static final long serialVersionUID = -1254375399L;
     public final QBaseEntity _super = new QBaseEntity(this);
 
     //inherited
@@ -40,7 +38,8 @@ public class QStore extends EntityPathBase<Store> {
 
     public final StringPath profile = createString("profile");
 
-    public final ListPath<WishlistStore, QWishlistStore> wishlistStores = this.<WishlistStore, QWishlistStore>createList("wishlistStores", WishlistStore.class, QWishlistStore.class, PathInits.DIRECT2);
+    public final ListPath<WishlistStore, QWishlistStore> wishlistStores = this.<WishlistStore, QWishlistStore>createList(
+        "wishlistStores", WishlistStore.class, QWishlistStore.class, PathInits.DIRECT2);
 
     public QStore(String variable) {
         super(Store.class, forVariable(variable));

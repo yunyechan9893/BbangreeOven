@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.config;
+package com.bbangle.bbangle.common.image.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class S3Config {
+
     @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;
 
@@ -34,10 +35,11 @@ public class S3Config {
     @Bean
     public AmazonS3Client amazonS3Client() {
         // 권한 및 S3 환경설정
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey,secretKey);
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
         return (AmazonS3Client) AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, region))
-                .build();
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, region))
+            .build();
     }
+
 }

@@ -15,14 +15,15 @@ import org.springframework.test.annotation.Rollback;
 import java.util.List;
 import java.util.Optional;
 
-
 @SpringBootTest
 @Transactional
 @Rollback
 public class BoardRepositoryImplTest {
 
+
     @Autowired
     private MemberRepository memberRepository;
+
     @Autowired
     private StoreRepository storeRepository;
 
@@ -48,19 +49,19 @@ public class BoardRepositoryImplTest {
     private WishListStoreRepository wishListStoreRepository;
 
     @BeforeEach
-    public void saveData(){
+    public void saveData() {
         createData(15);
     }
 
     @AfterEach
     void afterEach() {
         this.entityManager
-                .createNativeQuery("ALTER TABLE store ALTER COLUMN `id` RESTART WITH 1")
-                .executeUpdate();
+            .createNativeQuery("ALTER TABLE store ALTER COLUMN `id` RESTART WITH 1")
+            .executeUpdate();
 
         this.entityManager
-                .createNativeQuery("ALTER TABLE product_board ALTER COLUMN `id` RESTART WITH 1")
-                .executeUpdate();
+            .createNativeQuery("ALTER TABLE product_board ALTER COLUMN `id` RESTART WITH 1")
+            .executeUpdate();
 
         this.entityManager
                 .createNativeQuery("ALTER TABLE member ALTER COLUMN `id` RESTART WITH 2")
@@ -179,71 +180,80 @@ public class BoardRepositoryImplTest {
         String storeId = "1";
         String boardId = "1";
         String fileName = "detail.html";
-        String filePath = String.format("%s/%s/%s/%s", defaultURL,storeId,boardId,fileName);
+        String filePath = String.format("%s/%s/%s/%s", defaultURL, storeId, boardId, fileName);
 
         var result = boardRepository.updateDetailWhereStoreIdEqualsBoardId(
-                Long.parseLong(boardId),
-                filePath
+            Long.parseLong(boardId),
+            filePath
         );
 
         Assertions.assertEquals(1, result);
 
         Optional<Board> resultBoard = boardRepository.findById(Long.parseLong(boardId));
 
-        resultBoard.stream().forEach(
+        resultBoard.stream()
+            .forEach(
                 board -> {
                     Assertions.assertEquals(Long.parseLong(boardId), board.getId());
                     Assertions.assertEquals(filePath, board.getDetail());
                 }
-        );
+            );
     }
 
-    private void createData(int count){
-        for(int i=0; i<count; i++){
+    private void createData(int count) {
+        for (int i = 0; i < count; i++) {
             var store = Store.builder()
-                    .identifier("7962401222")
-                    .name("RAWSOME")
-                    .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
-                    .introduce("건강을 먹다-로썸")
-                    .build();
+                .identifier("7962401222")
+                .name("RAWSOME")
+                .profile(
+                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
+                .introduce("건강을 먹다-로썸")
+                .build();
 
             var board = Board.builder()
-                    .store(store)
-                    .title("비건 베이커리 로썸 비건빵")
-                    .price(5400)
-                    .status(true)
-                    .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                    .detail("test.txt")
-                    .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                    .view(100)
-                    .sunday(false).monday(false).tuesday(false).wednesday(false).thursday(true).sunday(false)
-                    .build();
+                .store(store)
+                .title("비건 베이커리 로썸 비건빵")
+                .price(5400)
+                .status(true)
+                .profile(
+                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
+                .detail("test.txt")
+                .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
+                .view(100)
+                .sunday(false)
+                .monday(false)
+                .tuesday(false)
+                .wednesday(false)
+                .thursday(true)
+                .sunday(false)
+                .build();
 
             var product1 = Product.builder()
-                    .board(board)
-                    .title("콩볼")
-                    .price(3600)
-                    .category(Category.COOKIE)
-                    .glutenFreeTag(true)
-                    .highProteinTag(false)
-                    .sugarFreeTag(true)
-                    .veganTag(true)
-                    .ketogenicTag(false)
-                    .build();
+                .board(board)
+                .title("콩볼")
+                .price(3600)
+                .category(Category.COOKIE)
+                .glutenFreeTag(true)
+                .highProteinTag(false)
+                .sugarFreeTag(true)
+                .veganTag(true)
+                .ketogenicTag(false)
+                .build();
 
             var product2 = Product.builder()
-                    .board(board)
-                    .title("카카모카")
-                    .price(5000)
-                    .category(Category.BREAD)
-                    .glutenFreeTag(true)
-                    .highProteinTag(false)
-                    .sugarFreeTag(false)
-                    .veganTag(true)
-                    .ketogenicTag(false)
-                    .build();
+                .board(board)
+                .title("카카모카")
+                .price(5000)
+                .category(Category.BREAD)
+                .glutenFreeTag(true)
+                .highProteinTag(false)
+                .sugarFreeTag(false)
+                .veganTag(true)
+                .ketogenicTag(false)
+                .build();
 
             var product3 = Product.builder()
+
                     .board(board)
                     .title("로미넛쑥")
                     .price(5000)
@@ -254,6 +264,7 @@ public class BoardRepositoryImplTest {
                     .veganTag(true)
                     .ketogenicTag(false)
                     .build();
+
 
             var boardImg = ProductImg.builder()
                     .board(board)
@@ -277,6 +288,7 @@ public class BoardRepositoryImplTest {
         }
     }
 
+
     private void createLikeData(Long memberId, Long storeId, Long boardId){
         Member member = Member.builder().id(memberId).email("dd@ex.com").nickname("test").name("testName").birth("99999").phone("01023299893").build();
         Store store = Store.builder().id(storeId).build();
@@ -293,4 +305,5 @@ public class BoardRepositoryImplTest {
         wishListProductRepository.save(wishlistProduct);
         wishListStoreRepository.save(wishlistStore);
     }
+
 }

@@ -1,10 +1,21 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.dto.*;
-import com.bbangle.bbangle.model.*;
+import com.bbangle.bbangle.dto.BoardDto;
+import com.bbangle.bbangle.dto.StoreDetailResponseDto;
+import com.bbangle.bbangle.dto.StoreDto;
+import com.bbangle.bbangle.model.Category;
+import com.bbangle.bbangle.model.QBoard;
+import com.bbangle.bbangle.model.QProduct;
+import com.bbangle.bbangle.model.QStore;
+import com.bbangle.bbangle.model.TagEnum;
 import com.bbangle.bbangle.repository.queryDsl.StoreQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
@@ -16,6 +27,7 @@ import java.util.*;
 @Repository
 @RequiredArgsConstructor
 public class StoreRepositoryImpl implements StoreQueryDSLRepository {
+
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -348,9 +360,9 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         QStore store = QStore.store;
 
         List<Tuple> fetch = jpaQueryFactory
-                .select(store.id, store.name)
-                .from(store)
-                .fetch();
+            .select(store.id, store.name)
+            .from(store)
+            .fetch();
 
         HashMap<Long, String> storeMap = new HashMap<>();
         fetch.forEach((tuple) -> storeMap.put(tuple.get(store.id), tuple.get(store.name)));

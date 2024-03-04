@@ -16,13 +16,11 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QSearch extends EntityPathBase<Search> {
 
-    private static final long serialVersionUID = -245201552L;
-
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QSearch search = new QSearch("search");
-
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+    private static final long serialVersionUID = -245201552L;
+    private static final PathInits INITS = PathInits.DIRECT2;
+    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt",
+        java.time.LocalDateTime.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 

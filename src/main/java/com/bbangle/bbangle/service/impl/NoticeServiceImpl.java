@@ -2,7 +2,6 @@ package com.bbangle.bbangle.service.impl;
 
 import com.bbangle.bbangle.dto.NoticeDetailResponseDto;
 import com.bbangle.bbangle.dto.NoticePagingResponseDto;
-import com.bbangle.bbangle.dto.NoticeResponseDto;
 import com.bbangle.bbangle.dto.NoticeSaveRequestDto;
 import com.bbangle.bbangle.model.Notice;
 import com.bbangle.bbangle.repository.NoticeRepository;
@@ -23,7 +22,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public NoticePagingResponseDto getNoticePagingList(Pageable pageable) {
-       return NoticePagingResponseDto.of(noticeQueryDSLRepositoryImpl.getNoticeList(pageable));
+        return NoticePagingResponseDto.of(noticeQueryDSLRepositoryImpl.getNoticeList(pageable));
     }
 
     @Override
@@ -35,9 +34,10 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional
     public void saveNotice(NoticeSaveRequestDto noticeSaveRequestDto) {
         Notice notice = Notice.builder()
-                .title(noticeSaveRequestDto.title())
-                .content(noticeSaveRequestDto.content())
-                .build();
+            .title(noticeSaveRequestDto.title())
+            .content(noticeSaveRequestDto.content())
+            .build();
         noticeRepository.save(notice);
     }
+
 }

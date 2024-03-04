@@ -371,4 +371,5 @@ public class StoreRepositoryImplTest {
         wishListProductRepository.save(wishlistProduct);
         wishListStoreRepository.save(wishlistStore);
     }
+
 }

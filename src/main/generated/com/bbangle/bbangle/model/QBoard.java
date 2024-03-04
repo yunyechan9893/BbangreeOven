@@ -16,12 +16,9 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QBoard extends EntityPathBase<Board> {
 
-    private static final long serialVersionUID = -1270237666L;
-
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QBoard board = new QBoard("board");
-
+    private static final long serialVersionUID = -1270237666L;
+    private static final PathInits INITS = PathInits.DIRECT2;
     public final QBaseEntity _super = new QBaseEntity(this);
 
     //inherited
@@ -42,7 +39,8 @@ public class QBoard extends EntityPathBase<Board> {
 
     public final NumberPath<Integer> price = createNumber("price", Integer.class);
 
-    public final ListPath<Product, QProduct> productList = this.<Product, QProduct>createList("productList", Product.class, QProduct.class, PathInits.DIRECT2);
+    public final ListPath<Product, QProduct> productList = this.<Product, QProduct>createList(
+        "productList", Product.class, QProduct.class, PathInits.DIRECT2);
 
     public final StringPath profile = createString("profile");
 

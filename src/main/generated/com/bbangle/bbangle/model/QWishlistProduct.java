@@ -16,12 +16,9 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QWishlistProduct extends EntityPathBase<WishlistProduct> {
 
-    private static final long serialVersionUID = 433043618L;
-
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QWishlistProduct wishlistProduct = new QWishlistProduct("wishlistProduct");
-
+    private static final long serialVersionUID = 433043618L;
+    private static final PathInits INITS = PathInits.DIRECT2;
     public final QBaseEntity _super = new QBaseEntity(this);
 
     public final QBoard board;
@@ -56,10 +53,16 @@ public class QWishlistProduct extends EntityPathBase<WishlistProduct> {
         this(WishlistProduct.class, metadata, inits);
     }
 
-    public QWishlistProduct(Class<? extends WishlistProduct> type, PathMetadata metadata, PathInits inits) {
+    public QWishlistProduct(
+        Class<? extends WishlistProduct> type,
+        PathMetadata metadata,
+        PathInits inits
+    ) {
         super(type, metadata, inits);
-        this.board = inits.isInitialized("board") ? new QBoard(forProperty("board"), inits.get("board")) : null;
-        this.wishlistFolder = inits.isInitialized("wishlistFolder") ? new QWishlistFolder(forProperty("wishlistFolder"), inits.get("wishlistFolder")) : null;
+        this.board = inits.isInitialized("board") ? new QBoard(forProperty("board"),
+            inits.get("board")) : null;
+        this.wishlistFolder = inits.isInitialized("wishlistFolder") ? new QWishlistFolder(
+            forProperty("wishlistFolder"), inits.get("wishlistFolder")) : null;
     }
 
 }

@@ -1,19 +1,24 @@
-package com.bbangle.bbangle.model;
+package com.bbangle.bbangle.member.domain;
 
-import jakarta.persistence.*;
+import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
+import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.exception.UserValidator;
+import com.bbangle.bbangle.model.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.util.Collection;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
 
 @Table(name = "member")
 @Entity
@@ -45,10 +50,12 @@ public class Member extends BaseEntity implements UserDetails {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
-  
+
     @Builder
-    public Member(Long id, String email, String phone, String name, String nickname,
-                  String birth, boolean isDeleted, String profile)  {
+    public Member(
+        Long id, String email, String phone, String name, String nickname,
+        String birth, boolean isDeleted, String profile
+    ) {
         this.id = id;
         this.email = email;
         this.phone = phone;
@@ -94,8 +101,42 @@ public class Member extends BaseEntity implements UserDetails {
         return true;
     }
 
-    public Member update(String nickname){
+    public Member updateNickname(String nickname) {
         this.nickname = nickname;
         return this;
     }
+
+    public void updateFirst(MemberInfoRequest request) {
+        if (request.birthDate() != null) {
+            UserValidator.validateBirthDate(request.birthDate());
+        }
+        UserValidator.validatePhoneNumber(request.phoneNumber());
+        UserValidator.validateNickname(request.nickname());
+
+        this.birth = request.birthDate();
+        this.nickname = request.nickname();
+        this.phone = request.phoneNumber();
+    }
+
+    public void updateProfile(String imgUrl) {
+        this.profile = imgUrl;
+    }
+
+    public void update(InfoUpdateRequest request) {
+        if (request.birthDate() != null) {
+            UserValidator.validateBirthDate(request.birthDate());
+            this.birth = request.birthDate();
+        }
+
+        if (request.phoneNumber() != null) {
+            UserValidator.validatePhoneNumber(request.phoneNumber());
+            this.phone = request.phoneNumber();
+        }
+
+        if (request.nickname() != null) {
+            UserValidator.validateNickname(request.nickname());
+            this.nickname = request.nickname();
+        }
+    }
+
 }

@@ -100,6 +100,7 @@ CREATE TABLE wishlist_product
     product_board_id   BIGINT NOT NULL,
     created_at         DATETIME(6),
     modified_at        DATETIME(6),
+    member_id          BIGINT,
     is_deleted         TINYINT,
     CONSTRAINT wishlist_product_pk PRIMARY KEY (id),
     CONSTRAINT fk_wishlist_folder_wishlist_product FOREIGN KEY (wishlist_folder_id) REFERENCES wishlist_folder (id),

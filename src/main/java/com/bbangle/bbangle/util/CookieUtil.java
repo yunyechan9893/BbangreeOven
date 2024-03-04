@@ -3,10 +3,9 @@ package com.bbangle.bbangle.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Base64;
 import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
-
-import java.util.Base64;
 
 /**
  * 쿠키 유틸 클래스
@@ -21,18 +20,23 @@ public class CookieUtil {
      * @param value    the value
      * @param maxAge   the max age
      */
-    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge){
+    public static void addCookie(
+        HttpServletResponse response,
+        String name,
+        String value,
+        int maxAge
+    ) {
       /*  Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);*/
         ResponseCookie cookie = ResponseCookie.from(name, value)
-                .maxAge(maxAge)
-                .value(value)
-                .sameSite("None")
-                .path("/")
-                .secure(true)
-                .build();
+            .maxAge(maxAge)
+            .value(value)
+            .sameSite("None")
+            .path("/")
+            .secure(true)
+            .build();
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
@@ -43,14 +47,18 @@ public class CookieUtil {
      * @param response the response
      * @param name     the name
      */
-    public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name){
+    public static void deleteCookie(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        String name
+    ) {
         Cookie[] cookies = request.getCookies();
-        if(cookies == null){
+        if (cookies == null) {
             return;
         }
 
-        for(Cookie cookie : cookies){
-            if(name.equals(cookie.getName())){
+        for (Cookie cookie : cookies) {
+            if (name.equals(cookie.getName())) {
                 cookie.setValue("");
                 cookie.setPath("/");
                 cookie.setMaxAge(0);
@@ -65,9 +73,9 @@ public class CookieUtil {
      * @param obj the obj
      * @return the string
      */
-    public static String serialize(Object obj){
+    public static String serialize(Object obj) {
         return Base64.getUrlEncoder()
-                .encodeToString(SerializationUtils.serialize(obj));
+            .encodeToString(SerializationUtils.serialize(obj));
     }
 
     /**
@@ -78,11 +86,12 @@ public class CookieUtil {
      * @param cls    the cls
      * @return the t
      */
-    public static <T> T deserialize(Cookie cookie, Class<T> cls){
+    public static <T> T deserialize(Cookie cookie, Class<T> cls) {
         return cls.cast(
-                SerializationUtils.deserialize(
-                        Base64.getUrlDecoder().decode(cookie.getValue())
-                )
+            SerializationUtils.deserialize(
+                Base64.getUrlDecoder()
+                    .decode(cookie.getValue())
+            )
         );
     }
 

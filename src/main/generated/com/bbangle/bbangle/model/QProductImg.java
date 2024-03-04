@@ -16,12 +16,9 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QProductImg extends EntityPathBase<ProductImg> {
 
-    private static final long serialVersionUID = 1539273756L;
-
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QProductImg productImg = new QProductImg("productImg");
-
+    private static final long serialVersionUID = 1539273756L;
+    private static final PathInits INITS = PathInits.DIRECT2;
     public final QBoard board;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
@@ -46,7 +43,8 @@ public class QProductImg extends EntityPathBase<ProductImg> {
 
     public QProductImg(Class<? extends ProductImg> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.board = inits.isInitialized("board") ? new QBoard(forProperty("board"), inits.get("board")) : null;
+        this.board = inits.isInitialized("board") ? new QBoard(forProperty("board"),
+            inits.get("board")) : null;
     }
 
 }

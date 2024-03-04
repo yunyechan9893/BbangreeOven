@@ -1,12 +1,11 @@
 package com.bbangle.bbangle.dto;
 
+import java.util.List;
 import lombok.Builder;
 
-import java.util.List;
-
 @Builder
-public record RecencySearchResponse (
-        List<KeywordDto> content
-){
+public record RecencySearchResponse(
+    List<KeywordDto> content
+) {
 
 }

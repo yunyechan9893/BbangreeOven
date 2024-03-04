@@ -21,7 +21,10 @@ public class StoreController {
     private final StoreService storeService;
 
     @GetMapping
-    public ResponseEntity<Slice<StoreResponseDto>> getList(@PageableDefault Pageable pageable){
+    public ResponseEntity<Slice<StoreResponseDto>> getList(
+        @PageableDefault
+        Pageable pageable
+    ) {
         return ResponseEntity.ok(storeService.getList(pageable));
     }
 

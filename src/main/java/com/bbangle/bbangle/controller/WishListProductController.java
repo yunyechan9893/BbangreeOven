@@ -20,12 +20,17 @@ public class WishListProductController {
     private final WishListProductService wishListProductService;
 
     @PatchMapping
-    public ResponseEntity<Void> wish(@PathVariable Long boardId,
-                                     @RequestBody WishProductRequestDto wishRequest){
+    public ResponseEntity<Void> wish(
+        @PathVariable
+        Long boardId,
+        @RequestBody
+        WishProductRequestDto wishRequest
+    ) {
         Long memberId = SecurityUtils.getMemberId();
         wishListProductService.wish(memberId, boardId, wishRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.OK)
+            .build();
     }
 
 }

@@ -5,4 +5,5 @@ import com.bbangle.bbangle.repository.queryDsl.SearchQueryDSLRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SearchRepository extends JpaRepository<Search, Long>, SearchQueryDSLRepository {
+
 }

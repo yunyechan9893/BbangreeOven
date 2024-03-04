@@ -3,12 +3,20 @@ package com.bbangle.bbangle.controller;
 import com.bbangle.bbangle.dto.MessageResDto;
 import com.bbangle.bbangle.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.exception.ExceedNicknameLengthException;
+import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.service.impl.ProfileServiceImpl;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,9 +31,10 @@ public class ProfileController {
      * @return 프로필 정보
      */
     @GetMapping
-    public ResponseEntity<ProfileInfoResponseDto> getProfile(){
+    public ResponseEntity<ProfileInfoResponseDto> getProfile() {
         Long memberId = SecurityUtils.getMemberId();
-        return ResponseEntity.ok().body(profileService.getProfileInfo(memberId));
+        return ResponseEntity.ok()
+            .body(profileService.getProfileInfo(memberId));
     }
 
 
@@ -36,14 +45,32 @@ public class ProfileController {
      * @return 메세지
      */
     @PostMapping("/doublecheck")
-    public ResponseEntity<MessageResDto> doubleCheckNickname(@RequestParam String nickname){
+    public ResponseEntity<MessageResDto> doubleCheckNickname(
+        @RequestParam
+        String nickname
+    ) {
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
         Assert.notNull(nickname, "닉네임을 입력해주세요");
-        if(nickname.length() > 20){
+        if (nickname.length() > 20) {
             throw new ExceedNicknameLengthException();
         }
         profileService.doubleCheckNickname(nickname);
-        return ResponseEntity.ok().body(new MessageResDto("사용가능한 닉네임이에요!"));
+        return ResponseEntity.ok()
+            .body(new MessageResDto("사용가능한 닉네임이에요!"));
     }
+
+    @PutMapping
+    public ResponseEntity<Void> update(
+        @RequestPart(required = false)
+        InfoUpdateRequest infoUpdateRequest,
+        @RequestPart(required = false)
+        MultipartFile profileImg
+    ) {
+        Long memberId = SecurityUtils.getMemberId();
+        profileService.updateProfileInfo(infoUpdateRequest, memberId, profileImg);
+        return ResponseEntity.ok()
+            .build();
+    }
+
 }
