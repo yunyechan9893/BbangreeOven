@@ -74,11 +74,11 @@ public class WishListProductService {
                                 new BoardLikeInfo(boardId, 1, LocalDateTime.now(), ScoreType.WISH));
                     }
                 },
-                makeNewWish(boardId, wishlistFolder)
+                makeNewWish(boardId, wishlistFolder, member)
             );
     }
 
-    private Runnable makeNewWish(Long boardId, WishlistFolder wishlistFolder) {
+    private Runnable makeNewWish(Long boardId, WishlistFolder wishlistFolder, Member member) {
         return () -> {
             redisTemplate.opsForZSet()
                 .incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 1);
@@ -93,6 +93,7 @@ public class WishListProductService {
             WishlistProduct wishlistProduct = WishlistProduct.builder()
                 .wishlistFolder(wishlistFolder)
                 .board(board)
+                .memberId(member.getId())
                 .isDeleted(false)
                 .build();
             WishlistProduct save = wishListProductRepository.save(wishlistProduct);
