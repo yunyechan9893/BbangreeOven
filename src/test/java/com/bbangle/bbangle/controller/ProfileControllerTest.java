@@ -56,7 +56,7 @@ public class ProfileControllerTest {
     @DisplayName("닉네임이 20자 이하이거나 비어 있는지 확인한다")
     @ParameterizedTest
     @ValueSource(strings = {"thisnicknameisexceed20characterright", " ", "", "\t", "\n"})
-    public void isExceed20Charcter(String nickname) throws Exception{
+    public void isExceed20Character(String nickname) throws Exception{
         //given
         mockMvc.perform(get("/api/v1/profile/doublecheck")
                         .header("Authorization", String.format("%s %s", BEARER, AUTHORIZATION))

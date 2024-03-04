@@ -39,7 +39,9 @@ public class ProfileController {
     public ResponseEntity<MessageResDto> doubleCheckNickname(@RequestParam String nickname){
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
-        Assert.notNull(nickname, "닉네임을 입력해주세요");
+        if(nickname.isEmpty() || nickname == null){
+            ResponseEntity.ok().body(new MessageResDto("닉네임을 입력해주세요!"));
+        }
         if(nickname.length() > 20){
             throw new ExceedNicknameLengthException();
         }
