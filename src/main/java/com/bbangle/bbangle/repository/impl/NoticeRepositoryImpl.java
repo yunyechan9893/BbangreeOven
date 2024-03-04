@@ -4,7 +4,7 @@ import com.bbangle.bbangle.dto.NoticeDetailResponseDto;
 import com.bbangle.bbangle.dto.NoticeResponseDto;
 import com.bbangle.bbangle.dto.QNoticeDetailResponseDto;
 import com.bbangle.bbangle.dto.QNoticeResponseDto;
-import com.bbangle.bbangle.repository.NoticeQueryDSLRepository;
+import com.bbangle.bbangle.repository.queryDsl.NoticeQueryDSLRepository;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
@@ -21,7 +21,7 @@ import static com.bbangle.bbangle.model.QNotice.notice;
 
 @Repository
 @RequiredArgsConstructor
-public class NoticeQueryDSLRepositoryImpl implements NoticeQueryDSLRepository {
+public class NoticeRepositoryImpl implements NoticeQueryDSLRepository {
 
     private final JPAQueryFactory queryFactory;
     //날짜 변환
