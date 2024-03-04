@@ -15,7 +15,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final static String HEADER_AUTHORIZATION = "Authorization";
     private final static String TOKEN_PREFIX = "Bearer ";
-    
+
     private final TokenProvider tokenProvider;
 
     @Override
