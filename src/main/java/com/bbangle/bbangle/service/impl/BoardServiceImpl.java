@@ -3,6 +3,7 @@ package com.bbangle.bbangle.service.impl;
 
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
+import com.bbangle.bbangle.dto.ProductBoardLikeStatus;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -13,10 +14,14 @@ import com.bbangle.bbangle.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import com.bbangle.bbangle.service.BoardService;
 import com.bbangle.bbangle.util.RedisKeyUtil;
+import com.bbangle.bbangle.util.SecurityUtils;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,6 +96,10 @@ public class BoardServiceImpl implements BoardService {
                 dto -> matchedIdx.indexOf(dto.boardId()))) // matchedIdx의 순서에 따라 정렬
             .toList();
 
+        if (SecurityUtils.isLogin()) {
+            sortedBoardResponseDto = boardRepository.updateLikeStatus(matchedIdx, sortedBoardResponseDto);
+        }
+
         // 현재 페이지와 페이지 크기 계산
         int currentPage = pageable.getPageNumber();
         int pageSize = pageable.getPageSize();
@@ -133,7 +142,11 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional(readOnly = true)
     public BoardDetailResponseDto getBoardDetailResponse(Long boardId) {
-        return boardRepository.getBoardDetailResponseDto(boardId);
+        BoardDetailResponseDto boardDetailResponseDto = boardRepository.getBoardDetailResponseDto(boardId);
+        if (SecurityUtils.isLogin()) {
+            boardDetailResponseDto = boardRepository.getDetailLikeUpdate(boardDetailResponseDto);
+        }
+        return boardDetailResponseDto;
     }
 
     @Override

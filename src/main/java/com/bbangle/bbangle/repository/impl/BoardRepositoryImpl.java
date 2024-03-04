@@ -5,6 +5,7 @@ import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardDto;
 import com.bbangle.bbangle.dto.BoardImgDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
+import com.bbangle.bbangle.dto.ProductBoardLikeStatus;
 import com.bbangle.bbangle.dto.ProductDto;
 import com.bbangle.bbangle.dto.ProductTagDto;
 import com.bbangle.bbangle.dto.StoreDto;
@@ -23,21 +24,27 @@ import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.TagEnum;
 import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
+import com.bbangle.bbangle.util.SecurityUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
@@ -132,7 +139,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QProduct product = QProduct.product;
         QStore store = QStore.store;
         QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
-        QWishlistFolder folder = QWishlistFolder.wishlistFolder;
 
         BooleanBuilder filter =
             setFilteringCondition(glutenFreeTag,
@@ -164,10 +170,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             List<String> tags = addList(productTagsByBoardId.get(board1.getId()));
             content.add(BoardResponseDto.from(board1, tags));
         }
-
-        List<Long> idList = boards.stream()
-            .map(Board::getId)
-            .toList();
 
         return content;
     }
@@ -420,6 +422,89 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         fetch.forEach((tuple) -> boardMap.put(tuple.get(board.id), tuple.get(board.title)));
 
         return boardMap;
+    }
+
+    @Override
+    public List<BoardResponseDto> updateLikeStatus(List<Long> matchedIdx, List<BoardResponseDto> content) {
+        QBoard board = QBoard.board;
+        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+
+        Long memberId = SecurityUtils.getMemberId();
+
+        BooleanExpression isLikedExpression = wishlistProduct.isDeleted.isFalse();
+
+
+        List<ProductBoardLikeStatus> likeFetch = queryFactory
+            .select(Projections.bean(
+                ProductBoardLikeStatus.class,
+                board.id.as("boardId"),
+                isLikedExpression.as("isLike")
+            ))
+            .from(board)
+            .leftJoin(wishlistProduct)
+            .on(board.id.eq(wishlistProduct.board.id)
+                .and(wishlistProduct.memberId.eq(memberId)))
+            .where(board.id.in(matchedIdx))
+            .fetch()
+            .stream()
+            .peek(result -> {
+                if (result.getIsLike() == null) {
+                    result.setIsLike(false);
+                }
+            })
+            .toList();
+
+        for (ProductBoardLikeStatus likeStatus : likeFetch) {
+            if (likeStatus.getIsLike()) {
+                for (BoardResponseDto boardResponseDto : content) {
+                    if (Objects.equals(likeStatus
+                        .getBoardId(), boardResponseDto
+                        .boardId())) {
+                        boardResponseDto
+                            .updateLike(true);
+                    }
+                }
+            }
+        }
+        return content;
+    }
+
+    @Override
+    public BoardDetailResponseDto getDetailLikeUpdate(BoardDetailResponseDto content) {
+        QBoard board = QBoard.board;
+        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+
+        Long memberId = SecurityUtils.getMemberId();
+
+        BooleanExpression isLikedExpression = wishlistProduct.isDeleted.isFalse();
+
+        ProductBoardLikeStatus likeFetch = queryFactory
+            .select(Projections.bean(
+                ProductBoardLikeStatus.class,
+                board.id.as("boardId"),
+                isLikedExpression.as("isLike")
+            ))
+            .from(board)
+            .leftJoin(wishlistProduct)
+            .on(board.id.eq(wishlistProduct.board.id)
+                .and(wishlistProduct.memberId.eq(memberId)))
+            .where(board.id.eq(content.board()
+                .boardId()))
+            .fetch()
+            .stream()
+            .peek(result -> {
+                if (result.getIsLike() == null) {
+                    result.setIsLike(false);
+                }
+            })
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
+
+        if(content.board().boardId().equals(likeFetch.getBoardId()) && likeFetch.getIsLike()){
+            content.board().updateLike(true);
+        }
+
+        return content;
     }
 
 }
