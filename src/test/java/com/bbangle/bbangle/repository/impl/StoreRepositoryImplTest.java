@@ -4,6 +4,8 @@ import com.bbangle.bbangle.dto.BoardDto;
 import com.bbangle.bbangle.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.dto.StoreBestBoardDto;
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.*;
 import jakarta.persistence.EntityManager;

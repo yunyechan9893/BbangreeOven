@@ -30,7 +30,6 @@ public interface BoardQueryDSLRepository {
     HashMap<Long, String> getAllBoardTitle();
 
     List<BoardResponseDto> updateLikeStatus(List<Long> matchedIdx, List<BoardResponseDto> content);
-    BoardDetailResponseDto getDetailLikeUpdate(BoardDetailResponseDto content);
 
 }
 
