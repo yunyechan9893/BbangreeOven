@@ -33,7 +33,7 @@ public class QWishlistFolder extends EntityPathBase<WishlistFolder> {
 
     public final BooleanPath isDeleted = createBoolean("isDeleted");
 
-    public final QMember member;
+    public final com.bbangle.bbangle.member.domain.QMember member;
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
@@ -56,7 +56,7 @@ public class QWishlistFolder extends EntityPathBase<WishlistFolder> {
 
     public QWishlistFolder(Class<? extends WishlistFolder> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.member = inits.isInitialized("member") ? new QMember(forProperty("member")) : null;
+        this.member = inits.isInitialized("member") ? new com.bbangle.bbangle.member.domain.QMember(forProperty("member")) : null;
     }
 
 }

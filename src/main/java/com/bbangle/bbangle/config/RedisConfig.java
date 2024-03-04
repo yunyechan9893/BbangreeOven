@@ -20,7 +20,7 @@ public class RedisConfig {
 
     private final RedisProperties redisProperties;
 
-    @Bean(name="boardLikeInfoRedisTemplate")
+    @Bean(name = "boardLikeInfoRedisTemplate")
     public RedisTemplate<String, Object> boardLikeInfoRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
@@ -29,7 +29,8 @@ public class RedisConfig {
         template.setKeySerializer(new StringRedisSerializer());
 
         // BoardLikeInfo 전용 Value Serializer 설정
-        Jackson2JsonRedisSerializer<BoardLikeInfo> serializer = new Jackson2JsonRedisSerializer<>(BoardLikeInfo.class);
+        Jackson2JsonRedisSerializer<BoardLikeInfo> serializer = new Jackson2JsonRedisSerializer<>(
+            BoardLikeInfo.class);
         template.setValueSerializer(serializer);
 
         return template;
@@ -51,4 +52,5 @@ public class RedisConfig {
 
         return redisTemplate;
     }
+
 }

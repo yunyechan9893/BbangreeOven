@@ -2,12 +2,12 @@ package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.dto.*;
 import com.bbangle.bbangle.exception.CategoryTypeException;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.*;
 
 import com.bbangle.bbangle.repository.queryDsl.SearchQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

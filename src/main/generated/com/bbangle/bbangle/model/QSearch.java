@@ -30,7 +30,7 @@ public class QSearch extends EntityPathBase<Search> {
 
     public final StringPath keyword = createString("keyword");
 
-    public final QMember member;
+    public final com.bbangle.bbangle.member.domain.QMember member;
 
     public QSearch(String variable) {
         this(Search.class, forVariable(variable), INITS);
@@ -50,7 +50,7 @@ public class QSearch extends EntityPathBase<Search> {
 
     public QSearch(Class<? extends Search> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.member = inits.isInitialized("member") ? new QMember(forProperty("member")) : null;
+        this.member = inits.isInitialized("member") ? new com.bbangle.bbangle.member.domain.QMember(forProperty("member")) : null;
     }
 
 }

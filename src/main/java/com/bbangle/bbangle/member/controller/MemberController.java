@@ -21,8 +21,10 @@ public class MemberController {
 
     @PutMapping("additional-information")
     public ResponseEntity<Void> updateInfo(
-        @RequestPart MemberInfoRequest additionalInfo,
-        @RequestPart(required = false) MultipartFile profileImage
+        @RequestPart
+        MemberInfoRequest additionalInfo,
+        @RequestPart(required = false)
+        MultipartFile profileImage
     ) {
         Long memberId = SecurityUtils.getMemberId();
 

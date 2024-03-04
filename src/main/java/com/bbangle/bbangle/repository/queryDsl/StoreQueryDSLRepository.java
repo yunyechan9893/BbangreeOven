@@ -4,10 +4,12 @@ import com.bbangle.bbangle.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Pageable;
+
 import java.util.HashMap;
 
 
 public interface StoreQueryDSLRepository {
+
     StoreDetailResponseDto getStoreDetailResponseDtoWithLike(Long memberId, Long storeId);
 
     StoreDetailResponseDto getStoreDetailResponseDto(Long storeId);
@@ -18,4 +20,5 @@ public interface StoreQueryDSLRepository {
 
 
     HashMap<Long, String> getAllStoreTitle();
+
 }

@@ -1,10 +1,9 @@
 package com.bbangle.bbangle.config.oauth;
 
+import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
 
 /**
  * OAut2User의 attribute를 서비스 유형에 맞게 담아줄 서비스
@@ -22,8 +21,10 @@ public class OAuthAttributes {
     private String provider;
 
     @Builder
-    public OAuthAttributes(Map<String, Object> attributes, String nameAttributesKey, String name, String email,
-                           String gender, String profile, String nickname, String provider) {
+    public OAuthAttributes(
+        Map<String, Object> attributes, String nameAttributesKey, String name, String email,
+        String gender, String profile, String nickname, String provider
+    ) {
         this.attributes = attributes;
         this.nameAttributesKey = nameAttributesKey;
         this.name = name;
@@ -43,27 +44,34 @@ public class OAuthAttributes {
         return null;
     }
 
-    private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+    private static OAuthAttributes ofGoogle(
+        String userNameAttributeName,
+        Map<String, Object> attributes
+    ) {
         return OAuthAttributes.builder()
-                .name(String.valueOf(attributes.get("name")))
-                .email(String.valueOf(attributes.get("email")))
-                .profile(String.valueOf(attributes.get("picture")))
-                .attributes(attributes)
-                .nameAttributesKey(userNameAttributeName)
-                .provider("google")
-                .build();
+            .name(String.valueOf(attributes.get("name")))
+            .email(String.valueOf(attributes.get("email")))
+            .profile(String.valueOf(attributes.get("picture")))
+            .attributes(attributes)
+            .nameAttributesKey(userNameAttributeName)
+            .provider("google")
+            .build();
     }
 
-    private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
+    private static OAuthAttributes ofKakao(
+        String userNameAttributeName,
+        Map<String, Object> attributes
+    ) {
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
         Map<String, Object> kakaoProfile = (Map<String, Object>) kakaoAccount.get("profile");
 
         return OAuthAttributes.builder()
-                .nickname(String.valueOf(kakaoProfile.get("nickname")))
-                .profile(String.valueOf(kakaoProfile.get("profile_image_url")))
-                .nameAttributesKey(userNameAttributeName)
-                .attributes(attributes)
-                .provider("kakao")
-                .build();
+            .nickname(String.valueOf(kakaoProfile.get("nickname")))
+            .profile(String.valueOf(kakaoProfile.get("profile_image_url")))
+            .nameAttributesKey(userNameAttributeName)
+            .attributes(attributes)
+            .provider("kakao")
+            .build();
     }
+
 }

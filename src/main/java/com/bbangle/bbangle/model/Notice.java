@@ -1,11 +1,18 @@
 package com.bbangle.bbangle.model;
 
 import com.bbangle.bbangle.dto.NoticeResponseDto;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Table(name = "notice")
 @Entity
@@ -13,7 +20,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Notice{
+public class Notice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,11 +31,12 @@ public class Notice{
     private LocalDateTime createdAt;
 
 
-    public static NoticeResponseDto toDto(Notice notice){
+    public static NoticeResponseDto toDto(Notice notice) {
         return NoticeResponseDto.builder()
-                .id(notice.getId())
-                .title(notice.getTitle())
-                .createdAt(String.valueOf(notice.getCreatedAt()))
-                .build();
+            .id(notice.getId())
+            .title(notice.getTitle())
+            .createdAt(String.valueOf(notice.getCreatedAt()))
+            .build();
     }
+
 }

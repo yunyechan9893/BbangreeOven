@@ -3,7 +3,7 @@ package com.bbangle.bbangle.exception;
 import lombok.Builder;
 
 @Builder
-public record ErrorResponse (
+public record ErrorResponse(
     String message
 ) {
 

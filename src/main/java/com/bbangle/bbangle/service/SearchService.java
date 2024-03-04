@@ -7,7 +7,9 @@ import com.bbangle.bbangle.dto.SearchStoreDto;
 import java.util.List;
 
 public interface SearchService {
+
     void initSetting();
+
     void updateRedisAtBestKeyword();
     void saveKeyword(Long memberId,String keyword);
 
@@ -24,4 +26,5 @@ public interface SearchService {
     List<String> getBestKeyword();
 
     List<String> getAutoKeyword(String keyword);
+
 }

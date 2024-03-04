@@ -22,14 +22,21 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    public ResponseEntity<Page<NotificationResponse>> getList(@PageableDefault Pageable pageable){
+    public ResponseEntity<Page<NotificationResponse>> getList(
+        @PageableDefault
+        Pageable pageable
+    ) {
         return ResponseEntity.ok(notificationService.getList(pageable));
     }
 
     @PostMapping
-    public ResponseEntity<Void> upload(@RequestBody NoticeUploadRequest noticeUploadRequest){
+    public ResponseEntity<Void> upload(
+        @RequestBody
+        NoticeUploadRequest noticeUploadRequest
+    ) {
         notificationService.upload(noticeUploadRequest);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+            .build();
     }
 
 }

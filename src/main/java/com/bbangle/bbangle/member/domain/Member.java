@@ -1,9 +1,17 @@
 package com.bbangle.bbangle.member.domain;
 
+import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.exception.UserValidator;
 import com.bbangle.bbangle.model.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.util.Collection;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,9 +19,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Collection;
-import java.util.List;
 
 @Table(name = "member")
 @Entity
@@ -96,12 +101,12 @@ public class Member extends BaseEntity implements UserDetails {
         return true;
     }
 
-    public Member update(String nickname) {
+    public Member updateNickname(String nickname) {
         this.nickname = nickname;
         return this;
     }
 
-    public void updateInfo(MemberInfoRequest request) {
+    public void updateFirst(MemberInfoRequest request) {
         if (request.birthDate() != null) {
             UserValidator.validateBirthDate(request.birthDate());
         }
@@ -115,6 +120,23 @@ public class Member extends BaseEntity implements UserDetails {
 
     public void updateProfile(String imgUrl) {
         this.profile = imgUrl;
+    }
+
+    public void update(InfoUpdateRequest request) {
+        if (request.birthDate() != null) {
+            UserValidator.validateBirthDate(request.birthDate());
+            this.birth = request.birthDate();
+        }
+
+        if (request.phoneNumber() != null) {
+            UserValidator.validatePhoneNumber(request.phoneNumber());
+            this.phone = request.phoneNumber();
+        }
+
+        if (request.nickname() != null) {
+            UserValidator.validateNickname(request.nickname());
+            this.nickname = request.nickname();
+        }
     }
 
 }
