@@ -2,23 +2,22 @@ package com.bbangle.bbangle.config.oauth;
 
 import com.bbangle.bbangle.config.jwt.TokenProvider;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.model.RefreshToken;
 import com.bbangle.bbangle.repository.RefreshTokenRepository;
-import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.io.IOException;
-import java.time.Duration;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -36,17 +35,23 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final MemberService memberService;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+    public void onAuthenticationSuccess(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Authentication authentication
+    ) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
         Member member = null;
         //google
-        if(attributes.containsKey("sub")){
-            member = memberService.findByEmail((String) oAuth2User.getAttributes().get("email"));
-        //kakao
-        } else if(attributes.containsKey("id")) {
-            LinkedHashMap propertiesMap = (LinkedHashMap) oAuth2User.getAttributes().get("properties");
+        if (attributes.containsKey("sub")) {
+            member = memberService.findByEmail((String) oAuth2User.getAttributes()
+                .get("email"));
+            //kakao
+        } else if (attributes.containsKey("id")) {
+            LinkedHashMap propertiesMap = (LinkedHashMap) oAuth2User.getAttributes()
+                .get("properties");
             String nickname = (String) propertiesMap.get("nickname");
             member = memberService.findByNickname(nickname);
         }
@@ -57,8 +62,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         addTokensToCookie(request, response, refreshToken, accessToken);
 
         String targetUrl = UriComponentsBuilder.fromUriString(REDIRECT_PATH)
-                                .build()
-                                .toUriString();
+            .build()
+            .toUriString();
 
         clearAuthenticationAttributes(request, response);
 
@@ -73,8 +78,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      */
     public void saveRefreshToken(Long memberId, String newRefreshToken) {
         RefreshToken refreshToken = refreshTokenRepository.findByMemberId(memberId)
-                .map(entity -> entity.update(newRefreshToken))
-                .orElse(new RefreshToken(memberId, newRefreshToken));
+            .map(entity -> entity.update(newRefreshToken))
+            .orElse(new RefreshToken(memberId, newRefreshToken));
 
         refreshTokenRepository.save(refreshToken);
     }
@@ -87,8 +92,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      * @param refreshToken the refresh token
      * @param accessToken  the access token
      */
-    private void addTokensToCookie(HttpServletRequest request, HttpServletResponse response,
-                                         String refreshToken, String accessToken) {
+    private void addTokensToCookie(
+        HttpServletRequest request, HttpServletResponse response,
+        String refreshToken, String accessToken
+    ) {
         int cookieMaxAge = (int) REFRESH_TOKEN_DURATION.toSeconds();
         CookieUtil.deleteCookie(request, response, REFRESH_TOKEN_COOKIE_NAME);
         CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, cookieMaxAge);
@@ -105,8 +112,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
      * @param request  the request
      * @param response the response
      */
-    private void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
+    private void clearAuthenticationAttributes(
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) {
         super.clearAuthenticationAttributes(request);
         authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
+
 }

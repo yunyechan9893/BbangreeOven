@@ -20,22 +20,22 @@ public class UserValidator {
     }
 
     public static void validateNickname(String nickname) {
-        if(nickname == null){
+        if (nickname == null) {
             throw new IllegalArgumentException("닉네임은 필수입니다.");
         }
 
-        if(nickname.length() > MAX_NICKNAME_LENGTH){
+        if (nickname.length() > MAX_NICKNAME_LENGTH) {
             throw new IllegalArgumentException("nickname 은 20자 이하만 등록 가능합니다.");
         }
     }
 
     public static void validatePhoneNumber(String phoneNumber) {
-        if(phoneNumber == null){
+        if (phoneNumber == null) {
             throw new IllegalArgumentException("전화번호는 필수입니다.");
         }
-       if(phoneNumber.length() != PHONE_NUMBER_LENGTH){
-           throw new IllegalArgumentException("전화번호는 11자리로 입력해주세요");
-       }
+        if (phoneNumber.length() != PHONE_NUMBER_LENGTH) {
+            throw new IllegalArgumentException("전화번호는 11자리로 입력해주세요");
+        }
     }
 
 }

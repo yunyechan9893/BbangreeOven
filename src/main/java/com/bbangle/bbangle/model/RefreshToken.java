@@ -1,6 +1,10 @@
 package com.bbangle.bbangle.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 public class RefreshToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
@@ -25,8 +30,9 @@ public class RefreshToken {
         this.refreshToken = refreshToken;
     }
 
-    public RefreshToken update(String newRefreshToken){
+    public RefreshToken update(String newRefreshToken) {
         this.refreshToken = newRefreshToken;
         return this;
     }
+
 }

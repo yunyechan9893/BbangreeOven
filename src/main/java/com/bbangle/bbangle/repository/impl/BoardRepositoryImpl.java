@@ -1,14 +1,5 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.exception.MemberNotFoundException;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.util.SecurityUtils;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import com.bbangle.bbangle.dto.BoardAvailableDayDto;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardDto;
@@ -18,6 +9,7 @@ import com.bbangle.bbangle.dto.ProductDto;
 import com.bbangle.bbangle.dto.ProductTagDto;
 import com.bbangle.bbangle.dto.StoreDto;
 import com.bbangle.bbangle.exception.CategoryTypeException;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.model.Board;
 import com.bbangle.bbangle.model.Category;
 import com.bbangle.bbangle.model.Product;
@@ -35,6 +27,10 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -47,6 +43,83 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private final JPAQueryFactory queryFactory;
     private final MemberRepository memberRepository;
+
+    private static OrderSpecifier<?> sortTypeFolder(
+        String sort,
+        QBoard board,
+        QWishlistProduct products
+    ) {
+        OrderSpecifier<?> orderSpecifier;
+        if (sort == null) {
+            orderSpecifier = products.createdAt.desc();
+            return orderSpecifier;
+        }
+        switch (SortType.fromString(sort)) {
+            case RECENT:
+                orderSpecifier = products.createdAt.desc();
+                break;
+            case LOW_PRICE:
+                orderSpecifier = board.price.asc();
+                break;
+            case POPULAR:
+                orderSpecifier = board.wishCnt.desc();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid SortType");
+        }
+        return orderSpecifier;
+    }
+
+    private static Map<Long, List<ProductTagDto>> getLongListMap(List<Board> boards) {
+        Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
+        for (Board board1 : boards) {
+            for (Product product1 : board1.getProductList()) {
+                productTagsByBoardId.put(board1.getId(),
+                    productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
+                productTagsByBoardId.get(board1.getId())
+                    .add(ProductTagDto.from(product1));
+            }
+        }
+        return productTagsByBoardId;
+    }
+
+    private static BooleanBuilder setFilteringCondition(
+        Boolean glutenFreeTag, Boolean highProteinTag,
+        Boolean sugarFreeTag,
+        Boolean veganTag, Boolean ketogenicTag, String category,
+        Integer minPrice, Integer maxPrice,
+        QProduct product, QBoard board
+    ) {
+        BooleanBuilder filterBuilder = new BooleanBuilder();
+        if (glutenFreeTag != null) {
+            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
+        }
+        if (highProteinTag != null) {
+            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
+        }
+        if (sugarFreeTag != null) {
+            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
+        }
+        if (veganTag != null) {
+            filterBuilder.and(product.veganTag.eq(veganTag));
+        }
+        if (ketogenicTag != null) {
+            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
+        }
+        if (category != null && !category.isBlank()) {
+            if (!Category.checkCategory(category)) {
+                throw new CategoryTypeException();
+            }
+            filterBuilder.and(product.category.eq(Category.valueOf(category)));
+        }
+        if (minPrice != null) {
+            filterBuilder.and(board.price.goe(minPrice));
+        }
+        if (maxPrice != null) {
+            filterBuilder.and(board.price.loe(maxPrice));
+        }
+        return filterBuilder;
+    }
 
     @Override
     public List<BoardResponseDto> getBoardResponseDto(
@@ -145,83 +218,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         }
 
         return new SliceImpl<>(content, pageable, hasNext);
-    }
-
-    private static OrderSpecifier<?> sortTypeFolder(
-        String sort,
-        QBoard board,
-        QWishlistProduct products
-    ) {
-        OrderSpecifier<?> orderSpecifier;
-        if (sort == null) {
-            orderSpecifier = products.createdAt.desc();
-            return orderSpecifier;
-        }
-        switch (SortType.fromString(sort)) {
-            case RECENT:
-                orderSpecifier = products.createdAt.desc();
-                break;
-            case LOW_PRICE:
-                orderSpecifier = board.price.asc();
-                break;
-            case POPULAR:
-                orderSpecifier = board.wishCnt.desc();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid SortType");
-        }
-        return orderSpecifier;
-    }
-
-    private static Map<Long, List<ProductTagDto>> getLongListMap(List<Board> boards) {
-        Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
-        for (Board board1 : boards) {
-            for (Product product1 : board1.getProductList()) {
-                productTagsByBoardId.put(board1.getId(),
-                    productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
-                productTagsByBoardId.get(board1.getId())
-                    .add(ProductTagDto.from(product1));
-            }
-        }
-        return productTagsByBoardId;
-    }
-
-    private static BooleanBuilder setFilteringCondition(
-        Boolean glutenFreeTag, Boolean highProteinTag,
-        Boolean sugarFreeTag,
-        Boolean veganTag, Boolean ketogenicTag, String category,
-        Integer minPrice, Integer maxPrice,
-        QProduct product, QBoard board
-    ) {
-        BooleanBuilder filterBuilder = new BooleanBuilder();
-        if (glutenFreeTag != null) {
-            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
-        }
-        if (highProteinTag != null) {
-            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
-        }
-        if (sugarFreeTag != null) {
-            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
-        }
-        if (veganTag != null) {
-            filterBuilder.and(product.veganTag.eq(veganTag));
-        }
-        if (ketogenicTag != null) {
-            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
-        }
-        if (category != null && !category.isBlank()) {
-            if (!Category.checkCategory(category)) {
-                throw new CategoryTypeException();
-            }
-            filterBuilder.and(product.category.eq(Category.valueOf(category)));
-        }
-        if (minPrice != null) {
-            filterBuilder.and(board.price.goe(minPrice));
-        }
-        if (maxPrice != null) {
-            filterBuilder.and(board.price.loe(maxPrice));
-        }
-        return filterBuilder;
     }
 
     private List<String> addList(List<ProductTagDto> dtos) {
@@ -347,7 +343,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             }
 
             // 중복 제거 및 상품 추가
-            if (alreadyProductId.indexOf(tuple.get(product.id)) == -1) {
+            if (!alreadyProductId.contains(tuple.get(product.id))) {
                 productDtos.add(
                     ProductDto.builder()
                         .title(tuple.get(product.title))
@@ -358,7 +354,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             }
 
             // 중복 제거 및 보드 이미지 추가
-            if (alreadyProductImgId.indexOf(tuple.get(productImg.id)) == -1
+            if (!alreadyProductImgId.contains(tuple.get(productImg.id))
                 && tuple.get(productImg.id) != null) {
                 boardImgDtos.add(
                     BoardImgDto.builder()

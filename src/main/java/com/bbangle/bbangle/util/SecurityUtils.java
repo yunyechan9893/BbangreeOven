@@ -22,8 +22,8 @@ public class SecurityUtils {
     public static Long getMemberIdWithAnonymous() {
         // 인증된 사용자인지 확인
         Authentication authentication = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
+            .getContext()
+            .getAuthentication();
 
         // 만약 요청된 인증이 있다면 통과
         if (authentication != null && authentication.getPrincipal() != null) {
@@ -42,8 +42,9 @@ public class SecurityUtils {
 
     public static boolean isLogin() {
         return !ANONYMOUS_USER_PRINCIPLE.equals(SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal());
+            .getContext()
+            .getAuthentication()
+            .getPrincipal());
     }
+
 }

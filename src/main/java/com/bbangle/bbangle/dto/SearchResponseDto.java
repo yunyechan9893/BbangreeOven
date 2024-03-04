@@ -6,6 +6,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class SearchResponseDto {
+
     SearchBoardDto boards;
     SearchStoreDto stores;
+
 }

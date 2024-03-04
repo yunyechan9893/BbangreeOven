@@ -9,10 +9,9 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.repository.ProfileRepository;
 import com.bbangle.bbangle.service.ProfileService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,22 +25,23 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public ProfileInfoResponseDto getProfileInfo(Long memberId) {
         Member member = profileRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
+            .orElseThrow(MemberNotFoundException::new);
         return ProfileInfoResponseDto.builder()
-                .profileImg(member.getProfile())
-                .nickname(member.getNickname())
-                .phoneNumber(member.getPhone())
-                .birthDate(member.getBirth())
-                .build();
+            .profileImg(member.getProfile())
+            .nickname(member.getNickname())
+            .phoneNumber(member.getPhone())
+            .birthDate(member.getBirth())
+            .build();
     }
 
     @Transactional
-    public void updateProfileInfo(InfoUpdateRequest request, Long memberId,
+    public void updateProfileInfo(
+        InfoUpdateRequest request, Long memberId,
         MultipartFile profileImg
     ) {
         Member member = profileRepository.findById(memberId)
             .orElseThrow(MemberNotFoundException::new);
-        if(!profileImg.isEmpty()){
+        if (!profileImg.isEmpty()) {
             ImageValidator.validateImage(profileImg);
             String imgUrl = imageService.saveImage(profileImg);
             member.updateProfile(imgUrl);
@@ -52,7 +52,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public void doubleCheckNickname(String nickname) {
         Optional<Member> member = profileRepository.findByNickname(nickname);
-        if(!member.isEmpty()){
+        if (!member.isEmpty()) {
             throw new DuplicateNicknameException();
         }
     }

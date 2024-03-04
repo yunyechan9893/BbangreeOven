@@ -6,7 +6,8 @@ import java.util.List;
 
 
 public class TrieUtil {
-    private mNode root;
+
+    private final mNode root;
 
     public TrieUtil() {
         this.root = new mNode("");
@@ -16,11 +17,14 @@ public class TrieUtil {
         mNode currentMNode = this.root;
 
         for (char ch : string.toCharArray()) {
-            if (!currentMNode.getChildren().containsKey(ch)) {
-                currentMNode.getChildren().put(ch, new mNode(currentMNode.getValue() + ch));
+            if (!currentMNode.getChildren()
+                .containsKey(ch)) {
+                currentMNode.getChildren()
+                    .put(ch, new mNode(currentMNode.getValue() + ch));
             }
 
-            currentMNode = currentMNode.getChildren().get(ch);
+            currentMNode = currentMNode.getChildren()
+                .get(ch);
         }
 
         currentMNode.setWordExists(true);
@@ -30,10 +34,12 @@ public class TrieUtil {
         mNode currentMNode = this.root;
 
         for (char ch : string.toCharArray()) {
-            if (!currentMNode.getChildren().containsKey(ch)) {
+            if (!currentMNode.getChildren()
+                .containsKey(ch)) {
                 return null;
             }
-            currentMNode = currentMNode.getChildren().get(ch);
+            currentMNode = currentMNode.getChildren()
+                .get(ch);
         }
 
         return currentMNode;
@@ -45,8 +51,9 @@ public class TrieUtil {
 
     public List<String> autoComplete(String prefix, int limit) {
         mNode prefixMNode = find(prefix);
-        if (prefixMNode == null || prefixMNode.getChildren().isEmpty()) {
-            return Arrays.asList();
+        if (prefixMNode == null || prefixMNode.getChildren()
+            .isEmpty()) {
+            return List.of();
         }
 
         mQueue queue = new mQueue();
@@ -60,16 +67,18 @@ public class TrieUtil {
 
                 words.add(currentMNode.getValue());
 
-                if (limit == 0){
+                if (limit == 0) {
                     return words;
                 }
             }
 
-            for (mNode child : currentMNode.getChildren().values()) {
+            for (mNode child : currentMNode.getChildren()
+                .values()) {
                 queue.enqueue(child);
             }
         }
 
         return words;
     }
+
 }

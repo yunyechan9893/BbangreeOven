@@ -2,6 +2,13 @@ package com.bbangle.bbangle.controller;
 
 import com.bbangle.bbangle.dto.RequestEmailDto;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,23 +17,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @Slf4j
 @RequestMapping("/api/v1")
 public class LandingPageController {
-    private static final String DIRECTORY_PATH = "/etc/bbangle";
+
     static final String FILE_NAME = "landingPageUserEmail.txt";
+    private static final String DIRECTORY_PATH = "/etc/bbangle";
+
     @PostMapping("/landingpage")
-    public ResponseEntity<Map<String, String>> getUserEmail(@Valid @RequestBody RequestEmailDto requestEmailDto){
-        String email = requestEmailDto.getEmail()+",";
+    public ResponseEntity<Map<String, String>> getUserEmail(
+        @Valid
+        @RequestBody
+        RequestEmailDto requestEmailDto
+    ) {
+        String email = requestEmailDto.getEmail() + ",";
 
         //for local
         //String directoryPath = "C:\\Users\\Dongseok\\Desktop";
@@ -41,7 +46,7 @@ public class LandingPageController {
             // 파일이 있는지 확인하고 없으면 생성
             if (Files.notExists(filePath)) {
                 Files.createFile(filePath);
-                log.debug("File created: " + filePath.toString());
+                log.debug("File created: " + filePath);
             }
 
             // 파일에 이메일 추가하기
@@ -52,7 +57,9 @@ public class LandingPageController {
         } catch (IOException e) {
             log.error("getUserEmail() >>>> file io {}", e.getMessage());
             messageMap.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageMap);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(messageMap);
         }
     }
+
 }

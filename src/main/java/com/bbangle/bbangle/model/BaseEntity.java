@@ -15,5 +15,6 @@ public class BaseEntity {
 
     @UpdateTimestamp
     private LocalDateTime modifiedAt;
+
 }
 

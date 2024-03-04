@@ -17,7 +17,8 @@ public class ImageValidator {
         Assert.notNull(img, EMPTY_FILE);
         Assert.isTrue(!img.isEmpty(), EMPTY_FILE);
         Assert.isTrue(img.getSize() < 10_000_000, FILE_OVER_SIZE);
-        Assert.isTrue(img.getContentType().startsWith(IMAGE_PREFIX), INVALID_FILE_TYPE);
+        Assert.isTrue(img.getContentType()
+            .startsWith(IMAGE_PREFIX), INVALID_FILE_TYPE);
     }
 
 }

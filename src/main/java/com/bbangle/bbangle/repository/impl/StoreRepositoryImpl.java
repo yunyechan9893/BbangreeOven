@@ -1,20 +1,29 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.dto.*;
-import com.bbangle.bbangle.model.*;
+import com.bbangle.bbangle.dto.BoardDto;
+import com.bbangle.bbangle.dto.StoreDetailResponseDto;
+import com.bbangle.bbangle.dto.StoreDto;
+import com.bbangle.bbangle.model.Category;
+import com.bbangle.bbangle.model.QBoard;
+import com.bbangle.bbangle.model.QProduct;
+import com.bbangle.bbangle.model.QStore;
+import com.bbangle.bbangle.model.TagEnum;
 import com.bbangle.bbangle.repository.queryDsl.StoreQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Repository
 @RequiredArgsConstructor
 public class StoreRepositoryImpl implements StoreQueryDSLRepository {
+
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -39,13 +48,15 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 product.ketogenicTag,
                 product.category,
                 board.view
-        ).from(product)
-                .join(product.board, board)
-                .join(board.store, store)
-                .where(board.store.id.eq(storeId))
-                .orderBy(board.createdAt.desc())
-                .fetch();
-        StoreDto storeDto = StoreDto.builder().build();
+            )
+            .from(product)
+            .join(product.board, board)
+            .join(board.store, store)
+            .where(board.store.id.eq(storeId))
+            .orderBy(board.createdAt.desc())
+            .fetch();
+        StoreDto storeDto = StoreDto.builder()
+            .build();
         List<BoardDto> boardDtos = new ArrayList<>();
 
         // TagDto 초기화
@@ -57,61 +68,66 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
         int best_one_product_id = 0;
 
-        for (Tuple tuple: fetch) {
+        for (Tuple tuple : fetch) {
             index++;
 
             // 개별 태그의 True를 각각 확인하여 전체 태그로 구성
-            if (!tags.contains(TagEnum.GLUTEN_FREE.label()) && tuple.get(product.glutenFreeTag))
+            if (!tags.contains(TagEnum.GLUTEN_FREE.label()) && tuple.get(product.glutenFreeTag)) {
                 tags.add(TagEnum.GLUTEN_FREE.label());
+            }
 
-            if (!tags.contains(TagEnum.HIGH_PROTEIN.label()) && tuple.get(product.highProteinTag))
+            if (!tags.contains(TagEnum.HIGH_PROTEIN.label()) && tuple.get(product.highProteinTag)) {
                 tags.add(TagEnum.HIGH_PROTEIN.label());
+            }
 
-            if (!tags.contains(TagEnum.SUGAR_FREE.label()) && tuple.get(product.sugarFreeTag))
+            if (!tags.contains(TagEnum.SUGAR_FREE.label()) && tuple.get(product.sugarFreeTag)) {
                 tags.add(TagEnum.SUGAR_FREE.label());
+            }
 
-            if (!tags.contains(TagEnum.VEGAN.label()) && tuple.get(product.veganTag))
+            if (!tags.contains(TagEnum.VEGAN.label()) && tuple.get(product.veganTag)) {
                 tags.add(TagEnum.VEGAN.label());
+            }
 
-            if (!tags.contains(TagEnum.KETOGENIC.label()) && tuple.get(product.ketogenicTag))
+            if (!tags.contains(TagEnum.KETOGENIC.label()) && tuple.get(product.ketogenicTag)) {
                 tags.add(TagEnum.KETOGENIC.label());
+            }
 
             categorys.add(tuple.get(product.category));
 
-
             // ProductId가 달라지거나 반복문 마지막 일 시 Board 데이터 추가
-            if ( resultSize > index &&  tuple.get(board.id) != fetch.get(index).get(board.id) || resultSize == index){
-                var is_categories = false;
-                if (categorys.stream().distinct().collect(Collectors.toList()).size() > 1){
-                    is_categories = true;
-                }
+            if (resultSize > index && tuple.get(board.id) != fetch.get(index)
+                .get(board.id) || resultSize == index) {
+                var is_categories = categorys.stream()
+                    .distinct()
+                    .collect(Collectors.toList())
+                    .size() > 1;
 
                 // 보드 리스트에 데이터 추가
                 boardDtos.add(BoardDto.builder()
-                        .boardId(tuple.get(board.id))
-                        .thumbnail(tuple.get(board.profile))
-                        .title(tuple.get(board.title))
-                        .price(tuple.get(board.price))
-                        .isWished(true)
-                        .isBundled(is_categories)
-                        .tags(tags)
-                        .build());
+                    .boardId(tuple.get(board.id))
+                    .thumbnail(tuple.get(board.profile))
+                    .title(tuple.get(board.title))
+                    .price(tuple.get(board.price))
+                    .isWished(true)
+                    .isBundled(is_categories)
+                    .tags(tags)
+                    .build());
 
                 // 태그 초기화
                 tags = new ArrayList<>();
                 categorys = new ArrayList<>();
             }
 
-
             // 반복문 마지막에 스토어 Dto 추가
-            if (index == resultSize){
+            if (index == resultSize) {
                 storeDto = StoreDto.builder()
-                        .storeId(tuple.get(store.id))
-                        .profile(tuple.get(store.profile))
-                        .storeName(tuple.get(store.name))
-                        .introduce(tuple.get(store.introduce).isBlank() ? "": tuple.get(store.introduce))
-                        .isWished(true)
-                        .build();
+                    .storeId(tuple.get(store.id))
+                    .profile(tuple.get(store.profile))
+                    .storeName(tuple.get(store.name))
+                    .introduce(tuple.get(store.introduce)
+                        .isBlank() ? "" : tuple.get(store.introduce))
+                    .isWished(true)
+                    .build();
             }
         }
 
@@ -122,40 +138,41 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         });
         index = 0;
 
-
         List<BoardDto> bestBoards = new ArrayList<>();
-        for (Tuple tuple: fetch) {
+        for (Tuple tuple : fetch) {
             index++;
 
             categorys.add(tuple.get(product.category));
 
-            if ( resultSize > index &&  tuple.get(board.id) != fetch.get(index).get(board.id) || resultSize == index){
-                var is_categories = false;
+            if (resultSize > index && tuple.get(board.id) != fetch.get(index)
+                .get(board.id) || resultSize == index) {
+                var is_categories = categorys.stream()
+                    .distinct()
+                    .collect(Collectors.toList())
+                    .size() > 1;
 
-                if (categorys.stream().distinct().collect(Collectors.toList()).size() > 1){
-                    is_categories = true;
-                }
                 bestBoards.add(BoardDto.builder()
-                        .boardId(tuple.get(board.id))
-                        .thumbnail(tuple.get(board.profile))
-                        .title(tuple.get(board.title))
-                        .price(tuple.get(board.price))
-                        .isBundled(is_categories)
-                        .build());
+                    .boardId(tuple.get(board.id))
+                    .thumbnail(tuple.get(board.profile))
+                    .title(tuple.get(board.title))
+                    .price(tuple.get(board.price))
+                    .isBundled(is_categories)
+                    .build());
 
-                if (bestBoards.size() > 2) break;
+                if (bestBoards.size() > 2) {
+                    break;
+                }
                 categorys = new ArrayList<>();
             }
 
 
         }
 
-
         return StoreDetailResponseDto.builder()
-                .store(storeDto)
-                .bestProducts(bestBoards)
-                .allProducts(boardDtos)
-                .build();
+            .store(storeDto)
+            .bestProducts(bestBoards)
+            .allProducts(boardDtos)
+            .build();
     }
 
     @Override
@@ -163,9 +180,9 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         QStore store = QStore.store;
 
         List<Tuple> fetch = jpaQueryFactory
-                .select(store.id, store.name)
-                .from(store)
-                .fetch();
+            .select(store.id, store.name)
+            .from(store)
+            .fetch();
 
         HashMap<Long, String> storeMap = new HashMap<>();
         fetch.forEach((tuple) -> storeMap.put(tuple.get(store.id), tuple.get(store.name)));

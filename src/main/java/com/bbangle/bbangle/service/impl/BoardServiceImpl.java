@@ -1,20 +1,22 @@
 package com.bbangle.bbangle.service.impl;
 
 
-import java.util.*;
-
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.BoardRepository;
-import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import com.bbangle.bbangle.service.BoardService;
 import com.bbangle.bbangle.util.RedisKeyUtil;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,13 +39,19 @@ public class BoardServiceImpl implements BoardService {
 
     @Value("${cloud.aws.s3.bucket}")
     private String BUCKET_NAME;
-    private String DETAIL_HTML_FILE_NAME = "detail.html";
+    private final String DETAIL_HTML_FILE_NAME = "detail.html";
 
     public BoardServiceImpl(
-            @Autowired BoardRepository boardRepository,
-            @Autowired MemberRepository memberRepository,
-            @Autowired WishListFolderRepository folderRepository,
-            @Autowired @Qualifier("defaultRedisTemplate")RedisTemplate<String, Object> redisTemplate, ObjectStorageRepository objectStorageRepository) {
+        @Autowired
+        BoardRepository boardRepository,
+        @Autowired
+        MemberRepository memberRepository,
+        @Autowired
+        WishListFolderRepository folderRepository,
+        @Autowired
+        @Qualifier("defaultRedisTemplate")
+        RedisTemplate<String, Object> redisTemplate, ObjectStorageRepository objectStorageRepository
+    ) {
         this.boardRepository = boardRepository;
         this.memberRepository = memberRepository;
         this.folderRepository = folderRepository;
@@ -53,10 +61,12 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public Slice<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                String category, Integer minPrice, Integer maxPrice,
-                                                Pageable pageable) {
+    public Slice<BoardResponseDto> getBoardList(
+        String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+        String category, Integer minPrice, Integer maxPrice,
+        Pageable pageable
+    ) {
 
         List<BoardResponseDto> boardResponseDto = boardRepository.getBoardResponseDto(
             sort,
@@ -77,7 +87,8 @@ public class BoardServiceImpl implements BoardService {
         List<Long> matchedIdx = getListAdaptingSort(boardResponseDtoIdx, sort);
 
         List<BoardResponseDto> sortedBoardResponseDto = boardResponseDto.stream()
-            .sorted(Comparator.comparingInt(dto -> matchedIdx.indexOf(dto.boardId()))) // matchedIdx의 순서에 따라 정렬
+            .sorted(Comparator.comparingInt(
+                dto -> matchedIdx.indexOf(dto.boardId()))) // matchedIdx의 순서에 따라 정렬
             .toList();
 
         // 현재 페이지와 페이지 크기 계산
@@ -102,15 +113,19 @@ public class BoardServiceImpl implements BoardService {
 
     private List<Long> getListAdaptingSort(List<Long> boardResponseDtoIdx, String sort) {
         if (sort != null && sort.equals(SortType.POPULAR.getValue())) {
-            return redisTemplate.opsForZSet().reverseRange(RedisKeyUtil.POPULAR_KEY, 0, -1)
+            return redisTemplate.opsForZSet()
+                .reverseRange(RedisKeyUtil.POPULAR_KEY, 0, -1)
                 .stream()
-                .map(idx -> Long.valueOf(idx.toString().replace("\"", "")))
+                .map(idx -> Long.valueOf(idx.toString()
+                    .replace("\"", "")))
                 .filter(boardResponseDtoIdx::contains)
                 .toList();
         }
-        return redisTemplate.opsForZSet().reverseRange(RedisKeyUtil.RECOMMEND_KEY, 0, -1)
+        return redisTemplate.opsForZSet()
+            .reverseRange(RedisKeyUtil.RECOMMEND_KEY, 0, -1)
             .stream()
-            .map(idx -> Long.valueOf(idx.toString().replace("\"", "")))
+            .map(idx -> Long.valueOf(idx.toString()
+                .replace("\"", "")))
             .filter(boardResponseDtoIdx::contains)
             .toList();
     }
@@ -123,20 +138,30 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile){
-        Long storeId = boardRepository.findById(boardId).get().getStore().getId();
-        String filePath = String.format("%s/%s/%s",storeId,boardId,DETAIL_HTML_FILE_NAME);
+    public Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile) {
+        Long storeId = boardRepository.findById(boardId)
+            .get()
+            .getStore()
+            .getId();
+        String filePath = String.format("%s/%s/%s", storeId, boardId, DETAIL_HTML_FILE_NAME);
         // Board DetailUrl FilePath로 수정
         if (boardRepository.updateDetailWhereStoreIdEqualsBoardId(
-                boardId,
-                filePath
-        ) != 1) return false;
+            boardId,
+            filePath
+        ) != 1) {
+            return false;
+        }
 
         // ObjectStorage에 파일 생성
         return objectStorageRepository.createFile(BUCKET_NAME, filePath, htmlFile);
     }
 
-    public Slice<BoardResponseDto> getPostInFolder(Long memberId, String sort, Long folderId, Pageable pageable) {
+    public Slice<BoardResponseDto> getPostInFolder(
+        Long memberId,
+        String sort,
+        Long folderId,
+        Pageable pageable
+    ) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(MemberNotFoundException::new);
 

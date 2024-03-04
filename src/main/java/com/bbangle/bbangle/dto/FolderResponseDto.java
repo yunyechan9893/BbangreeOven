@@ -7,6 +7,6 @@ public record FolderResponseDto(
     String title,
     int count,
     List<String> productImages
-){
+) {
 
 }

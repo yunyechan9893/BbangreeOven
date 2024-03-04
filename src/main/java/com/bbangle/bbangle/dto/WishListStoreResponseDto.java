@@ -7,6 +7,7 @@ import lombok.Getter;
 @Builder
 @Getter
 public class WishListStoreResponseDto {
+
     private String introduce;
     private String storeName;
     private Long storeId;
@@ -17,4 +18,5 @@ public class WishListStoreResponseDto {
         this.storeName = storeName;
         this.storeId = storeId;
     }
+
 }

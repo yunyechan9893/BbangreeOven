@@ -3,14 +3,14 @@ package com.bbangle.bbangle.dto;
 import com.bbangle.bbangle.model.Store;
 
 public record StoreResponseDto(
-        Long storeId,
-        String storeName,
-        String introduce,
-        String profile,
-        Boolean isWished
-    ){
+    Long storeId,
+    String storeName,
+    String introduce,
+    String profile,
+    Boolean isWished
+) {
 
-    public static StoreResponseDto fromWithoutLogin(Store store){
+    public static StoreResponseDto fromWithoutLogin(Store store) {
         return new StoreResponseDto(
             store.getId(),
             store.getName(),

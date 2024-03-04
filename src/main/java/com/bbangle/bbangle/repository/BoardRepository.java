@@ -1,9 +1,7 @@
 package com.bbangle.bbangle.repository;
 
 import com.bbangle.bbangle.model.Board;
-import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +12,10 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryD
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Board b SET b.detail = :detailUrl WHERE b.id = :boardId ")
     int updateDetailWhereStoreIdEqualsBoardId(
-            @Param("boardId") Long boardId,
-            @Param("detailUrl") String detailUrl);
+        @Param("boardId")
+        Long boardId,
+        @Param("detailUrl")
+        String detailUrl
+    );
+
 }

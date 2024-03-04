@@ -9,7 +9,13 @@ import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -56,8 +62,10 @@ public class ProfileController {
 
     @PutMapping
     public ResponseEntity<Void> update(
-        @RequestPart(required = false) InfoUpdateRequest infoUpdateRequest,
-        @RequestPart(required = false) MultipartFile profileImg
+        @RequestPart(required = false)
+        InfoUpdateRequest infoUpdateRequest,
+        @RequestPart(required = false)
+        MultipartFile profileImg
     ) {
         Long memberId = SecurityUtils.getMemberId();
         profileService.updateProfileInfo(infoUpdateRequest, memberId, profileImg);

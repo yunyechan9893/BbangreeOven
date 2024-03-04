@@ -16,12 +16,10 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QSignatureAgreement extends EntityPathBase<SignatureAgreement> {
 
+    public static final QSignatureAgreement signatureAgreement = new QSignatureAgreement(
+        "signatureAgreement");
     private static final long serialVersionUID = -842998790L;
-
     private static final PathInits INITS = PathInits.DIRECT2;
-
-    public static final QSignatureAgreement signatureAgreement = new QSignatureAgreement("signatureAgreement");
-
     public final BooleanPath agreementStatus = createBoolean("agreementStatus");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
@@ -46,7 +44,11 @@ public class QSignatureAgreement extends EntityPathBase<SignatureAgreement> {
         this(SignatureAgreement.class, metadata, inits);
     }
 
-    public QSignatureAgreement(Class<? extends SignatureAgreement> type, PathMetadata metadata, PathInits inits) {
+    public QSignatureAgreement(
+        Class<? extends SignatureAgreement> type,
+        PathMetadata metadata,
+        PathInits inits
+    ) {
         super(type, metadata, inits);
         this.member = inits.isInitialized("member") ? new QMember(forProperty("member")) : null;
     }
