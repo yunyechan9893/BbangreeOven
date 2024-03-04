@@ -2,10 +2,10 @@ package com.bbangle.bbangle.dto;
 
 import com.bbangle.bbangle.model.Board;
 import java.util.List;
-import java.util.Objects;
 import lombok.Builder;
+import lombok.Getter;
 
-@Builder
+@Getter
 public final class BoardResponseDto {
 
     private final Long boardId;
@@ -18,6 +18,7 @@ public final class BoardResponseDto {
     private final Boolean isBundled;
     private final List<String> tags;
 
+    @Builder
     public BoardResponseDto(
         Long boardId,
         Long storeId,
@@ -97,46 +98,6 @@ public final class BoardResponseDto {
 
     public List<String> tags() {
         return tags;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj == null || obj.getClass() != this.getClass()) {
-            return false;
-        }
-        var that = (BoardResponseDto) obj;
-        return Objects.equals(this.boardId, that.boardId) &&
-            Objects.equals(this.storeId, that.storeId) &&
-            Objects.equals(this.storeName, that.storeName) &&
-            Objects.equals(this.thumbnail, that.thumbnail) &&
-            Objects.equals(this.title, that.title) &&
-            this.price == that.price &&
-            Objects.equals(this.isWished, that.isWished) &&
-            Objects.equals(this.isBundled, that.isBundled) &&
-            Objects.equals(this.tags, that.tags);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(boardId, storeId, storeName, thumbnail, title, price, isWished,
-            isBundled, tags);
-    }
-
-    @Override
-    public String toString() {
-        return "BoardResponseDto[" +
-            "boardId=" + boardId + ", " +
-            "storeId=" + storeId + ", " +
-            "storeName=" + storeName + ", " +
-            "thumbnail=" + thumbnail + ", " +
-            "title=" + title + ", " +
-            "price=" + price + ", " +
-            "isWished=" + isWished + ", " +
-            "isBundled=" + isBundled + ", " +
-            "tags=" + tags + ']';
     }
 
 
