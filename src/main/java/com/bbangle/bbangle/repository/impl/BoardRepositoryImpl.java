@@ -331,8 +331,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                         .build();
 
                 boardDto = BoardDto.builder()
-                        .boardId(tuple.get(board.id))
-                        .thumbnail(tuple.get(board.profile))
+                        .id(tuple.get(board.id))
+                        .profile(tuple.get(board.profile))
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
                         .orderAvailableDays(
@@ -412,7 +412,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         int resultSize = fetch.size();
         StoreDto storeDto = null;
         BoardDto boardDto = null;
-        List<ProductDto> productDtos = new ArrayList<>();
+        Set<ProductDto> productDtos = new HashSet<>();
         Set<BoardImgDto> boardImgDtos = new HashSet<>();
         Set<String> allTags = new HashSet<>();
         Set<Category> categories = new HashSet<>();
@@ -457,8 +457,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                         .build();
 
                 boardDto = BoardDto.builder()
-                        .boardId(tuple.get(board.id))
-                        .thumbnail(tuple.get(board.profile))
+                        .id(tuple.get(board.id))
+                        .profile(tuple.get(board.profile))
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
                         .orderAvailableDays(
@@ -474,7 +474,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                         )
                         .purchaseUrl(tuple.get(board.purchaseUrl))
                         .detail(tuple.get(board.detail))
-                        .products(productDtos)
+                        .products(productDtos.stream().toList())
                         .images(boardImgDtos.stream().toList())
                         .tags(allTags.stream().toList())
                         .isWished(false)
