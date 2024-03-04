@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.service.impl;
 
 import com.bbangle.bbangle.dto.*;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.RedisEnum;
 import com.bbangle.bbangle.model.Search;
 import com.bbangle.bbangle.repository.*;

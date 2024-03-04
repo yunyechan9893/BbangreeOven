@@ -6,7 +6,7 @@ import com.bbangle.bbangle.config.oauth.OAuth2AuthorizationReqBasedOnCookieRepos
 import com.bbangle.bbangle.config.oauth.OAuth2MemberCustomService;
 import com.bbangle.bbangle.config.oauth.OAuth2SuccessHandler;
 import com.bbangle.bbangle.repository.RefreshTokenRepository;
-import com.bbangle.bbangle.service.MemberService;
+import com.bbangle.bbangle.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -45,20 +45,20 @@ public class WebOAuthSecurityConfig {
 
 
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/token").permitAll()
-                        .requestMatchers("/api/v1/search/**").permitAll()
-                        .requestMatchers("/api/v1/landingpage").permitAll()
-                        .requestMatchers("/api/v1/store/**").permitAll()
-                        .requestMatchers("/api/v1/stores/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "api/v1/boards/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "api/v1/notice/**").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "api/v1/boards/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "api/v1/boards/folders/**").authenticated()
-                        //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
-                        .requestMatchers(HttpMethod.GET, "api/v1/boards/notification/**").permitAll()
+                .requestMatchers("/api/token").permitAll()
+                .requestMatchers("/api/v1/search/**").permitAll()
+                .requestMatchers("/api/v1/landingpage").permitAll()
+                .requestMatchers("/api/v1/store/**").permitAll()
+                .requestMatchers("/api/v1/stores/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "api/v1/boards/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "api/v1/notice/**").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "api/v1/boards/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "api/v1/boards/folders/**").authenticated()
+                //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
+                .requestMatchers(HttpMethod.GET, "api/v1/boards/notification/**").permitAll()
 
-                        .requestMatchers("/api/**").authenticated()
-                        .anyRequest().permitAll());
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll());
 
 
         http.oauth2Login(oauth2 -> oauth2

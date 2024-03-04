@@ -7,6 +7,7 @@ import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.queryDsl.SearchQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

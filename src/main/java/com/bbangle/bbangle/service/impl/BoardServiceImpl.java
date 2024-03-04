@@ -6,11 +6,11 @@ import java.util.*;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.BoardRepository;
-import com.bbangle.bbangle.repository.MemberRepository;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import com.bbangle.bbangle.service.BoardService;
@@ -142,11 +142,9 @@ public class BoardServiceImpl implements BoardService {
     public Slice<BoardResponseDto> getPostInFolder(Long memberId, String sort, Long folderId, Pageable pageable) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(MemberNotFoundException::new);
+
         WishlistFolder folder = folderRepository.findByMemberAndId(member, folderId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 폴더입니다."));
-        if (folder.isDeleted()) {
-            throw new IllegalArgumentException("존재하지 않는 폴더입니다.");
-        }
 
         return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
     }

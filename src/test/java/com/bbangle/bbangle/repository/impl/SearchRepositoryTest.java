@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.repository.impl;
 
 import com.bbangle.bbangle.dto.KeywordDto;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.*;
 import com.bbangle.bbangle.service.SearchService;

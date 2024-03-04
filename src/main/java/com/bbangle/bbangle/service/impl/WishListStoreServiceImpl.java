@@ -2,10 +2,10 @@ package com.bbangle.bbangle.service.impl;
 
 import com.bbangle.bbangle.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.exception.NoSuchMemberidOrStoreIdException;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.Store;
 import com.bbangle.bbangle.model.WishlistStore;
-import com.bbangle.bbangle.repository.MemberRepository;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.repository.StoreRepository;
 import com.bbangle.bbangle.repository.WishListStoreRepository;
 import com.bbangle.bbangle.repository.impl.WishListStoreRepositoryImpl;

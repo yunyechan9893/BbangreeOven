@@ -5,9 +5,9 @@ import com.bbangle.bbangle.dto.FolderRequestDto;
 import com.bbangle.bbangle.dto.FolderResponseDto;
 import com.bbangle.bbangle.dto.FolderUpdateDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.WishlistFolder;
-import com.bbangle.bbangle.repository.MemberRepository;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,8 +25,8 @@ public class WishListFolderService {
     public void create(Long memberId, FolderRequestDto requestDto) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(MemberNotFoundException::new);
-
-        if (wishListFolderRepository.getFolderCount(member) > 10) {
+        int folderCount = wishListFolderRepository.getFolderCount(member);
+        if (folderCount >= 10) {
             throw new IllegalArgumentException(OVER_MAX_FOLDER);
         }
 
