@@ -25,6 +25,8 @@ public interface BoardQueryDSLRepository {
 
     BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
 
+    BoardDetailResponseDto getBoardDetailResponseDtoWithLike(Long memberId, Long boardId);
+
     HashMap<Long, String> getAllBoardTitle();
 
     List<BoardResponseDto> updateLikeStatus(List<Long> matchedIdx, List<BoardResponseDto> content);

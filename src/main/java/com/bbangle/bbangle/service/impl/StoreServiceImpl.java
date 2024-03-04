@@ -1,5 +1,11 @@
 package com.bbangle.bbangle.service.impl;
 
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.bbangle.bbangle.dto.StoreAllBoardDto;
+
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
 import com.bbangle.bbangle.model.Store;
@@ -8,6 +14,7 @@ import com.bbangle.bbangle.service.StoreService;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -20,8 +27,20 @@ public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
 
     @Override
-    public StoreDetailResponseDto getStoreDetailResponse(Long StoreId) {
-        return storeRepository.getStoreDetailResponseDto(StoreId);
+    public StoreDetailResponseDto getStoreDetailResponse(Long memberId, Long storeId) {
+        return memberId > 1L ?
+                storeRepository.getStoreDetailResponseDtoWithLike(memberId, storeId) :
+                storeRepository.getStoreDetailResponseDto(storeId);
+
+    }
+
+    @Override
+    public SliceImpl<StoreAllBoardDto> getAllBoard(int page, Long memberId, Long storeId) {
+        int PAGE_SIZE = 10;
+
+        return memberId > 1L ?
+                storeRepository.getAllBoardWithLike(PageRequest.of(page, PAGE_SIZE), memberId, storeId) :
+                storeRepository.getAllBoard(PageRequest.of(page, PAGE_SIZE),storeId);
     }
 
     @Override

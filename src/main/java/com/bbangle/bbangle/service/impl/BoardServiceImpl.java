@@ -141,12 +141,12 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public BoardDetailResponseDto getBoardDetailResponse(Long boardId) {
-        BoardDetailResponseDto boardDetailResponseDto = boardRepository.getBoardDetailResponseDto(boardId);
-        if (SecurityUtils.isLogin()) {
-            boardDetailResponseDto = boardRepository.getDetailLikeUpdate(boardDetailResponseDto);
-        }
-        return boardDetailResponseDto;
+    public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
+
+        return memberId > 1L ?
+                boardRepository.getBoardDetailResponseDtoWithLike(memberId, boardId) :
+                boardRepository.getBoardDetailResponseDto(boardId);
+
     }
 
     @Override

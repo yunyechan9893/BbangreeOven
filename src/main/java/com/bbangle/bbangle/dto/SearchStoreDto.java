@@ -5,10 +5,10 @@ import lombok.Builder;
 
 @Builder
 public record SearchStoreDto(
-    List<StoreResponseDto> content,
-    int itemCount,
-    int pageNumber,
-    int pageSize
-) {
-
+        List<StoreResponseDto> content,
+        int itemCount,
+        int pageNumber,
+        int itemSize,
+        boolean existNextPage
+){
 }

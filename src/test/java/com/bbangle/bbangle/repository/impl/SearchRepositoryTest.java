@@ -103,9 +103,11 @@ public class SearchRepositoryTest {
         Assertions.assertEquals(15, resultBoardIds.size(), "전체 아이템 개수가 다릅니다");
 
         var searchBoardResult = searchRepository.getSearchResult(
-            BOARD_IDS, sort, glutenFreeTag, highProteinTag,
-            sugarFreeTag, veganTag, ketogenicTag,
-            category, minPrice, maxPrice, page, limit);
+
+                BOARD_IDS, sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag,
+                category, minPrice, maxPrice);
+
 
         // 각 BoardResponseDto에 대한 처리
         Assertions.assertEquals(1L, searchBoardResult.get(0)
@@ -200,6 +202,21 @@ public class SearchRepositoryTest {
         for (String keyword : keywords) {
             Assertions.assertEquals(expectList.get(index++), keyword, "저장된 값이 다릅니다");
         }
+    }
+
+    @Test
+    public void getSearchStroeDtosTest(){
+        //스토어 및 보드 검색 결과 가져오기
+        var searchStoreResult = searchRepository.getSearchedStore(STORE_IDS);
+
+        // 각 BoardResponseDto에 대한 처리
+        Assertions.assertEquals(1L, searchStoreResult.get(0).storeId());
+        Assertions.assertEquals("RAWSOME", searchStoreResult.get(0).storeName());
+        Assertions.assertEquals(false, searchStoreResult.get(0).isWished());
+
+        Assertions.assertEquals(2L, searchStoreResult.get(1).storeId());
+        Assertions.assertEquals("RAWSOME", searchStoreResult.get(1).storeName());
+        Assertions.assertEquals(false, searchStoreResult.get(1).isWished());
     }
 
     @Test

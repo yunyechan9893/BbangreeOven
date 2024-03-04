@@ -7,9 +7,7 @@ import lombok.Builder;
 public record StoreDetailResponseDto(
     StoreDto store,
 
-    List<BoardDto> bestProducts,
-
-    List<BoardDto> allProducts
+    List<StoreBestBoardDto> bestProducts
 ) {
 
 }

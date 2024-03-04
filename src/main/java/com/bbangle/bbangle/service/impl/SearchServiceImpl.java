@@ -191,20 +191,11 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public SearchResponseDto getSearchResult(
-        int storePage,
-        int boardPage,
-        String keyword,
-        String sort,
-        Boolean glutenFreeTag,
-        Boolean highProteinTag,
-        Boolean sugarFreeTag,
-        Boolean veganTag,
-        Boolean ketogenicTag,
-        String category,
-        Integer minPrice,
-        Integer maxPrice
-    ) {
+
+    public SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                             Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                             String category, Integer minPrice, Integer maxPrice) {
+
 
         int startItem = (boardPage + 1) * DEFAULT_PAGE - DEFAULT_PAGE;
         int endItem = (boardPage + 1) * DEFAULT_PAGE;
@@ -220,13 +211,6 @@ public class SearchServiceImpl implements SearchService {
             .distinct()
             .collect(Collectors.toList());
 
-        // 토큰화된 검색어를 통해 스토어 아이디 가져오기
-        List<Long> storeIndexs = keys.stream()
-            .map(key -> redisRepository.get(RedisEnum.STORE.name(), key))
-            .filter(list -> list != null)  // Filter out null lists
-            .flatMap(List::stream)
-            .distinct()
-            .collect(Collectors.toList());
 
         List<Long> boardSliceList;
         int boardIndexSize = boardIndexs.size();
@@ -234,22 +218,51 @@ public class SearchServiceImpl implements SearchService {
         if (endItem <= boardIndexSize) {
             boardSliceList = boardIndexs.subList(startItem, Math.min(endItem, boardIndexSize));
         } else if (startItem > boardIndexSize) {
-            return new SearchResponseDto(
-                SearchBoardDto.builder()
-                    .content(List.of())
-                    .itemCount(boardIndexs.size())
-                    .pageNumber(boardPage)
-                    .pageSize(DEFAULT_PAGE)
-                    .build(),
-                SearchStoreDto.builder()
-                    .content(List.of())
-                    .itemCount(storeIndexs.size())
-                    .pageNumber(storePage)
-                    .pageSize(DEFAULT_PAGE)
-                    .build());
+
+            return SearchBoardDto.builder()
+                            .content(List.of())
+                            .itemCount(boardIndexs.size())
+                            .pageNumber(boardPage)
+                            .itemSize(DEFAULT_PAGE)
+                            .existNextPage(boardIndexs.size() - ((boardPage + 1) * DEFAULT_PAGE) > 0)
+                            .build();
+
         } else {
             boardSliceList = boardIndexs.subList(startItem, Math.min(boardIndexSize, endItem));
         }
+        return SearchBoardDto.builder()
+                .content(memberId > 1L ?
+                        searchRepository.getSearchResultWithLike(
+                                memberId, boardSliceList, sort, glutenFreeTag, highProteinTag,
+                                sugarFreeTag, veganTag, ketogenicTag,
+                                category, minPrice, maxPrice) :
+                        searchRepository.getSearchResult(
+                                boardSliceList, sort, glutenFreeTag, highProteinTag,
+                                sugarFreeTag, veganTag, ketogenicTag,
+                                category, minPrice, maxPrice))
+                .itemCount(boardIndexs.size())
+                .pageNumber(boardPage)
+                .itemSize(DEFAULT_PAGE)
+                .existNextPage(boardIndexs.size() - ((boardPage + 1) * DEFAULT_PAGE) > 0)
+                .build();
+
+
+    }
+
+    @Override
+    public SearchStoreDto getSearchStoreDtos(Long memberId, int storePage, String keyword){
+
+        // 검색어 토큰화
+        List<String> keys = getAllTokenizer(keyword);
+
+        // 토큰화된 검색어를 통해 스토어 아이디 가져오기
+        List<Long> storeIndexs = keys.stream()
+                .map(key -> redisRepository.get(RedisEnum.STORE.name(), key))
+                .filter(list -> list != null)  // Filter out null lists
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
+
 
         int storeStartItem = (storePage + 1) * DEFAULT_PAGE - DEFAULT_PAGE;
         int storeEndItem = (storePage + 1) * DEFAULT_PAGE;
@@ -261,45 +274,36 @@ public class SearchServiceImpl implements SearchService {
             storeSliceList = storeIndexs.subList(storeStartItem,
                 Math.min(storeEndItem, storeIndexSize));
         } else if (storeStartItem > storeIndexSize) {
-            return new SearchResponseDto(
-                SearchBoardDto.builder()
-                    .content(List.of())
-                    .itemCount(boardIndexs.size())
-                    .pageNumber(boardPage)
-                    .pageSize(DEFAULT_PAGE)
-                    .build(),
-                SearchStoreDto.builder()
-                    .content(List.of())
-                    .itemCount(storeIndexs.size())
-                    .pageNumber(storePage)
-                    .pageSize(DEFAULT_PAGE)
-                    .build());
+
+            return
+
+                    SearchStoreDto.builder()
+                            .content(List.of())
+                            .itemCount(storeIndexs.size())
+                            .pageNumber(storePage)
+                            .itemSize(DEFAULT_PAGE)
+                            .existNextPage(storeIndexs.size() - ((storePage + 1) * DEFAULT_PAGE) > 0)
+                            .build();
+
         } else {
             storeSliceList = storeIndexs.subList(storeStartItem,
                 Math.min(storeIndexSize, storeEndItem));
         }
 
-        var searchBoardResult = searchRepository.getSearchResult(
-            boardSliceList, sort, glutenFreeTag, highProteinTag,
-            sugarFreeTag, veganTag, ketogenicTag,
-            category, minPrice, maxPrice, boardPage, DEFAULT_PAGE);
 
         //스토어 및 보드 검색 결과 가져오기
-        var searchStoreResult = searchRepository.getSearchedStore(storeSliceList);
-
-        return new SearchResponseDto(
-            SearchBoardDto.builder()
-                .content(searchBoardResult)
-                .itemCount(boardIndexs.size())
-                .pageNumber(boardPage)
-                .pageSize(DEFAULT_PAGE)
-                .build(),
-            SearchStoreDto.builder()
-                .content(searchStoreResult)
+        return SearchStoreDto.builder()
+                .content(
+                        memberId > 1L ?
+                                searchRepository.getSearchedStoreWithLike(memberId, storeSliceList):
+                                searchRepository.getSearchedStore(storeSliceList)
+                )
                 .itemCount(storeIndexs.size())
                 .pageNumber(storePage)
-                .pageSize(DEFAULT_PAGE)
-                .build());
+                .itemSize(DEFAULT_PAGE)
+                .existNextPage(storeIndexs.size() - ((storePage + 1) * DEFAULT_PAGE) > 0)
+                .build();
+
     }
 
     @Override
