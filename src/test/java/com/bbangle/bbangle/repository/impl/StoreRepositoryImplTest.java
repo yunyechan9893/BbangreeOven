@@ -12,9 +12,10 @@ public class StoreRepositoryImplTest {
     StoreRepositoryImpl storeRepository;
 
     @Test
-    public void getStoreDetailResponseDtoTest(){
+    public void getStoreDetailResponseDtoTest() {
         Long storeId = Long.valueOf(1);
         StoreDetailResponseDto result = storeRepository.getStoreDetailResponseDto(storeId);
         System.out.println(result);
     }
+
 }

@@ -3,9 +3,7 @@ package com.bbangle.bbangle.controller;
 import com.bbangle.bbangle.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
 import com.bbangle.bbangle.service.StoreService;
-import lombok.Builder.Default;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
@@ -23,17 +21,22 @@ public class StoreController {
     private final StoreService storeService;
 
     @GetMapping
-    public ResponseEntity<Slice<StoreResponseDto>> getList(@PageableDefault Pageable pageable){
+    public ResponseEntity<Slice<StoreResponseDto>> getList(
+        @PageableDefault
+        Pageable pageable
+    ) {
         return ResponseEntity.ok(storeService.getList(pageable));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<StoreDetailResponseDto> getStoreDetailResponse(
-            @PathVariable("id")
-            Long storeId
-    ){
+        @PathVariable("id")
+        Long storeId
+    ) {
         StoreDetailResponseDto storeDetailResponse = storeService.getStoreDetailResponse(storeId);
-        ResponseEntity<StoreDetailResponseDto> response = ResponseEntity.ok().body(storeDetailResponse);
+        ResponseEntity<StoreDetailResponseDto> response = ResponseEntity.ok()
+            .body(storeDetailResponse);
         return response;
     }
+
 }

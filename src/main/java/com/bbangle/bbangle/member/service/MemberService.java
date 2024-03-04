@@ -3,9 +3,9 @@ package com.bbangle.bbangle.member.service;
 import com.bbangle.bbangle.common.image.service.S3Service;
 import com.bbangle.bbangle.common.image.validation.ImageValidator;
 import com.bbangle.bbangle.member.domain.Agreement;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
-import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import jakarta.annotation.PostConstruct;
@@ -81,7 +81,7 @@ public class MemberService {
             String profileImgUrl = imageService.saveImage(profileImage);
             loginedMember.updateProfile(profileImgUrl);
         }
-        loginedMember.updateInfo(request);
+        loginedMember.updateFirst(request);
 
         checkingConsent(request);
         saveConsent(request, loginedMember);

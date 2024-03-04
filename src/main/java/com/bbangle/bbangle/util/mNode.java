@@ -1,13 +1,12 @@
 package com.bbangle.bbangle.util;
 
-import lombok.Data;
-import lombok.Getter;
-
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Data;
 
 @Data
 public class mNode {
+
     private String value;
     private Map<Character, mNode> children;
     private boolean isWordExists;
@@ -17,4 +16,5 @@ public class mNode {
         this.children = new HashMap<>();
         this.isWordExists = false;
     }
+
 }

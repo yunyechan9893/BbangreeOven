@@ -32,7 +32,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri : ${REDIRECT_URI}
+            redirect-uri: ${REDIRECT_URI}
             scope:
               - email
               - profile

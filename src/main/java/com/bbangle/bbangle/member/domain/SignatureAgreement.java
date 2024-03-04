@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.member.domain;
 
-import com.bbangle.bbangle.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -42,4 +41,5 @@ public class SignatureAgreement {
 
     @Column(name = "agreement_status", columnDefinition = "tinyint")
     private boolean agreementStatus;
+
 }

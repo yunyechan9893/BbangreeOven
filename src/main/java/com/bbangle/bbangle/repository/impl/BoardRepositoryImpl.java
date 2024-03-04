@@ -1,18 +1,16 @@
 package com.bbangle.bbangle.repository.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import com.bbangle.bbangle.dto.BoardAvailableDayDto;
 import com.bbangle.bbangle.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.dto.BoardDto;
 import com.bbangle.bbangle.dto.BoardImgDto;
 import com.bbangle.bbangle.dto.BoardResponseDto;
+import com.bbangle.bbangle.dto.ProductBoardLikeStatus;
 import com.bbangle.bbangle.dto.ProductDto;
 import com.bbangle.bbangle.dto.ProductTagDto;
 import com.bbangle.bbangle.dto.StoreDto;
 import com.bbangle.bbangle.exception.CategoryTypeException;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.model.Board;
 import com.bbangle.bbangle.model.Category;
 import com.bbangle.bbangle.model.Product;
@@ -26,108 +24,38 @@ import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.model.TagEnum;
 import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.queryDsl.BoardQueryDSLRepository;
+import com.bbangle.bbangle.util.SecurityUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final MemberRepository memberRepository;
 
-    @Override
-    public List<BoardResponseDto> getBoardResponseDto(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                      Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                      String category, Integer minPrice, Integer maxPrice) {
-
-        QBoard board = QBoard.board;
-        QProduct product = QProduct.product;
-        QStore store = QStore.store;
-
-        BooleanBuilder filter =
-            setFilteringCondition(glutenFreeTag,
-                highProteinTag,
-                sugarFreeTag,
-                veganTag,
-                ketogenicTag,
-                category,
-                minPrice,
-                maxPrice,
-                product,
-                board);
-
-        List<Board> boards = queryFactory
-            .selectFrom(board)
-            .leftJoin(board.productList, product).fetchJoin()
-            .leftJoin(board.store, store).fetchJoin()
-            .where(filter)
-            .fetch();
-
-
-        Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
-
-        List<BoardResponseDto> content = new ArrayList<>();
-
-        // isBundled 포함한 정리
-        for (Board board1 : boards) {
-            List<String> tags = addList(productTagsByBoardId.get(board1.getId()));
-            content.add(BoardResponseDto.from(board1, tags));
-        }
-
-       return content;
-    }
-
-    @Override
-    public Slice<BoardResponseDto> getAllByFolder(String sort, Pageable pageable, Long wishListFolderId,
-                                                  WishlistFolder selectedFolder) {
-        QBoard board = QBoard.board;
-        QProduct product = QProduct.product;
-        QStore store = QStore.store;
-        QWishlistProduct products = QWishlistProduct.wishlistProduct;
-        QWishlistFolder folder = QWishlistFolder.wishlistFolder;
-
-        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort, board, products);
-
-        List<Board> boards = queryFactory
-            .selectFrom(board)
-            .leftJoin(board.productList, product).fetchJoin()
-            .leftJoin(board.store, store).fetchJoin()
-            .join(board).on(board.id.eq(products.board.id))
-            .join(products).on(products.wishlistFolder.eq(folder))
-            .where(products.wishlistFolder.eq(selectedFolder)
-                .and(products.isDeleted.eq(false)))
-            .offset(pageable.getOffset())
-            .orderBy(orderSpecifier)
-            .limit(pageable.getPageSize() + 1)
-            .fetch();
-
-        Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
-
-        List<BoardResponseDto> content = new ArrayList<>();
-
-
-        // isBundled 포함한 정리
-        for (Board board1 : boards) {
-            List<String> tags = addList(productTagsByBoardId.get(board1.getId()));
-            content.add(BoardResponseDto.from(board1, tags));
-        }
-
-        boolean hasNext = content.size() > pageable.getPageSize();
-        if (hasNext) {
-            content.remove(content.size() - 1);
-        }
-
-        return new SliceImpl<>(content, pageable, hasNext);
-    }
-
-    private static OrderSpecifier<?> sortTypeFolder(String sort, QBoard board, QWishlistProduct products) {
+    private static OrderSpecifier<?> sortTypeFolder(
+        String sort,
+        QBoard board,
+        QWishlistProduct products
+    ) {
         OrderSpecifier<?> orderSpecifier;
         if (sort == null) {
             orderSpecifier = products.createdAt.desc();
@@ -155,17 +83,20 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             for (Product product1 : board1.getProductList()) {
                 productTagsByBoardId.put(board1.getId(),
                     productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
-                productTagsByBoardId.get(board1.getId()).add(ProductTagDto.from(product1));
+                productTagsByBoardId.get(board1.getId())
+                    .add(ProductTagDto.from(product1));
             }
         }
         return productTagsByBoardId;
     }
 
-    private static BooleanBuilder setFilteringCondition(Boolean glutenFreeTag, Boolean highProteinTag,
-                                                        Boolean sugarFreeTag,
-                                                        Boolean veganTag, Boolean ketogenicTag, String category,
-                                                        Integer minPrice, Integer maxPrice,
-                                                        QProduct product, QBoard board) {
+    private static BooleanBuilder setFilteringCondition(
+        Boolean glutenFreeTag, Boolean highProteinTag,
+        Boolean sugarFreeTag,
+        Boolean veganTag, Boolean ketogenicTag, String category,
+        Integer minPrice, Integer maxPrice,
+        QProduct product, QBoard board
+    ) {
         BooleanBuilder filterBuilder = new BooleanBuilder();
         if (glutenFreeTag != null) {
             filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
@@ -195,6 +126,100 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             filterBuilder.and(board.price.loe(maxPrice));
         }
         return filterBuilder;
+    }
+
+    @Override
+    public List<BoardResponseDto> getBoardResponseDto(
+        String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+        String category, Integer minPrice, Integer maxPrice
+    ) {
+
+        QBoard board = QBoard.board;
+        QProduct product = QProduct.product;
+        QStore store = QStore.store;
+        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+
+        BooleanBuilder filter =
+            setFilteringCondition(glutenFreeTag,
+                highProteinTag,
+                sugarFreeTag,
+                veganTag,
+                ketogenicTag,
+                category,
+                minPrice,
+                maxPrice,
+                product,
+                board);
+
+        List<Board> boards = queryFactory
+            .selectFrom(board)
+            .leftJoin(board.productList, product)
+            .fetchJoin()
+            .leftJoin(board.store, store)
+            .fetchJoin()
+            .where(filter)
+            .fetch();
+
+        Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
+
+        List<BoardResponseDto> content = new ArrayList<>();
+
+        // isBundled 포함한 정리
+        for (Board board1 : boards) {
+            List<String> tags = addList(productTagsByBoardId.get(board1.getId()));
+            content.add(BoardResponseDto.from(board1, tags));
+        }
+
+        return content;
+    }
+
+    @Override
+    public Slice<BoardResponseDto> getAllByFolder(
+        String sort, Pageable pageable, Long wishListFolderId,
+        WishlistFolder selectedFolder
+    ) {
+        QBoard board = QBoard.board;
+        QProduct product = QProduct.product;
+        QStore store = QStore.store;
+        QWishlistProduct products = QWishlistProduct.wishlistProduct;
+        QWishlistFolder folder = QWishlistFolder.wishlistFolder;
+
+        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort, board, products);
+
+        List<Board> boards = queryFactory
+            .selectFrom(board)
+            .leftJoin(board.productList, product)
+            .fetchJoin()
+            .leftJoin(board.store, store)
+            .fetchJoin()
+            .join(board)
+            .on(board.id.eq(products.board.id))
+            .join(products)
+            .on(products.wishlistFolder.eq(folder))
+            .where(products.wishlistFolder.eq(selectedFolder)
+                .and(products.isDeleted.eq(false)))
+            .offset(pageable.getOffset())
+            .orderBy(orderSpecifier)
+            .limit(pageable.getPageSize() + 1)
+            .fetch();
+
+        Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
+
+        List<BoardResponseDto> content = new ArrayList<>();
+
+        // isBundled 포함한 정리
+        for (Board board1 : boards) {
+            List<String> tags = addList(productTagsByBoardId.get(board1.getId()));
+            content.add(BoardResponseDto.from(board1, tags));
+        }
+
+        boolean hasNext = content.size() > pageable.getPageSize();
+        if (hasNext) {
+            content.remove(content.size() - 1);
+        }
+
+        return new SliceImpl<>(content, pageable, hasNext);
     }
 
     private List<String> addList(List<ProductTagDto> dtos) {
@@ -281,12 +306,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .from(product)
             .join(product.board, board)
             .join(board.store, store)
-            .leftJoin(productImg).on(board.id.eq(productImg.board.id))
+            .leftJoin(productImg)
+            .on(board.id.eq(productImg.board.id))
             .where(board.id.eq(boardId))
             .fetch();
 
-        StoreDto storeDto = StoreDto.builder().build();
-        BoardDto boardDto = BoardDto.builder().build();
+        StoreDto storeDto = StoreDto.builder()
+            .build();
+        BoardDto boardDto = BoardDto.builder()
+            .build();
         List<ProductDto> productDtos = new ArrayList<>();
         List<BoardImgDto> boardImgDtos = new ArrayList<>();
 
@@ -317,17 +345,19 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             }
 
             // 중복 제거 및 상품 추가
-            if (alreadyProductId.indexOf(tuple.get(product.id)) == -1) {
+            if (!alreadyProductId.contains(tuple.get(product.id))) {
                 productDtos.add(
                     ProductDto.builder()
                         .title(tuple.get(product.title))
-                        .tags(tags).build());
+                        .tags(tags)
+                        .build());
 
                 alreadyProductId.add(tuple.get(product.id));
             }
 
             // 중복 제거 및 보드 이미지 추가
-            if (alreadyProductImgId.indexOf(tuple.get(productImg.id)) == -1 && tuple.get(productImg.id) != null) {
+            if (!alreadyProductImgId.contains(tuple.get(productImg.id))
+                && tuple.get(productImg.id) != null) {
                 boardImgDtos.add(
                     BoardImgDto.builder()
                         .id(tuple.get(productImg.id))
@@ -373,7 +403,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             }
         }
 
-
         return BoardDetailResponseDto.builder()
             .store(storeDto)
             .board(boardDto)
@@ -385,14 +414,97 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QBoard board = QBoard.board;
 
         List<Tuple> fetch = queryFactory
-                .select(board.id, board.title)
-                .from(board)
-                .fetch();
+            .select(board.id, board.title)
+            .from(board)
+            .fetch();
 
         HashMap<Long, String> boardMap = new HashMap<>();
         fetch.forEach((tuple) -> boardMap.put(tuple.get(board.id), tuple.get(board.title)));
 
         return boardMap;
+    }
+
+    @Override
+    public List<BoardResponseDto> updateLikeStatus(List<Long> matchedIdx, List<BoardResponseDto> content) {
+        QBoard board = QBoard.board;
+        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+
+        Long memberId = SecurityUtils.getMemberId();
+
+        BooleanExpression isLikedExpression = wishlistProduct.isDeleted.isFalse();
+
+
+        List<ProductBoardLikeStatus> likeFetch = queryFactory
+            .select(Projections.bean(
+                ProductBoardLikeStatus.class,
+                board.id.as("boardId"),
+                isLikedExpression.as("isLike")
+            ))
+            .from(board)
+            .leftJoin(wishlistProduct)
+            .on(board.id.eq(wishlistProduct.board.id)
+                .and(wishlistProduct.memberId.eq(memberId)))
+            .where(board.id.in(matchedIdx))
+            .fetch()
+            .stream()
+            .peek(result -> {
+                if (result.getIsLike() == null) {
+                    result.setIsLike(false);
+                }
+            })
+            .toList();
+
+        for (ProductBoardLikeStatus likeStatus : likeFetch) {
+            if (likeStatus.getIsLike()) {
+                for (BoardResponseDto boardResponseDto : content) {
+                    if (Objects.equals(likeStatus
+                        .getBoardId(), boardResponseDto
+                        .boardId())) {
+                        boardResponseDto
+                            .updateLike(true);
+                    }
+                }
+            }
+        }
+        return content;
+    }
+
+    @Override
+    public BoardDetailResponseDto getDetailLikeUpdate(BoardDetailResponseDto content) {
+        QBoard board = QBoard.board;
+        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+
+        Long memberId = SecurityUtils.getMemberId();
+
+        BooleanExpression isLikedExpression = wishlistProduct.isDeleted.isFalse();
+
+        ProductBoardLikeStatus likeFetch = queryFactory
+            .select(Projections.bean(
+                ProductBoardLikeStatus.class,
+                board.id.as("boardId"),
+                isLikedExpression.as("isLike")
+            ))
+            .from(board)
+            .leftJoin(wishlistProduct)
+            .on(board.id.eq(wishlistProduct.board.id)
+                .and(wishlistProduct.memberId.eq(memberId)))
+            .where(board.id.eq(content.board()
+                .boardId()))
+            .fetch()
+            .stream()
+            .peek(result -> {
+                if (result.getIsLike() == null) {
+                    result.setIsLike(false);
+                }
+            })
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
+
+        if(content.board().boardId().equals(likeFetch.getBoardId()) && likeFetch.getIsLike()){
+            content.board().updateLike(true);
+        }
+
+        return content;
     }
 
 }
