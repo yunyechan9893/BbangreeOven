@@ -1,18 +1,21 @@
 package com.bbangle.bbangle.service;
 
 import com.bbangle.bbangle.dto.RecencySearchResponse;
-import com.bbangle.bbangle.dto.SearchResponseDto;
+import com.bbangle.bbangle.dto.SearchBoardDto;
+import com.bbangle.bbangle.dto.SearchStoreDto;
 
 import java.util.List;
 
 public interface SearchService {
     void initSetting();
     void updateRedisAtBestKeyword();
+    void saveKeyword(Long memberId,String keyword);
 
-    SearchResponseDto getSearchResult(Long memberId, int storePage, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+    SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                       Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
                                       String category, Integer minPrice, Integer maxPrice);
-    void saveKeyword(Long memberId,String keyword);
+
+    SearchStoreDto getSearchStoreDtos(Long memberId, int storePage, String keyword);
 
     RecencySearchResponse getRecencyKeyword(Long memberId);
 

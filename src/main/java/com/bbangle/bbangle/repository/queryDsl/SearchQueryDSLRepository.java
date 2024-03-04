@@ -10,11 +10,11 @@ import java.util.List;
 public interface SearchQueryDSLRepository {
     List<BoardResponseDto> getSearchResult(List<Long> boardIds,String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                            Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                           String category, Integer minPrice, Integer maxPrice, int page, int limit);
+                                           String category, Integer minPrice, Integer maxPrice);
 
     List<BoardResponseDto> getSearchResultWithLike(Long memberId, List<Long> boardIds, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                                    Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                   String category, Integer minPrice, Integer maxPrice, int page, int limit);
+                                                   String category, Integer minPrice, Integer maxPrice);
 
     List<StoreResponseDto> getSearchedStore(List<Long> storeIndexList);
 

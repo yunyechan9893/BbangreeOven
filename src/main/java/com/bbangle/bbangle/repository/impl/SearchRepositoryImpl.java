@@ -25,12 +25,11 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     @Override
     public List<BoardResponseDto> getSearchResult(List<Long> boardIds,String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                                   Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                  String category, Integer minPrice, Integer maxPrice, int page, int limit) {
+                                                  String category, Integer minPrice, Integer maxPrice) {
 
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
-        System.out.println("얘호출");
         BooleanBuilder filter =
                 setFilteringCondition(glutenFreeTag,
                         highProteinTag,
@@ -51,8 +50,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         board.id.in(boardIds),
                         filter
                 )
-                .offset(page * limit) // 페이지 계산을 위한 오프셋 조정
-                .limit(limit)
                 .fetch();
 
         var boards = queryFactory
@@ -63,6 +60,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         product.board.profile,
                         product.board.title,
                         product.board.price,
+                        product.category,
                         product.glutenFreeTag,
                         product.highProteinTag,
                         product.sugarFreeTag,
@@ -77,9 +75,11 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .fetch();
 
         Map<Long, BoardResponseDto> boardMap = new HashMap<>();
+        Set<Category> categories = new HashSet<>();
 
         for (Tuple tuple:boards) {
             Long boardId =  tuple.get(product.board.id);
+
             if (!boardMap.containsKey(boardId)) {
                 boardMap.put(boardId,
                         BoardResponseDto.builder()
@@ -89,10 +89,15 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                                 .thumbnail(tuple.get(product.board.profile))
                                 .title(tuple.get(product.board.title))
                                 .price(tuple.get(product.board.price))
+                                .isBundled(categories.size() > 1)
                                 .tags(new ArrayList<>())
                                 .isWished(false)
                                 .build());
+
+                categories.clear();
             }
+
+            categories.add(tuple.get(product.category));
 
             BoardResponseDto boardResponseDto = boardMap.get(tuple.get(product.board.id));
 
@@ -125,9 +130,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     @Override
     public List<BoardResponseDto> getSearchResultWithLike(Long memberId, List<Long> boardIds, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                                           Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                          String category, Integer minPrice, Integer maxPrice, int page, int limit) {
+                                                          String category, Integer minPrice, Integer maxPrice) {
 
-        System.out.println("얘호출2222");
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
@@ -154,8 +158,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         board.id.in(boardIds),
                         filter
                 )
-                .offset(page * limit) // 페이지 계산을 위한 오프셋 조정
-                .limit(limit)
                 .fetch();
 
         var boards = queryFactory
@@ -182,6 +184,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .fetch();
 
         Map<Long, BoardResponseDto> boardMap = new HashMap<>();
+        Set<Category> categories = new HashSet<>();
 
         for (Tuple tuple:boards) {
             Long boardId =  tuple.get(product.board.id);
@@ -194,6 +197,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                                 .thumbnail(tuple.get(product.board.profile))
                                 .title(tuple.get(product.board.title))
                                 .price(tuple.get(product.board.price))
+                                .isBundled(categories.size() > 1)
                                 .tags(new ArrayList<>())
                                 .isWished(tuple.get(wishlistProduct.id)!=null?true:false)
                                 .build());
@@ -288,6 +292,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .thumbnail(boardResponseDto.thumbnail())
                 .title(boardResponseDto.title())
                 .price(boardResponseDto.price())
+                .isBundled(boardResponseDto.isBundled())
                 .isWished(boardResponseDto.isWished())
                 .tags(uniqueTags)
                 .build();

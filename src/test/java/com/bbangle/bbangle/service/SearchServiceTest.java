@@ -109,18 +109,17 @@ public class SearchServiceTest {
         Integer maxPrice= 6000;
         int page=0;
 
-        var result = searchService.getSearchResult(
-                memberId, STORE_PAGE, BOARD_PAGE, SEARCH_KEYWORD,
+        var searchBoardResult = searchService.getSearchBoardDtos(
+                memberId, BOARD_PAGE, SEARCH_KEYWORD,
                 sort, glutenFreeTag, highProteinTag,
                 sugarFreeTag, veganTag, ketogenicTag,
                 category, minPrice, maxPrice);
 
-        var searchBoardResult = result.getBoards();
         var boards = searchBoardResult.content();
 
         int itemCount = searchBoardResult.itemCount();
         int pageNumber = searchBoardResult.pageNumber();
-        int pageSize = searchBoardResult.pageSize();
+        int pageSize = searchBoardResult.itemSize();
 
         Assertions.assertEquals(15, itemCount, "전체 아이템 개수가 다릅니다");
 
@@ -162,17 +161,13 @@ public class SearchServiceTest {
         Integer minPrice=0;
         Integer maxPrice= 6000;
 
-        var result = searchService.getSearchResult(
-                memberId, STORE_PAGE, BOARD_PAGE, SEARCH_KEYWORD_STORE,
-                sort, glutenFreeTag, highProteinTag,
-                sugarFreeTag, veganTag, ketogenicTag,
-                category, minPrice, maxPrice);
+        var searchStoreResult = searchService.getSearchStoreDtos(
+                memberId, STORE_PAGE, SEARCH_KEYWORD_STORE);
 
-        var searchStoreResult = result.getStores();
         var stores = searchStoreResult.content();
         int itemCount = searchStoreResult.itemCount();
         int pageNumber = searchStoreResult.pageNumber();
-        int pageSize = searchStoreResult.pageSize();
+        int pageSize = searchStoreResult.itemSize();
 
         Assertions.assertEquals(15, itemCount, "전체 아이템 개수가 다릅니다");
         Assertions.assertEquals(true, stores.size() <= pageSize);
@@ -188,17 +183,13 @@ public class SearchServiceTest {
         Assertions.assertEquals(false, stores.get(1).isWished());
 
 
-        result = searchService.getSearchResult(
-                memberId,STORE_PAGE + 1, BOARD_PAGE, SEARCH_KEYWORD_STORE,
-                sort, glutenFreeTag, highProteinTag,
-                sugarFreeTag, veganTag, ketogenicTag,
-                category, minPrice, maxPrice);
+        searchStoreResult = searchService.getSearchStoreDtos(
+                memberId,STORE_PAGE + 1, SEARCH_KEYWORD_STORE);
 
-        searchStoreResult = result.getStores();
         stores = searchStoreResult.content();
         itemCount = searchStoreResult.itemCount();
         pageNumber = searchStoreResult.pageNumber();
-        pageSize = searchStoreResult.pageSize();
+        pageSize = searchStoreResult.itemSize();
 
         Assertions.assertEquals(15, itemCount, "전체 아이템 개수가 다릅니다");
         Assertions.assertEquals(5, stores.size());
@@ -215,11 +206,36 @@ public class SearchServiceTest {
     }
 
     @Test
+    @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
+    public void getSearchStoreTest() {
+        Long memberId = 1L;
 
+        var searchStoreResult = searchService.getSearchStoreDtos(
+                memberId,STORE_PAGE + 1, SEARCH_KEYWORD_STORE);
+
+        var stores = searchStoreResult.content();
+        var itemCount = searchStoreResult.itemCount();
+        var pageNumber = searchStoreResult.pageNumber();
+        var pageSize = searchStoreResult.itemSize();
+
+        Assertions.assertEquals(15, itemCount, "전체 아이템 개수가 다릅니다");
+        Assertions.assertEquals(5, stores.size());
+        Assertions.assertEquals(1, pageNumber);
+        Assertions.assertEquals(10, pageSize);
+
+        Assertions.assertEquals(11L, stores.get(0).storeId());
+        Assertions.assertEquals("RAWSOME", stores.get(0).storeName());
+        Assertions.assertEquals(false, stores.get(0).isWished());
+
+        Assertions.assertEquals(12L, stores.get(1).storeId());
+        Assertions.assertEquals("RAWSOME", stores.get(1).storeName());
+        Assertions.assertEquals(false, stores.get(1).isWished());
+    }
+
+    @Test
     public void getAllBoardTitleTest() {
 
         var result = boardRepository.getAllBoardTitle();
-        System.out.println(result);
     }
 
 

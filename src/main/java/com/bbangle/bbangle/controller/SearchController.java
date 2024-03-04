@@ -1,8 +1,6 @@
 package com.bbangle.bbangle.controller;
 
-import com.bbangle.bbangle.dto.MessageResDto;
-import com.bbangle.bbangle.dto.RecencySearchResponse;
-import com.bbangle.bbangle.dto.SearchResponseDto;
+import com.bbangle.bbangle.dto.*;
 import com.bbangle.bbangle.service.SearchService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +16,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("api/v1/search")
 public class SearchController {
+    private final String GET_BOARD_KEYWORD_SEARCH_API = "/boards";
+    private final String GET_STORE_KEYWORD_SEARCH_API = "/stores";
     private final String GET_RECENCY_KEYWORD_SEARCH_API = "/recency";
     private final String DELETE_RECENCY_KEYWORD_SEARCH_API = "/recency";
     private final String GET_BEST_KEYWORD_SEARCH_API = "/best-keyword";
@@ -27,12 +27,10 @@ public class SearchController {
 
     private final SearchService searchService;
 
-    @GetMapping
-    public ResponseEntity<SearchResponseDto> getSearchedBoard(
-            @RequestParam(value = "boardPage")
-            int boardPage,
-            @RequestParam(value = "storePage")
-            int storePage,
+    @GetMapping(GET_BOARD_KEYWORD_SEARCH_API)
+    public ResponseEntity<SearchBoardDto> getSearchBoardDtos(
+            @RequestParam(value = "page")
+            int page,
             @RequestParam(value = "keyword")
             String keyword,
             @RequestParam(value = "sort", required = false, defaultValue = "LATEST")
@@ -58,13 +56,30 @@ public class SearchController {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
         memberId = (memberId != null) ? memberId : 1L;
 
-        return ResponseEntity.ok().body(searchService.getSearchResult(
-                memberId, storePage, boardPage, keyword,
+        return ResponseEntity.ok().body(searchService.getSearchBoardDtos(
+                memberId, page, keyword,
                 sort, glutenFreeTag, highProteinTag,
                 sugarFreeTag, veganTag, ketogenicTag,
                 category, minPrice, maxPrice
         ));
     }
+
+    @GetMapping(GET_STORE_KEYWORD_SEARCH_API)
+    public ResponseEntity<SearchStoreDto> getSearchStoreDtos(
+            @RequestParam("page")
+            int page,
+            @RequestParam(value = "keyword")
+            String keyword
+    ){
+        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
+        memberId = (memberId != null) ? memberId : 1L;
+
+        return ResponseEntity.ok().body(
+                searchService.getSearchStoreDtos(memberId, page, keyword)
+        );
+    }
+
+
 
     @PostMapping
     public ResponseEntity<Map<String, MessageResDto>> saveKeyword(

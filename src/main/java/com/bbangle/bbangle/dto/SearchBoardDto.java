@@ -9,6 +9,7 @@ public record SearchBoardDto(
         List<BoardResponseDto> content,
         int itemCount,
         int pageNumber,
-        int pageSize
+        int itemSize,
+        boolean existNextPage
 ){
 }
