@@ -4,8 +4,12 @@ import com.bbangle.bbangle.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.model.WishlistStore;
 import com.bbangle.bbangle.repository.queryDsl.WishListStoreQueryDSLRepository;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,8 +26,8 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     }
 
     @Override
-    public List<WishListStoreResponseDto> getWishListStoreRes(Long memberId) {
-        return queryFactory
+    public Page<WishListStoreResponseDto> getWishListStoreRes(Long memberId, Pageable pageable) {
+        List<WishListStoreResponseDto> wishListStores = queryFactory
                 .select(new QWishListStoreResponseDto(
                         store.introduce,
                         store.name.as("storeName"),
@@ -32,7 +36,23 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                 .from(wishlistStore)
                 .leftJoin(wishlistStore.store, store)
                 .where(wishlistStore.member.id.eq(memberId).and(wishlistStore.isDeleted.ne(true)))
+                .orderBy(wishlistStore.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
+
+        JPAQuery<WishListStoreResponseDto> countQuery = queryFactory
+                .select(new QWishListStoreResponseDto(
+                        store.introduce,
+                        store.name.as("storeName"),
+                        wishlistStore.store.id.as("storeId")
+                ))
+                .from(wishlistStore)
+                .leftJoin(wishlistStore.store, store)
+                .where(wishlistStore.member.id.eq(memberId).and(wishlistStore.isDeleted.ne(true)))
+                .orderBy(wishlistStore.createdAt.desc());
+
+        return PageableExecutionUtils.getPage(wishListStores, pageable, countQuery::fetchCount);
     }
 
     @Override

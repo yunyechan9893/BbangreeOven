@@ -1,11 +1,14 @@
 package com.bbangle.bbangle.controller;
 
 import com.bbangle.bbangle.dto.MessageResDto;
+import com.bbangle.bbangle.dto.WishListStorePagingDto;
 import com.bbangle.bbangle.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.service.impl.WishListStoreServiceImpl;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +28,10 @@ public class WishListStoreController {
      * @return the response entity List<wishListStoreResDto>
      */
     @GetMapping("/stores")
-    public ResponseEntity<List<WishListStoreResponseDto>> getWishListStores(){
+    public ResponseEntity<WishListStorePagingDto> getWishListStores(Pageable pageable){
         Long memberId = SecurityUtils.getMemberId();
-        List<WishListStoreResponseDto> wishListStoreResList = wishlistStoreService.getWishListStoresRes(memberId);
-        return ResponseEntity.ok().body(wishListStoreResList);
+        WishListStorePagingDto wishListStoresRes = wishlistStoreService.getWishListStoresRes(memberId, pageable);
+        return ResponseEntity.ok().body(wishListStoresRes);
     }
 
     /**

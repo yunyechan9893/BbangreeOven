@@ -1,9 +1,8 @@
 package com.bbangle.bbangle.service;
 
-import com.bbangle.bbangle.dto.WishListStoreResponseDto;
-
-import java.util.List;
+import com.bbangle.bbangle.dto.WishListStorePagingDto;
+import org.springframework.data.domain.Pageable;
 
 public interface WishListStoreService {
-    List<WishListStoreResponseDto> getWishListStoresRes(Long memberId);
+    WishListStorePagingDto getWishListStoresRes(Long memberId, Pageable pageable);
 }
