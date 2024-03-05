@@ -41,7 +41,7 @@ public class ProfileServiceImpl implements ProfileService {
     ) {
         Member member = profileRepository.findById(memberId)
             .orElseThrow(MemberNotFoundException::new);
-        if (!profileImg.isEmpty()) {
+        if (profileImg != null && !profileImg.isEmpty()) {
             ImageValidator.validateImage(profileImg);
             String imgUrl = imageService.saveImage(profileImg);
             member.updateProfile(imgUrl);
