@@ -12,7 +12,7 @@ public record ProductTagDto(
     boolean ketogenicTag
 ) {
 
-    public static ProductTagDto from(Product product){
+    public static ProductTagDto from(Product product) {
         return new ProductTagDto(
             product.isGlutenFreeTag(),
             product.isHighProteinTag(),

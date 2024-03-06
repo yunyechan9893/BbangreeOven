@@ -6,7 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface NoticeQueryDSLRepository {
+
     Page<NoticeResponseDto> getNoticeList(Pageable pageable);
 
     NoticeDetailResponseDto getNoticeDetail(Long id);
+
 }

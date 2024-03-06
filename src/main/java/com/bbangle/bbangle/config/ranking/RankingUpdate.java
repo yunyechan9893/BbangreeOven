@@ -1,10 +1,10 @@
 package com.bbangle.bbangle.config.ranking;
 
+import com.bbangle.bbangle.util.RedisKeyUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
-import com.bbangle.bbangle.util.RedisKeyUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,7 +18,8 @@ import org.springframework.stereotype.Component;
 public class RankingUpdate {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
-    @Autowired @Qualifier("boardLikeInfoRedisTemplate")
+    @Autowired
+    @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
@@ -26,7 +27,8 @@ public class RankingUpdate {
     @Async
     @Scheduled(cron = "0 0 * * * *") // 매시 정각마다 실행
     public void cleanupLikes() {
-        LocalDateTime updateDate = LocalDateTime.now().minusDays(1);
+        LocalDateTime updateDate = LocalDateTime.now()
+            .minusDays(1);
 
         Set<String> keys = boardLikeInfoRedisTemplate.keys("*");
         if (keys != null) {
@@ -41,22 +43,26 @@ public class RankingUpdate {
                 }
                 // 현재 시간으로부터 24시간 이전인 경우 해당 키 삭제
                 if (keyTime.isBefore(updateDate) || keyTime.isEqual(updateDate)) {
-                    List<Object> range = boardLikeInfoRedisTemplate.opsForList().range(keyTime.format(formatter), 0, -1);
-                    if(range == null) {
+                    List<Object> range = boardLikeInfoRedisTemplate.opsForList()
+                        .range(keyTime.format(formatter), 0, -1);
+                    if (range == null) {
                         continue;
                     }
 
-                    for(Object ele : range){
+                    for (Object ele : range) {
                         BoardLikeInfo info = (BoardLikeInfo) ele;
-                        if(info.scoreType() == ScoreType.WISH) {
+                        if (info.scoreType() == ScoreType.WISH) {
                             redisTemplate.opsForZSet()
-                                .incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(info.boardId()), -info.score());
+                                .incrementScore(RedisKeyUtil.POPULAR_KEY,
+                                    String.valueOf(info.boardId()), -info.score());
                             redisTemplate.opsForZSet()
-                                .incrementScore(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(info.boardId()), -info.score());
+                                .incrementScore(RedisKeyUtil.RECOMMEND_KEY,
+                                    String.valueOf(info.boardId()), -info.score());
                             continue;
                         }
                         redisTemplate.opsForZSet()
-                            .incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(info.boardId()), -info.score());
+                            .incrementScore(RedisKeyUtil.POPULAR_KEY,
+                                String.valueOf(info.boardId()), -info.score());
                     }
                     boardLikeInfoRedisTemplate.delete(key);
                 }

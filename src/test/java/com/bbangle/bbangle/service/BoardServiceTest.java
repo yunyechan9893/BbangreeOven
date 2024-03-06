@@ -2,7 +2,6 @@ package com.bbangle.bbangle.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.model.Board;
@@ -13,6 +12,10 @@ import com.bbangle.bbangle.model.TagEnum;
 import com.bbangle.bbangle.repository.BoardRepository;
 import com.bbangle.bbangle.repository.ProductRepository;
 import com.bbangle.bbangle.repository.StoreRepository;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.mock.web.MockMultipartFile;
 
 @SpringBootTest
 public class BoardServiceTest {
@@ -116,24 +120,37 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, noFilter,
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
+            noFilter,
             noFilter, noFilter, noSort, null, null, defaultPage);
-        BoardResponseDto response1 = boardList.getContent().get(0);
-        BoardResponseDto response2 = boardList.getContent().get(1);
+        BoardResponseDto response1 = boardList.getContent()
+            .get(0);
+        BoardResponseDto response2 = boardList.getContent()
+            .get(1);
 
         //then
         assertThat(boardList.getContent()).hasSize(2);
 
-        assertThat(response1.tags().contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.VEGAN.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.KETOGENIC.label())).isEqualTo(true);
-        assertThat(response2.tags().contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
-        assertThat(response2.tags().contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
-        assertThat(response2.tags().contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response2.tags().contains(TagEnum.VEGAN.label())).isEqualTo(true);
-        assertThat(response2.tags().contains(TagEnum.KETOGENIC.label())).isEqualTo(false);
+        assertThat(response1.tags()
+            .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.VEGAN.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.KETOGENIC.label())).isEqualTo(true);
+        assertThat(response2.tags()
+            .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
+        assertThat(response2.tags()
+            .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
+        assertThat(response2.tags()
+            .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
+        assertThat(response2.tags()
+            .contains(TagEnum.VEGAN.label())).isEqualTo(true);
+        assertThat(response2.tags()
+            .contains(TagEnum.KETOGENIC.label())).isEqualTo(false);
 
     }
 
@@ -171,18 +188,25 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter, noFilter,
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter,
+            noFilter,
             noFilter, noFilter, noSort, null, null, defaultPage);
-        BoardResponseDto response1 = boardList.getContent().get(0);
+        BoardResponseDto response1 = boardList.getContent()
+            .get(0);
 
         //then
         assertThat(boardList).hasSize(1);
 
-        assertThat(response1.tags().contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.VEGAN.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.KETOGENIC.label())).isEqualTo(false);
+        assertThat(response1.tags()
+            .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.VEGAN.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.KETOGENIC.label())).isEqualTo(false);
 
     }
 
@@ -220,7 +244,8 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter, noFilter,
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter,
+            noFilter,
             noFilter, noFilter, noSort, null, null, defaultPage);
 
         //then
@@ -261,7 +286,8 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter, noFilter,
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter,
+            noFilter,
             noFilter, noFilter, noSort, null, null, defaultPage);
 
         //then
@@ -303,7 +329,8 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, noFilter,
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
+            noFilter,
             true, noFilter, noSort, null, null, defaultPage);
 
         //then
@@ -345,7 +372,8 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
         String noSort = "";
-        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter, noFilter,
+        Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
+            noFilter,
             noFilter, true, noSort, null, null, defaultPage);
 
         //then
@@ -483,16 +511,22 @@ public class BoardServiceTest {
 
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, true,
             null, null, category, null, null, defaultPage);
-        BoardResponseDto response1 = boardList.getContent().get(0);
+        BoardResponseDto response1 = boardList.getContent()
+            .get(0);
 
         //then
         assertThat(boardList).hasSize(1);
 
-        assertThat(response1.tags().contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(false);
-        assertThat(response1.tags().contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(false);
-        assertThat(response1.tags().contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags().contains(TagEnum.VEGAN.label())).isEqualTo(false);
-        assertThat(response1.tags().contains(TagEnum.KETOGENIC.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(false);
+        assertThat(response1.tags()
+            .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(false);
+        assertThat(response1.tags()
+            .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
+        assertThat(response1.tags()
+            .contains(TagEnum.VEGAN.label())).isEqualTo(false);
+        assertThat(response1.tags()
+            .contains(TagEnum.KETOGENIC.label())).isEqualTo(true);
 
     }
 
@@ -502,21 +536,29 @@ public class BoardServiceTest {
         //given, when
 
         Slice<BoardResponseDto> boardList =
-            boardService.getBoardList(null, null, null, null, null, null, null, 5000, null, defaultPage);
+            boardService.getBoardList(null, null, null, null, null, null, null, 5000, null,
+                defaultPage);
         Slice<BoardResponseDto> boardList2 =
-            boardService.getBoardList(null, null, null, null, null, null, null, 1000, null, defaultPage);
+            boardService.getBoardList(null, null, null, null, null, null, null, 1000, null,
+                defaultPage);
         Slice<BoardResponseDto> boardList3 =
-            boardService.getBoardList(null, null, null, null, null, null, null, null, 10000, defaultPage);
+            boardService.getBoardList(null, null, null, null, null, null, null, null, 10000,
+                defaultPage);
         Slice<BoardResponseDto> boardList4 =
-            boardService.getBoardList(null, null, null, null, null, null, null, null, 1000, defaultPage);
+            boardService.getBoardList(null, null, null, null, null, null, null, null, 1000,
+                defaultPage);
         Slice<BoardResponseDto> boardList5 =
-            boardService.getBoardList(null, null, null, null, null, null, null, null, 900, defaultPage);
+            boardService.getBoardList(null, null, null, null, null, null, null, null, 900,
+                defaultPage);
         Slice<BoardResponseDto> boardList6 =
-            boardService.getBoardList(null, null, null, null, null, null, null, 1000, 10000, defaultPage);
+            boardService.getBoardList(null, null, null, null, null, null, null, 1000, 10000,
+                defaultPage);
         Slice<BoardResponseDto> boardList7 =
-            boardService.getBoardList(null, null, null, null, null, null, null, 1001, 9999, defaultPage);
+            boardService.getBoardList(null, null, null, null, null, null, null, 1001, 9999,
+                defaultPage);
         Slice<BoardResponseDto> boardList8 =
-            boardService.getBoardList(null, null, null, null, null, null, null, null, null, defaultPage);
+            boardService.getBoardList(null, null, null, null, null, null, null, null, null,
+                defaultPage);
         List<Board> all = boardRepository.findAll();
 
         //then
@@ -560,7 +602,7 @@ public class BoardServiceTest {
             true,
             Category.BREAD.name());
 
-        for(int i = 0; i < 12; i++) {
+        for (int i = 0; i < 12; i++) {
             board = boardGenerator(store,
                 true,
                 true,
@@ -609,15 +651,17 @@ public class BoardServiceTest {
 
     }
 
-    private Board boardGenerator(Store store,
-                                 boolean sunday,
-                                 boolean monday,
-                                 boolean tuesday,
-                                 boolean wednesday,
-                                 boolean thursday,
-                                 boolean friday,
-                                 boolean saturday,
-                                 int price) {
+    private Board boardGenerator(
+        Store store,
+        boolean sunday,
+        boolean monday,
+        boolean tuesday,
+        boolean wednesday,
+        boolean thursday,
+        boolean friday,
+        boolean saturday,
+        int price
+    ) {
         return Board.builder()
             .store(store)
             .title("title")
@@ -648,13 +692,15 @@ public class BoardServiceTest {
             .build();
     }
 
-    private Product productGenerator(Board board,
-                                     boolean glutenFreeTag,
-                                     boolean highProteinTag,
-                                     boolean sugarFreeTag,
-                                     boolean veganTag,
-                                     boolean ketogenicTag,
-                                     String category) {
+    private Product productGenerator(
+        Board board,
+        boolean glutenFreeTag,
+        boolean highProteinTag,
+        boolean sugarFreeTag,
+        boolean veganTag,
+        boolean ketogenicTag,
+        String category
+    ) {
         return Product.builder()
             .board(board)
             .title("title")
@@ -667,5 +713,31 @@ public class BoardServiceTest {
             .ketogenicTag(ketogenicTag)
             .build();
     }
+
+    @Test
+    @DisplayName("오브젝트 스토리지에 상세페이지를 저장할 수 있으며, Board 테이블 detail 컬럼을 최신 값으로 업데이트 할 수 있다")
+    public void saveBoardDetailHtmlTest() {
+        byte[] content;
+        try {
+            content = Files.readAllBytes(Paths.get("src/test/resources/html/detail.html"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // MockMultipartFile 인스턴스 생성
+        MockMultipartFile HTML_FILE = new MockMultipartFile(
+            "htmlFile", // form의 input field 이름
+            "detail.html", // 업로드될 파일명
+            "text/html", // 파일 타입
+            content // 파일 내용
+        );
+
+        Long boardId = 1L;
+
+        var result = boardService.saveBoardDetailHtml(boardId, HTML_FILE);
+        Assertions.assertThat(result)
+            .isEqualTo(true);
+    }
+
 
 }

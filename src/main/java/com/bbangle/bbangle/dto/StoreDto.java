@@ -13,6 +13,5 @@ public record StoreDto(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String introduce
 ) {
-
     // 아이디, 이름, 프로필, isWished의 값이 없다면 예외 발생
 }

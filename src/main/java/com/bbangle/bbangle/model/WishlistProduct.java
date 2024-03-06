@@ -35,6 +35,9 @@ public class WishlistProduct extends BaseEntity {
     @JoinColumn(name = "product_board_id")
     private Board board;
 
+    @Column(name = "member_id")
+    private Long memberId;
+
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 

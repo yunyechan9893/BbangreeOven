@@ -1,16 +1,23 @@
 package com.bbangle.bbangle.service;
 
 import com.bbangle.bbangle.dto.RecencySearchResponse;
-import com.bbangle.bbangle.dto.SearchResponseDto;
+import com.bbangle.bbangle.dto.SearchBoardDto;
+import com.bbangle.bbangle.dto.SearchStoreDto;
 
 import java.util.List;
 
 public interface SearchService {
-    void initSetting();
-    void updateRedisAtBestKeyword();
 
-    SearchResponseDto getSearchResult(int storePage, int boarPage, String keyword);
+    void initSetting();
+
+    void updateRedisAtBestKeyword();
     void saveKeyword(Long memberId,String keyword);
+
+    SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                      Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                      String category, Integer minPrice, Integer maxPrice);
+
+    SearchStoreDto getSearchStoreDtos(Long memberId, int storePage, String keyword);
 
     RecencySearchResponse getRecencyKeyword(Long memberId);
 
@@ -19,4 +26,5 @@ public interface SearchService {
     List<String> getBestKeyword();
 
     List<String> getAutoKeyword(String keyword);
+
 }

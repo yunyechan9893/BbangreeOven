@@ -22,7 +22,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public NoticePagingResponseDto getNoticePagingList(Pageable pageable) {
-       return NoticePagingResponseDto.of(noticeQueryDSLRepositoryImpl.getNoticeList(pageable));
+        return NoticePagingResponseDto.of(noticeQueryDSLRepositoryImpl.getNoticeList(pageable));
     }
 
     @Override
@@ -34,9 +34,10 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional
     public void saveNotice(NoticeSaveRequestDto noticeSaveRequestDto) {
         Notice notice = Notice.builder()
-                .title(noticeSaveRequestDto.title())
-                .content(noticeSaveRequestDto.content())
-                .build();
+            .title(noticeSaveRequestDto.title())
+            .content(noticeSaveRequestDto.content())
+            .build();
         noticeRepository.save(notice);
     }
+
 }

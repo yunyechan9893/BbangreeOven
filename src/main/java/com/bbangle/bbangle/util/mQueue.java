@@ -1,10 +1,11 @@
 package com.bbangle.bbangle.util;
 
 public class mQueue {
+
     private int front;
     private int rear;
     private int size;
-    private Object[] queue;
+    private final Object[] queue;
 
     public mQueue() {
         this.queue = new Object[100]; // Assuming a maximum size of 100, adjust as needed
@@ -28,4 +29,5 @@ public class mQueue {
     public boolean isEmpty() {
         return this.front == this.rear;
     }
+
 }

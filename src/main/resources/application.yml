@@ -1,6 +1,10 @@
 server:
   port: 8000
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      maxRequestSize: 100MB
   data:
     redis:
       host: localhost
@@ -32,7 +36,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri : ${REDIRECT_URI}
+            redirect-uri: ${REDIRECT_URI}
             scope:
               - email
               - profile
@@ -54,3 +58,16 @@ spring:
 jwt:
   issuer: bbanglebbangle
   secret_key: bbangleOven
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET_NAME}
+      end-point: ${S3_END_POINT}
+    credentials:
+      access-key: ${S3_CREDENTIALS}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: ${S3_REGION}
+      auto: false
+    stack:
+      auto: false

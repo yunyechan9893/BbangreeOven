@@ -1,20 +1,19 @@
 package com.bbangle.bbangle.config.jwt;
 
-import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.member.domain.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Set;
 
 /**
  * 토큰 제공 클래스
@@ -32,7 +31,7 @@ public class TokenProvider {
      * @param expiredAt 만료기간
      * @return JWT 토큰
      */
-    public String generateToken(Member member, Duration expiredAt){
+    public String generateToken(Member member, Duration expiredAt) {
         Date now = new Date();
         return makeToken(new Date(now.getTime() + expiredAt.toMillis()), member);
     }
@@ -49,15 +48,15 @@ public class TokenProvider {
         Date now = new Date();
 
         return Jwts.builder()
-                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .setIssuer(jwtProperties.getIssuer())
-                .setIssuedAt(now)
-                .setExpiration(expiry)
-                .setSubject(member.getEmail())
-                .claim("id", member.getId())
-                // 서명 : 비밀값과 함께 해시값을 HS256 방식으로 암호화
-                .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
-                .compact();
+            .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+            .setIssuer(jwtProperties.getIssuer())
+            .setIssuedAt(now)
+            .setExpiration(expiry)
+            .setSubject(member.getEmail())
+            .claim("id", member.getId())
+            // 서명 : 비밀값과 함께 해시값을 HS256 방식으로 암호화
+            .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
+            .compact();
     }
 
     /**
@@ -66,13 +65,13 @@ public class TokenProvider {
      * @param token the token
      * @return the boolean
      */
-    public boolean isValidToken(String token){
-        try{
+    public boolean isValidToken(String token) {
+        try {
             Jwts.parser()
-                    .setSigningKey(jwtProperties.getSecretKey())// 비밀값으로 복호화
-                    .parseClaimsJws(token);
+                .setSigningKey(jwtProperties.getSecretKey())// 비밀값으로 복호화
+                .parseClaimsJws(token);
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false; //복호화 과정에서 에러가 나면 유효하지 않은 토큰
         }
     }
@@ -83,10 +82,11 @@ public class TokenProvider {
      * @param token the token
      * @return 인증 정보
      */
-    public Authentication getAuthentication(String token){
+    public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
         Object memberId = claims.get("id");
-        Set<SimpleGrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
+        Set<SimpleGrantedAuthority> authorities = Collections.singleton(
+            new SimpleGrantedAuthority("ROLE_USER"));
         return new UsernamePasswordAuthenticationToken(memberId, token, authorities);
     }
 
@@ -98,8 +98,9 @@ public class TokenProvider {
      */
     private Claims getClaims(String token) {
         return Jwts.parser()
-                .setSigningKey(jwtProperties.getSecretKey())
-                .parseClaimsJws(token)
-                .getBody();
+            .setSigningKey(jwtProperties.getSecretKey())
+            .parseClaimsJws(token)
+            .getBody();
     }
+
 }
