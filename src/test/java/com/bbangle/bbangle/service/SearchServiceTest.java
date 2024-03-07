@@ -1,10 +1,6 @@
 package com.bbangle.bbangle.service;
 
-import com.bbangle.bbangle.model.Board;
-import com.bbangle.bbangle.model.Category;
-import com.bbangle.bbangle.model.Product;
-import com.bbangle.bbangle.model.RedisEnum;
-import com.bbangle.bbangle.model.Store;
+import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.BoardRepository;
 import com.bbangle.bbangle.repository.ProductRepository;
 import com.bbangle.bbangle.repository.RedisRepository;
@@ -13,7 +9,9 @@ import com.bbangle.bbangle.util.KomoranUtil;
 import com.bbangle.bbangle.util.TrieUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.List;
+
+import java.util.*;
+
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -107,6 +105,7 @@ public class SearchServiceTest {
         Boolean sugarFreeTag = false;
         Boolean veganTag = false;
         Boolean ketogenicTag = false;
+        Boolean orderAvailableToday = true;
         String category = "COOKIE";
         Integer minPrice = 0;
         Integer maxPrice = 6000;
@@ -116,7 +115,7 @@ public class SearchServiceTest {
                 memberId, BOARD_PAGE, SEARCH_KEYWORD,
                 sort, glutenFreeTag, highProteinTag,
                 sugarFreeTag, veganTag, ketogenicTag,
-                category, minPrice, maxPrice);
+                orderAvailableToday, category, minPrice, maxPrice);
 
         var boards = searchBoardResult.content();
 
@@ -298,7 +297,6 @@ public class SearchServiceTest {
 
         Assertions.assertTrue(result.size() < 7);
     }
-
 
     private void createData(int count) {
         for (int i = 0; i < count; i++) {
