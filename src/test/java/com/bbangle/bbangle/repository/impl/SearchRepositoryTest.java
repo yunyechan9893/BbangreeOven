@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.Rollback;
 
 @SpringBootTest
@@ -89,6 +90,7 @@ public class SearchRepositoryTest {
         Boolean sugarFreeTag = false;
         Boolean veganTag = false;
         Boolean ketogenicTag = false;
+        Boolean orderAvailableToday = false;
         String category = "BREAD";
         Integer minPrice = 0;
         Integer maxPrice = 6000;
@@ -98,63 +100,64 @@ public class SearchRepositoryTest {
 
         var result = boardRepository.findAll();
         var resultBoardIds = result.stream()
-            .map(board -> board.getId())
+            .map(Board::getId)
             .toList();
         Assertions.assertEquals(15, resultBoardIds.size(), "전체 아이템 개수가 다릅니다");
 
         var searchBoardResult = searchRepository.getSearchResult(
-
-                BOARD_IDS, sort, glutenFreeTag, highProteinTag,
-                sugarFreeTag, veganTag, ketogenicTag,
-                category, minPrice, maxPrice);
+                1L, BOARD_IDS, sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag, orderAvailableToday,
+                category, minPrice, maxPrice, PageRequest.of(page, limit));
 
 
         // 각 BoardResponseDto에 대한 처리
-        Assertions.assertEquals(1L, searchBoardResult.get(0)
+        Assertions.assertEquals(1L, searchBoardResult.content().get(0)
             .boardId());
-        Assertions.assertEquals(1L, searchBoardResult.get(0)
+        Assertions.assertEquals(1L, searchBoardResult.content().get(0)
             .storeId());
-        Assertions.assertEquals("RAWSOME", searchBoardResult.get(0)
+        Assertions.assertEquals("RAWSOME", searchBoardResult.content().get(0)
             .storeName());
         Assertions.assertEquals(
             "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203"
-            , searchBoardResult.get(0)
+            , searchBoardResult.content().get(0)
                 .thumbnail());
-        Assertions.assertEquals("비건 베이커리 로썸 비건빵", searchBoardResult.get(0)
+        Assertions.assertEquals("비건 베이커리 로썸 비건빵", searchBoardResult.content().get(0)
             .title());
-        Assertions.assertEquals(5400, searchBoardResult.get(0)
+        Assertions.assertEquals(5400, searchBoardResult.content().get(0)
             .price());
-        Assertions.assertEquals(true, searchBoardResult.get(0)
+        Assertions.assertEquals(true, searchBoardResult.content().get(0)
             .isWished());
         Assertions.assertEquals(List.of("glutenFree", "sugarFree", "vegan"),
-            searchBoardResult.get(0)
+            searchBoardResult.content().get(0)
                 .tags());
 
-        Assertions.assertEquals(2L, searchBoardResult.get(1)
+        Assertions.assertEquals(2L, searchBoardResult.content().get(1)
             .boardId());
-        Assertions.assertEquals(2L, searchBoardResult.get(1)
+        Assertions.assertEquals(2L, searchBoardResult.content().get(1)
             .storeId());
-        Assertions.assertEquals("RAWSOME", searchBoardResult.get(1)
+        Assertions.assertEquals("RAWSOME", searchBoardResult.content().get(1)
             .storeName());
         Assertions.assertEquals(
             "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203"
-            , searchBoardResult.get(1)
+            , searchBoardResult.content().get(1)
                 .thumbnail());
-        Assertions.assertEquals("비건 베이커리 로썸 비건빵", searchBoardResult.get(1)
+        Assertions.assertEquals("비건 베이커리 로썸 비건빵", searchBoardResult.content().get(1)
             .title());
-        Assertions.assertEquals(5400, searchBoardResult.get(1)
+        Assertions.assertEquals(5400, searchBoardResult.content().get(1)
             .price());
-        Assertions.assertEquals(true, searchBoardResult.get(1)
+        Assertions.assertEquals(true, searchBoardResult.content().get(1)
             .isWished());
         Assertions.assertEquals(List.of("glutenFree", "sugarFree", "vegan"),
-            searchBoardResult.get(1)
+            searchBoardResult.content().get(1)
                 .tags());
     }
 
     @Test
     public void getSearchStore() {
+        Long memberId = 1L;
+
         //스토어 및 보드 검색 결과 가져오기
-        var searchStoreResult = searchRepository.getSearchedStore(STORE_IDS);
+        var searchStoreResult = searchRepository.getSearchedStore(memberId, STORE_IDS, PageRequest.of(0, 10));
 
         // 각 BoardResponseDto에 대한 처리
         Assertions.assertEquals(1L, searchStoreResult.get(0)
@@ -206,8 +209,9 @@ public class SearchRepositoryTest {
 
     @Test
     public void getSearchStroeDtosTest(){
+        Long memberId = 1L;
         //스토어 및 보드 검색 결과 가져오기
-        var searchStoreResult = searchRepository.getSearchedStore(STORE_IDS);
+        var searchStoreResult = searchRepository.getSearchedStore(memberId, STORE_IDS, PageRequest.of(0, 10));
 
         // 각 BoardResponseDto에 대한 처리
         Assertions.assertEquals(1L, searchStoreResult.get(0).storeId());
@@ -276,8 +280,6 @@ public class SearchRepositoryTest {
         searchRepository.markAsDeleted(savingKeyword.get(1), member);
 
         var result = searchRepository.getRecencyKeyword(member);
-
-        var a = searchRepository.findAll();
 
         index = 0;
         List<String> expectList = List.of("초콜릿", "비건", "비건 베이커리", "초코 휘낭시에", "바나나 빵", "배부른 음식",

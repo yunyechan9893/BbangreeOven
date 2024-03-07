@@ -231,14 +231,25 @@ public class SearchServiceImpl implements SearchService {
                 .distinct()
                 .collect(Collectors.toList());
 
+        if (storeIndexs.size() <= 0) {
+            return SearchStoreDto.builder()
+                    .content(List.of())
+                    .itemAllCount(0)
+                    .pageNumber(page)
+                    .limitItemCount(DEFAULT_PAGE)
+                    .currentItemCount(0)
+                    .existNextPage(false)
+                    .build();
+        }
 
+        var content = searchRepository.getSearchedStore(memberId, storeIndexs, PageRequest.of(page, DEFAULT_PAGE));
         //스토어 및 보드 검색 결과 가져오기
         return SearchStoreDto.builder()
-                .content(
-                        searchRepository.getSearchedStore(memberId, storeIndexs, PageRequest.of(page, DEFAULT_PAGE)))
-                .itemCount(storeIndexs.size())
+                .content(content)
+                .itemAllCount(storeIndexs.size())
                 .pageNumber(page)
-                .itemSize(DEFAULT_PAGE)
+                .limitItemCount(DEFAULT_PAGE)
+                .currentItemCount(content.size())
                 .existNextPage(storeIndexs.size() - ((page + 1) * DEFAULT_PAGE) > 0)
                 .build();
 
