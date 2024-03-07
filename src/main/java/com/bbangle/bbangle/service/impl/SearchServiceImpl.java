@@ -2,17 +2,18 @@ package com.bbangle.bbangle.service.impl;
 
 import com.bbangle.bbangle.dto.RecencySearchResponse;
 import com.bbangle.bbangle.dto.SearchBoardDto;
-import com.bbangle.bbangle.dto.SearchResponseDto;
 import com.bbangle.bbangle.dto.SearchStoreDto;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.RedisEnum;
 import com.bbangle.bbangle.model.Search;
+import com.bbangle.bbangle.model.SortType;
 import com.bbangle.bbangle.repository.BoardRepository;
 import com.bbangle.bbangle.repository.RedisRepository;
 import com.bbangle.bbangle.repository.SearchRepository;
 import com.bbangle.bbangle.repository.StoreRepository;
 import com.bbangle.bbangle.service.SearchService;
 import com.bbangle.bbangle.util.KomoranUtil;
+import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.TrieUtil;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -24,6 +25,10 @@ import java.util.stream.Collectors;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -194,12 +199,7 @@ public class SearchServiceImpl implements SearchService {
 
     public SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                              Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                             String category, Integer minPrice, Integer maxPrice) {
-
-
-        int startItem = (boardPage + 1) * DEFAULT_PAGE - DEFAULT_PAGE;
-        int endItem = (boardPage + 1) * DEFAULT_PAGE;
-
+                                             Boolean orderAvailableToday, String category, Integer minPrice, Integer maxPrice) {
         // 검색어 토큰화
         List<String> keys = getAllTokenizer(keyword);
 
@@ -211,46 +211,14 @@ public class SearchServiceImpl implements SearchService {
             .distinct()
             .collect(Collectors.toList());
 
-
-        List<Long> boardSliceList;
-        int boardIndexSize = boardIndexs.size();
-
-        if (endItem <= boardIndexSize) {
-            boardSliceList = boardIndexs.subList(startItem, Math.min(endItem, boardIndexSize));
-        } else if (startItem > boardIndexSize) {
-
-            return SearchBoardDto.builder()
-                            .content(List.of())
-                            .itemCount(boardIndexs.size())
-                            .pageNumber(boardPage)
-                            .itemSize(DEFAULT_PAGE)
-                            .existNextPage(boardIndexs.size() - ((boardPage + 1) * DEFAULT_PAGE) > 0)
-                            .build();
-
-        } else {
-            boardSliceList = boardIndexs.subList(startItem, Math.min(boardIndexSize, endItem));
-        }
-        return SearchBoardDto.builder()
-                .content(memberId > 1L ?
-                        searchRepository.getSearchResultWithLike(
-                                memberId, boardSliceList, sort, glutenFreeTag, highProteinTag,
-                                sugarFreeTag, veganTag, ketogenicTag,
-                                category, minPrice, maxPrice) :
-                        searchRepository.getSearchResult(
-                                boardSliceList, sort, glutenFreeTag, highProteinTag,
-                                sugarFreeTag, veganTag, ketogenicTag,
-                                category, minPrice, maxPrice))
-                .itemCount(boardIndexs.size())
-                .pageNumber(boardPage)
-                .itemSize(DEFAULT_PAGE)
-                .existNextPage(boardIndexs.size() - ((boardPage + 1) * DEFAULT_PAGE) > 0)
-                .build();
-
-
+        return searchRepository.getSearchResult(
+                        memberId, boardIndexs, sort, glutenFreeTag, highProteinTag,
+                        sugarFreeTag, veganTag, ketogenicTag, orderAvailableToday,
+                        category, minPrice, maxPrice, PageRequest.of(boardPage, DEFAULT_PAGE));
     }
 
     @Override
-    public SearchStoreDto getSearchStoreDtos(Long memberId, int storePage, String keyword){
+    public SearchStoreDto getSearchStoreDtos(Long memberId, int page, String keyword){
 
         // 검색어 토큰화
         List<String> keys = getAllTokenizer(keyword);
@@ -264,44 +232,14 @@ public class SearchServiceImpl implements SearchService {
                 .collect(Collectors.toList());
 
 
-        int storeStartItem = (storePage + 1) * DEFAULT_PAGE - DEFAULT_PAGE;
-        int storeEndItem = (storePage + 1) * DEFAULT_PAGE;
-
-        List<Long> storeSliceList = null;
-        int storeIndexSize = storeIndexs.size();
-
-        if (storeEndItem <= storeIndexSize) {
-            storeSliceList = storeIndexs.subList(storeStartItem,
-                Math.min(storeEndItem, storeIndexSize));
-        } else if (storeStartItem > storeIndexSize) {
-
-            return
-
-                    SearchStoreDto.builder()
-                            .content(List.of())
-                            .itemCount(storeIndexs.size())
-                            .pageNumber(storePage)
-                            .itemSize(DEFAULT_PAGE)
-                            .existNextPage(storeIndexs.size() - ((storePage + 1) * DEFAULT_PAGE) > 0)
-                            .build();
-
-        } else {
-            storeSliceList = storeIndexs.subList(storeStartItem,
-                Math.min(storeIndexSize, storeEndItem));
-        }
-
-
         //스토어 및 보드 검색 결과 가져오기
         return SearchStoreDto.builder()
                 .content(
-                        memberId > 1L ?
-                                searchRepository.getSearchedStoreWithLike(memberId, storeSliceList):
-                                searchRepository.getSearchedStore(storeSliceList)
-                )
+                        searchRepository.getSearchedStore(memberId, storeIndexs, PageRequest.of(page, DEFAULT_PAGE)))
                 .itemCount(storeIndexs.size())
-                .pageNumber(storePage)
+                .pageNumber(page)
                 .itemSize(DEFAULT_PAGE)
-                .existNextPage(storeIndexs.size() - ((storePage + 1) * DEFAULT_PAGE) > 0)
+                .existNextPage(storeIndexs.size() - ((page + 1) * DEFAULT_PAGE) > 0)
                 .build();
 
     }
@@ -353,5 +291,4 @@ public class SearchServiceImpl implements SearchService {
             .map(token -> token.getMorph())
             .toList();
     }
-
 }

@@ -49,6 +49,8 @@ public class SearchController {
             Boolean veganTag,
             @RequestParam(value = "ketogenicTag", required = false, defaultValue = "false")
             Boolean ketogenicTag,
+            @RequestParam(value = "orderAvailableToday", required = false, defaultValue = "false")
+            Boolean orderAvailableToday,
             @RequestParam(value = "category", required = false, defaultValue = "")
             String category,
             @RequestParam(value = "minPrice", required = false, defaultValue = "0")
@@ -64,7 +66,7 @@ public class SearchController {
                 memberId, page, keyword,
                 sort, glutenFreeTag, highProteinTag,
                 sugarFreeTag, veganTag, ketogenicTag,
-                category, minPrice, maxPrice
+                orderAvailableToday, category, minPrice, maxPrice
             ));
     }
 
