@@ -1,0 +1,32 @@
+package com.bbangle.bbangle.repository.impl;
+
+
+import com.bbangle.bbangle.model.Member;
+import com.bbangle.bbangle.repository.ProfileRepository;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Optional;
+
+@SpringBootTest
+public class ProfileRepositoryTest {
+    @Autowired
+    ProfileRepository profileRepository;
+
+    @Test
+    @DisplayName("중복된 닉네임이 있는 지 확인한다")
+    public void isDuplicatedNickname() throws Exception{
+        //given
+        String nickname = "윤동석";
+
+        //when
+        Member member = profileRepository.findByNickname(nickname).get();
+
+        //then
+        Assertions.assertThat(member.getNickname()).isEqualTo(nickname);
+
+    }
+}

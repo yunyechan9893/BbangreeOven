@@ -5,7 +5,7 @@ import com.bbangle.bbangle.dto.NoticePagingResponseDto;
 import com.bbangle.bbangle.dto.NoticeSaveRequestDto;
 import com.bbangle.bbangle.model.Notice;
 import com.bbangle.bbangle.repository.NoticeRepository;
-import com.bbangle.bbangle.repository.impl.NoticeQueryDSLRepositoryImpl;
+import com.bbangle.bbangle.repository.impl.NoticeRepositoryImpl;
 import com.bbangle.bbangle.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NoticeServiceImpl implements NoticeService {
 
-    private final NoticeQueryDSLRepositoryImpl noticeQueryDSLRepositoryImpl;
+    private final NoticeRepositoryImpl noticeQueryDSLRepositoryImpl;
     private final NoticeRepository noticeRepository;
 
     @Override
