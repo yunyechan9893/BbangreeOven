@@ -24,11 +24,11 @@ public class MemberController {
         @RequestPart
         MemberInfoRequest additionalInfo,
         @RequestPart(required = false)
-        MultipartFile profileImage
+        MultipartFile profileImg
     ) {
         Long memberId = SecurityUtils.getMemberId();
 
-        memberService.updateMemberInfo(additionalInfo, memberId, profileImage);
+        memberService.updateMemberInfo(additionalInfo, memberId, profileImg);
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();

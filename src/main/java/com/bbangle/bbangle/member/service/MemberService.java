@@ -73,12 +73,12 @@ public class MemberService {
     public void updateMemberInfo(
         MemberInfoRequest request,
         Long memberId,
-        MultipartFile profileImage
+        MultipartFile profileImg
     ) {
         Member loginedMember = findById(memberId);
-        if (!profileImage.isEmpty()) {
-            ImageValidator.validateImage(profileImage);
-            String profileImgUrl = imageService.saveImage(profileImage);
+        if (profileImg != null && !profileImg.isEmpty()) {
+            ImageValidator.validateImage(profileImg);
+            String profileImgUrl = imageService.saveImage(profileImg);
             loginedMember.updateProfile(profileImgUrl);
         }
         loginedMember.updateFirst(request);
