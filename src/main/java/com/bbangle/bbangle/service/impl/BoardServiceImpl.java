@@ -71,9 +71,9 @@ public class BoardServiceImpl implements BoardService {
     public Slice<BoardResponseDto> getBoardList(
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-        String category, Integer minPrice, Integer maxPrice,
+        String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday,
         Pageable pageable
-    ) {
+        ) {
 
         List<BoardResponseDto> boardResponseDto = boardRepository.getBoardResponseDto(
             sort,
@@ -84,7 +84,8 @@ public class BoardServiceImpl implements BoardService {
             ketogenicTag,
             category,
             minPrice,
-            maxPrice
+            maxPrice,
+            orderAvailableToday
         );
 
         List<Long> boardResponseDtoIdx = boardResponseDto.stream()

@@ -9,9 +9,20 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface BoardService {
 
-    Slice<BoardResponseDto> getBoardList(String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                         String category, Integer minPrice, Integer maxPrice, Pageable pageable);
+    Slice<BoardResponseDto> getBoardList(
+        String sort,
+        Boolean glutenFreeTag,
+        Boolean highProteinTag,
+        Boolean sugarFreeTag,
+        Boolean veganTag,
+        Boolean ketogenicTag,
+        String category,
+        Integer minPrice,
+        Integer maxPrice,
+        Boolean orderAvailableToday,
+        Pageable pageable
+    );
+
     @Transactional(readOnly = true)
     BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId);
 
