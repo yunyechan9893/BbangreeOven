@@ -15,7 +15,7 @@ public interface SearchService {
 
     SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                       Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                      String category, Integer minPrice, Integer maxPrice);
+                                      Boolean orderAvailableToday, String category, Integer minPrice, Integer maxPrice);
 
     SearchStoreDto getSearchStoreDtos(Long memberId, int storePage, String keyword);
 
@@ -26,5 +26,4 @@ public interface SearchService {
     List<String> getBestKeyword();
 
     List<String> getAutoKeyword(String keyword);
-
 }

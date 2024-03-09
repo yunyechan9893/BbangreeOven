@@ -26,6 +26,8 @@ public class BoardWishListConfig {
                 redisTemplate.opsForZSet()
                     .add(RedisKeyUtil.POPULAR_KEY, String.valueOf(board.getId()), 0);
             });
+
+
     }
 
 }

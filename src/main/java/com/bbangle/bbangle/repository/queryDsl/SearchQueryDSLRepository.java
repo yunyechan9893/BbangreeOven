@@ -1,24 +1,19 @@
 package com.bbangle.bbangle.repository.queryDsl;
 
-import com.bbangle.bbangle.dto.BoardResponseDto;
 import com.bbangle.bbangle.dto.KeywordDto;
+import com.bbangle.bbangle.dto.SearchBoardDto;
 import com.bbangle.bbangle.dto.StoreResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface SearchQueryDSLRepository {
 
-    List<BoardResponseDto> getSearchResult(List<Long> boardIds,String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                           Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                           String category, Integer minPrice, Integer maxPrice);
-
-    List<BoardResponseDto> getSearchResultWithLike(Long memberId, List<Long> boardIds, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                   Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                   String category, Integer minPrice, Integer maxPrice);
-
-    List<StoreResponseDto> getSearchedStore(List<Long> storeIndexList);
-
-    List<StoreResponseDto> getSearchedStoreWithLike(Long memberId, List<Long> storeIndexList);
+    SearchBoardDto getSearchResult(Long memberId, List<Long> boardIds, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                   Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag, Boolean orderAvailableToday,
+                                   String category, Integer minPrice, Integer maxPrice, Pageable pageable);
+    List<StoreResponseDto> getSearchedStore(Long memberId, List<Long> storeIndexList, Pageable pageable);
 
     List<KeywordDto> getRecencyKeyword(Member member);
 

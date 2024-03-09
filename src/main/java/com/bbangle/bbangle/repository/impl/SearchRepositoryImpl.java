@@ -8,10 +8,16 @@ import com.bbangle.bbangle.model.*;
 import com.bbangle.bbangle.repository.queryDsl.SearchQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,63 +28,103 @@ import java.util.stream.Collectors;
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
     private final int ONEDAY = 24;
+    private final int DEFAULT_ITEM_SIZE = 10;
+
+
 
     @Override
-    public List<BoardResponseDto> getSearchResult(List<Long> boardIds,String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                  Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                  String category, Integer minPrice, Integer maxPrice) {
-
+    public SearchBoardDto getSearchResult(Long memberId, List<Long> boardIds, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+                                          Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag, Boolean orderAvailableToday,
+                                          String category, Integer minPrice, Integer maxPrice, Pageable pageable) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
+
+        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+
         BooleanBuilder filter =
                 setFilteringCondition(glutenFreeTag,
                         highProteinTag,
                         sugarFreeTag,
                         veganTag,
                         ketogenicTag,
+                        orderAvailableToday,
                         category,
                         minPrice,
                         maxPrice,
                         product,
                         board);
 
-        var subquery = queryFactory
+        var orderByBuilder =
+                sort.equals(SortType.POPULAR.getValue())?
+                        board.view.add(board.wishCnt.multiply(10)).desc():
+                        orderByFieldList(boardIds, product.board.id);
+
+
+        var defaultQuery = queryFactory
                 .select(product.board.id)
                 .distinct()
                 .from(product)
                 .where(
+
                         board.id.in(boardIds),
                         filter
                 )
+                .orderBy(orderByBuilder);
+
+        var queryAllCount = defaultQuery.fetch().stream().toList().size();
+
+        if (queryAllCount <= 0){
+            return SearchBoardDto.builder()
+                    .content(List.of())
+                    .itemSize(queryAllCount)
+                    .pageNumber(pageable.getPageNumber())
+                    .itemCount(DEFAULT_ITEM_SIZE)
+                    .existNextPage(queryAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
+                    .build();
+        }
+
+        var filterQuery = defaultQuery
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
+        List<Expression<?>> columns = new ArrayList<>();
+        columns.add(product.board.store.id);
+        columns.add(product.board.store.name);
+        columns.add(product.board.id);
+        columns.add(product.board.profile);
+        columns.add(product.board.title);
+        columns.add(product.board.price);
+        columns.add(product.category);
+        columns.add(product.glutenFreeTag);
+        columns.add(product.highProteinTag);
+        columns.add(product.sugarFreeTag);
+        columns.add(product.veganTag);
+        columns.add(product.ketogenicTag);
+
+        if (memberId != null && memberId > 0) {
+            columns.add(wishlistProduct.id);
+        }
+
         var boards = queryFactory
-                .select(
-                        product.board.store.id,
-                        product.board.store.name,
-                        product.board.id,
-                        product.board.profile,
-                        product.board.title,
-                        product.board.price,
-                        product.category,
-                        product.glutenFreeTag,
-                        product.highProteinTag,
-                        product.sugarFreeTag,
-                        product.veganTag,
-                        product.ketogenicTag
-                )
+                .select(columns.toArray(new Expression[0]))
                 .from(product)
                 .join(product.board, board)
                 .join(board.store, store)
-                .where(board.id.in(subquery))
-                .orderBy(board.price.asc())
-                .fetch();
+                .where(board.id.in(filterQuery))
+                .orderBy(orderByFieldList(filterQuery, product.board.id));
 
-        Map<Long, BoardResponseDto> boardMap = new HashMap<>();
+
+        if (memberId != null && memberId > 0) {
+            boards = boards.leftJoin(wishlistProduct).on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId), wishlistProduct.isDeleted.eq(false));
+        }
+
+
+        Map<Long, BoardResponseDto> boardMap = new LinkedHashMap<>();
         Set<Category> categories = new HashSet<>();
 
-        for (Tuple tuple:boards) {
+        for (Tuple tuple:boards.fetch()) {
             Long boardId =  tuple.get(product.board.id);
 
             if (!boardMap.containsKey(boardId)) {
@@ -121,167 +167,62 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             boardMap.put(tuple.get(product.board.id), boardResponseDto);
         }
 
-        return boardMap.entrySet().stream().map(
-                longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
-        ).map(
-                boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
-        ).toList();
+        return SearchBoardDto.builder()
+                .content(
+                        boardMap.entrySet().stream().map(
+                                longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
+                        ).map(
+                                boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
+                        ).toList()
+                ).pageNumber(pageable.getPageNumber())
+                .itemSize(queryAllCount)
+                .itemCount(DEFAULT_ITEM_SIZE)
+                .existNextPage(queryAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
+                .build();
+    }
+    private OrderSpecifier<?> orderByFieldList(List<Long> boardIds, NumberPath<Long> id) {
+        String ids = boardIds.stream().map(String::valueOf).collect(Collectors.joining(", "));
+        return Expressions.stringTemplate("FIELD({0}, " + ids + ")", id).asc();
     }
 
     @Override
-    public List<BoardResponseDto> getSearchResultWithLike(Long memberId, List<Long> boardIds, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                                          Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                                          String category, Integer minPrice, Integer maxPrice) {
-
-        QBoard board = QBoard.board;
-        QProduct product = QProduct.product;
-        QStore store = QStore.store;
-
-        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
-
-        BooleanBuilder filter =
-                setFilteringCondition(glutenFreeTag,
-                        highProteinTag,
-                        sugarFreeTag,
-                        veganTag,
-                        ketogenicTag,
-                        category,
-                        minPrice,
-                        maxPrice,
-                        product,
-                        board);
-
-        var subquery = queryFactory
-                .select(product.board.id)
-                .distinct()
-                .from(product)
-                .where(
-                        board.id.in(boardIds),
-                        filter
-                )
-                .fetch();
-
-        var boards = queryFactory
-                .select(
-                        product.board.store.id,
-                        product.board.store.name,
-                        product.board.id,
-                        product.board.profile,
-                        product.board.title,
-                        product.board.price,
-                        wishlistProduct.id,
-                        product.glutenFreeTag,
-                        product.highProteinTag,
-                        product.sugarFreeTag,
-                        product.veganTag,
-                        product.ketogenicTag
-                )
-                .from(product)
-                .where(board.id.in(subquery))
-                .join(product.board, board)
-                .join(board.store, store)
-                .leftJoin(wishlistProduct).on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId), wishlistProduct.isDeleted.eq(false))
-                .orderBy(board.price.asc())
-                .fetch();
-
-        Map<Long, BoardResponseDto> boardMap = new HashMap<>();
-        Set<Category> categories = new HashSet<>();
-
-        for (Tuple tuple:boards) {
-            Long boardId =  tuple.get(product.board.id);
-            if (!boardMap.containsKey(boardId)) {
-                boardMap.put(boardId,
-                        BoardResponseDto.builder()
-                                .boardId(boardId)
-                                .storeId(tuple.get(product.board.store.id))
-                                .storeName(tuple.get(product.board.store.name))
-                                .thumbnail(tuple.get(product.board.profile))
-                                .title(tuple.get(product.board.title))
-                                .price(tuple.get(product.board.price))
-                                .isBundled(categories.size() > 1)
-                                .tags(new ArrayList<>())
-                                .isWished(tuple.get(wishlistProduct.id)!=null?true:false)
-                                .build());
-            }
-
-            BoardResponseDto boardResponseDto = boardMap.get(tuple.get(product.board.id));
-
-            if (tuple.get(product.glutenFreeTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.GLUTEN_FREE.label());
-            }
-            if (tuple.get(product.highProteinTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.HIGH_PROTEIN.label());
-            }
-            if (tuple.get(product.sugarFreeTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.SUGAR_FREE.label());
-            }
-            if (tuple.get(product.veganTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.VEGAN.label());
-            }
-            if (tuple.get(product.ketogenicTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.KETOGENIC.label());
-            }
-
-            boardMap.put(tuple.get(product.board.id), boardResponseDto);
-        }
-
-        return boardMap.entrySet().stream().map(
-                longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
-        ).map(
-                boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
-        ).toList();
-    }
-
-    @Override
-    public List<StoreResponseDto> getSearchedStore(List<Long> storeIndexList){
-        QStore store = QStore.store;
-
-        return queryFactory
-                .select(
-                        store.id,
-                        store.name,
-                        store.introduce,
-                        store.profile
-                )
-                .from(store)
-                .where(store.id.in(storeIndexList))
-                .fetch().stream().map(
-                        tuple -> StoreResponseDto.fromWithoutLogin(
-                                Store.builder()
-                                        .id(tuple.get(store.id))
-                                        .name(tuple.get(store.name))
-                                        .introduce(tuple.get(store.introduce))
-                                        .profile(tuple.get(store.profile))
-                                        .build())).toList();
-    }
-
-    @Override
-    public List<StoreResponseDto> getSearchedStoreWithLike(Long memberId, List<Long> storeIndexList){
+    public List<StoreResponseDto> getSearchedStore(Long memberId, List<Long> storeIndexList, Pageable pageable){
         QStore store = QStore.store;
         QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
 
-        return queryFactory
-                .select(
-                        store.id,
-                        store.name,
-                        store.introduce,
-                        store.profile,
-                        wishlistStore.id
-                )
-                .from(store)
-                .where(store.id.in(storeIndexList))
-                .leftJoin(wishlistStore).on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId), wishlistStore.isDeleted.eq(false))
-                .fetch().stream().map(
-                        tuple -> StoreResponseDto.builder()
-                                        .storeId(tuple.get(store.id))
-                                .storeName(tuple.get(store.name))
-                                .introduce(tuple.get(store.introduce))
-                                .profile(tuple.get(store.profile))
-                                .isWished(tuple.get(wishlistStore.id)!=null?true:false)
-                                .build())
-                .toList();
+        List<Expression<?>> columns = new ArrayList<>();
+        columns.add(store.id);
+        columns.add(store.name);
+        columns.add(store.introduce);
+        columns.add(store.profile);
 
+        if (memberId > 1L){
+            columns.add(wishlistStore.id);
+        }
+
+        var stores = queryFactory
+                .select(columns.toArray(new Expression[0]))
+                .from(store)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .where(store.id.in(storeIndexList))
+                .orderBy(orderByFieldList(storeIndexList, store.id));
+
+        if (memberId > 1L){
+            stores.leftJoin(wishlistStore).on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId), wishlistStore.isDeleted.eq(false));
+        }
+
+        return stores.fetch().stream().map(
+                tuple -> StoreResponseDto.builder()
+                        .storeId(tuple.get(store.id))
+                        .storeName(tuple.get(store.name))
+                        .introduce(tuple.get(store.introduce))
+                        .profile(tuple.get(store.profile))
+                        .isWished(tuple.get(wishlistStore.id)!=null?true:false)
+                        .build()).toList();
     }
+
+
 
     private static BoardResponseDto removeDuplicatesFromDto(BoardResponseDto boardResponseDto) {
         List<String> uniqueTags = boardResponseDto.tags().stream().distinct().collect(Collectors.toList());
@@ -345,8 +286,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     }
 
     private static BooleanBuilder setFilteringCondition(Boolean glutenFreeTag, Boolean highProteinTag,
-                                                        Boolean sugarFreeTag,
-                                                        Boolean veganTag, Boolean ketogenicTag, String category,
+                                                        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
+                                                        Boolean orderAvailableToday, String category,
                                                         Integer minPrice, Integer maxPrice,
                                                         QProduct product, QBoard board) {
         BooleanBuilder filterBuilder = new BooleanBuilder();
@@ -365,16 +306,45 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         if (ketogenicTag != null && ketogenicTag == true) {
             filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
         }
+        if (orderAvailableToday != null && orderAvailableToday == true) {
+            LocalDate currentDate = LocalDate.now();
+            String dayOfWeek = currentDate.getDayOfWeek().toString().substring(0, 3);
+            switch (dayOfWeek){
+                case "MON":
+                    filterBuilder.and(board.monday.eq(true));
+                    break;
+                case "TUE":
+                    filterBuilder.and(board.tuesday.eq(true));
+                    break;
+                case "WED":
+                    filterBuilder.and(board.wednesday.eq(true));
+                    break;
+                case "THU":
+                    filterBuilder.and(board.thursday.eq(true));
+                    break;
+                case "FRI":
+                    filterBuilder.and(board.friday.eq(true));
+                    break;
+                case "SAT":
+                    filterBuilder.and(board.saturday.eq(true));
+                    break;
+                case "SUN":
+                    filterBuilder.and(board.sunday.eq(true));
+                    break;
+            }
+
+        }
         if (category != null && !category.isBlank()) {
             if (!Category.checkCategory(category)) {
                 throw new CategoryTypeException();
             }
             filterBuilder.and(product.category.eq(Category.valueOf(category)));
         }
+
         if (minPrice != null && minPrice!=0) {
             filterBuilder.and(board.price.goe(minPrice));
         }
-        if (maxPrice != null && minPrice!=0) {
+        if (maxPrice != null && maxPrice!=0) {
             filterBuilder.and(board.price.loe(maxPrice));
         }
         return filterBuilder;
