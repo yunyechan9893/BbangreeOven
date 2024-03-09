@@ -60,6 +60,25 @@ public final class BoardResponseDto {
             .build();
     }
 
+    public static BoardResponseDto inFolder(Board board, List<String> tags) {
+        boolean isBundled = board.getProductList()
+            .size() > 1;
+
+        return BoardResponseDto.builder()
+            .boardId(board.getId())
+            .storeId(board.getStore()
+                .getId())
+            .storeName(board.getStore()
+                .getName())
+            .thumbnail(board.getProfile())
+            .title(board.getTitle())
+            .price(board.getPrice())
+            .isWished(true)
+            .isBundled(isBundled)
+            .tags(tags)
+            .build();
+    }
+
     public void updateLike(boolean status){
         this.isWished = status;
     }

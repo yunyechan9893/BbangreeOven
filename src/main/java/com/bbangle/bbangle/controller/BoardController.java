@@ -64,6 +64,8 @@ public class BoardController {
         Integer minPrice,
         @RequestParam(required = false)
         Integer maxPrice,
+        @RequestParam(required = false)
+        Boolean orderAvailableToday,
         @PageableDefault
         Pageable pageable
     ) {
@@ -76,6 +78,7 @@ public class BoardController {
             category,
             minPrice,
             maxPrice,
+            orderAvailableToday,
             pageable));
     }
 

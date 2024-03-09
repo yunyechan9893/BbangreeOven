@@ -122,7 +122,7 @@ public class BoardServiceTest {
         String noSort = "";
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, defaultPage);
+            noFilter, noFilter, noSort, null, null, null, defaultPage);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
         BoardResponseDto response2 = boardList.getContent()
@@ -190,7 +190,7 @@ public class BoardServiceTest {
         String noSort = "";
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, defaultPage);
+            noFilter, noFilter, noSort, null, null, null, defaultPage);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -246,7 +246,7 @@ public class BoardServiceTest {
         String noSort = "";
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, defaultPage);
+            noFilter, noFilter, noSort, null, null, null, defaultPage);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -288,7 +288,7 @@ public class BoardServiceTest {
         String noSort = "";
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, defaultPage);
+            noFilter, noFilter, noSort, null, null, null, defaultPage);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -331,7 +331,7 @@ public class BoardServiceTest {
         String noSort = "";
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            true, noFilter, noSort, null, null, defaultPage);
+            true, noFilter, noSort, null, null, null, defaultPage);
 
         //then
         assertThat(boardList.getContent()).hasSize(0);
@@ -374,7 +374,7 @@ public class BoardServiceTest {
         String noSort = "";
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            noFilter, true, noSort, null, null, defaultPage);
+            noFilter, true, noSort, null, null, null, defaultPage);
 
         //then
         assertThat(boardList.getContent()).hasSize(2);
@@ -425,7 +425,7 @@ public class BoardServiceTest {
 
         //when
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, null,
-            null, null, category, null, null, defaultPage);
+            null, null, category, null, null, null, defaultPage);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -469,7 +469,7 @@ public class BoardServiceTest {
 
         //then
         Assertions.assertThatThrownBy(() -> boardService.getBoardList(noSort, null, null, null,
-                null, null, category, null, null, defaultPage))
+                null, null, category, null, null, null, defaultPage))
             .isInstanceOf(CategoryTypeException.class);
 
     }
@@ -510,7 +510,7 @@ public class BoardServiceTest {
         String noSort = "";
 
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, true,
-            null, null, category, null, null, defaultPage);
+            null, null, category, null, null, null, defaultPage);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -537,28 +537,28 @@ public class BoardServiceTest {
 
         Slice<BoardResponseDto> boardList =
             boardService.getBoardList(null, null, null, null, null, null, null, 5000, null,
-                defaultPage);
+                null, defaultPage);
         Slice<BoardResponseDto> boardList2 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1000, null,
-                defaultPage);
+                null, defaultPage);
         Slice<BoardResponseDto> boardList3 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 10000,
-                defaultPage);
+                null, defaultPage);
         Slice<BoardResponseDto> boardList4 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 1000,
-                defaultPage);
+                null, defaultPage);
         Slice<BoardResponseDto> boardList5 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 900,
-                defaultPage);
+                null, defaultPage);
         Slice<BoardResponseDto> boardList6 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1000, 10000,
-                defaultPage);
+                null, defaultPage);
         Slice<BoardResponseDto> boardList7 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1001, 9999,
-                defaultPage);
+                null, defaultPage);
         Slice<BoardResponseDto> boardList8 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, null,
-                defaultPage);
+                null, defaultPage);
         List<Board> all = boardRepository.findAll();
 
         //then
@@ -641,9 +641,9 @@ public class BoardServiceTest {
 
         List<Board> all = boardRepository.findAll();
         Slice<BoardResponseDto> boardList = boardService.getBoardList(noSort, null, null, null,
-            null, null, null, null, null, defaultPage);
+            null, null, null, null, null, null, defaultPage);
         Slice<BoardResponseDto> boardList2 = boardService.getBoardList(noSort, null, null, null,
-            null, null, null, null, null, PageRequest.of(1, 10));
+            null, null, null, null, null, null, PageRequest.of(1, 10));
 
         //then
         assertThat(boardList.getContent()).hasSize(10);
