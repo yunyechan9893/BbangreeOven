@@ -77,10 +77,11 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         if (queryAllCount <= 0){
             return SearchBoardDto.builder()
                     .content(List.of())
-                    .itemSize(queryAllCount)
+                    .itemAllCount(0)
                     .pageNumber(pageable.getPageNumber())
-                    .itemCount(DEFAULT_ITEM_SIZE)
-                    .existNextPage(queryAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
+                    .limitItemCount(DEFAULT_ITEM_SIZE)
+                    .currentItemCount(0)
+                    .existNextPage(false)
                     .build();
         }
 
@@ -167,18 +168,29 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             boardMap.put(tuple.get(product.board.id), boardResponseDto);
         }
 
+        var content = boardMap.entrySet().stream().map(
+                longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
+        ).map(
+                boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
+        ).toList();
+
         return SearchBoardDto.builder()
-                .content(
-                        boardMap.entrySet().stream().map(
-                                longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
-                        ).map(
-                                boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
-                        ).toList()
-                ).pageNumber(pageable.getPageNumber())
-                .itemSize(queryAllCount)
-                .itemCount(DEFAULT_ITEM_SIZE)
+                .content(content)
+                .pageNumber(pageable.getPageNumber())
+                .itemAllCount(queryAllCount)
+                .limitItemCount(DEFAULT_ITEM_SIZE)
+                .currentItemCount(content.size())
                 .existNextPage(queryAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
                 .build();
+
+        /*
+        * .itemAllCount(0)
+                    .pageNumber(pageable.getPageNumber())
+                    .limitItemCount(DEFAULT_ITEM_SIZE)
+                    .(0)
+                    .(false)
+                    .build();
+                    * */
     }
     private OrderSpecifier<?> orderByFieldList(List<Long> boardIds, NumberPath<Long> id) {
         String ids = boardIds.stream().map(String::valueOf).collect(Collectors.joining(", "));
@@ -211,6 +223,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         if (memberId > 1L){
             stores.leftJoin(wishlistStore).on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId), wishlistStore.isDeleted.eq(false));
         }
+
+
 
         return stores.fetch().stream().map(
                 tuple -> StoreResponseDto.builder()

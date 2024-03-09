@@ -6,9 +6,10 @@ import lombok.Builder;
 @Builder
 public record SearchBoardDto(
         List<BoardResponseDto> content,
-        int itemCount,
+        int itemAllCount,
+        int limitItemCount,
+        int currentItemCount,
         int pageNumber,
-        int itemSize,
         boolean existNextPage
 ){
 }

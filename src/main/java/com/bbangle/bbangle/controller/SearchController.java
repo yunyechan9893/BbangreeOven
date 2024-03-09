@@ -106,15 +106,10 @@ public class SearchController {
 
     @GetMapping(GET_RECENCY_KEYWORD_SEARCH_API)
     public ResponseEntity<RecencySearchResponse> getRecencyKeyword() {
-        Long memberId = SecurityUtils.getMemberId();
+        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
-        RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
-        var successResponse = ResponseEntity.ok()
-            .body(
-                recencyKeyword
-            );
-
-        return successResponse;
+        return memberId <= 1L ? ResponseEntity.ok().body(RecencySearchResponse.builder().build()) :
+            ResponseEntity.ok().body(searchService.getRecencyKeyword(memberId));
     }
 
     @DeleteMapping(DELETE_RECENCY_KEYWORD_SEARCH_API)
