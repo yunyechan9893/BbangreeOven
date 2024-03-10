@@ -45,7 +45,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
-        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
 
         BooleanBuilder filter =
             setFilteringCondition(glutenFreeTag,
