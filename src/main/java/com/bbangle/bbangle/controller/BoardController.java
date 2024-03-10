@@ -101,7 +101,6 @@ public class BoardController {
         Long boardId
     ) {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-        memberId = (memberId != null) ? memberId : 1L;
 
         return ResponseEntity.ok().body(
             boardService.getBoardDetailResponse(memberId, boardId)
