@@ -207,7 +207,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         if (maxPrice != null) {
             filterBuilder.and(board.price.loe(maxPrice));
         }
-        if (orderAvailableToday != null) {
+        if (orderAvailableToday != null && orderAvailableToday) {
             DayOfWeek dayOfWeek = LocalDate.now()
                 .getDayOfWeek();
 
