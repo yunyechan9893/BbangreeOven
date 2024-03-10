@@ -147,4 +147,13 @@ public class Member extends BaseEntity implements UserDetails {
         }
     }
 
+    public void delete(){
+        this.isDeleted = true;
+        this.email = "-";
+        this.phone = "-";
+        this.name = "-";
+        this.nickname = "-";
+        this.birth = "-";
+    }
+
 }

@@ -26,6 +26,15 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     }
 
     @Override
+    public List<WishlistStore> findWishListStores(Long memberId) {
+        return queryFactory
+                .selectFrom(wishlistStore)
+                .where(wishlistStore.member.id.eq(memberId)
+                        .and(wishlistStore.isDeleted.eq(false)))
+                .fetch();
+    }
+
+    @Override
     public Page<WishListStoreResponseDto> getWishListStoreRes(Long memberId, Pageable pageable) {
         List<WishListStoreResponseDto> wishListStores = queryFactory
                 .select(new QWishListStoreResponseDto(

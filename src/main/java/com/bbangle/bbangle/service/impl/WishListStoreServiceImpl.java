@@ -52,4 +52,14 @@ public class WishListStoreServiceImpl implements WishListStoreService {
         wishListStore.delete();
     }
 
+    @Transactional
+    @Override
+    public void deletedByDeletedMember(Long memberId) {
+        List<WishlistStore> wishListStores = wishListStoreRepositoryImpl.findWishListStores(memberId);
+        if (wishListStores.size() !=0){
+            for (WishlistStore wishListStore : wishListStores) {
+                wishListStore.delete();
+            }
+        }
+    }
 }

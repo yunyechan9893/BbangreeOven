@@ -9,6 +9,7 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.WishListFolderRepository;
 import java.util.List;
+import com.bbangle.bbangle.repository.impl.WishListFolderRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ public class WishListFolderService {
     private static final String OVER_MAX_FOLDER = "10개를 초과한 폴더를 생성하실 수 없습니다.";
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
+    private final WishListFolderRepositoryImpl wishListFolderRepositoryImpl;
 
     @Transactional
     public void create(Long memberId, FolderRequestDto requestDto) {
@@ -69,4 +71,11 @@ public class WishListFolderService {
         wishlistFolder.updateTitle(updateDto.title());
     }
 
+    @Transactional
+    public void deletedByDeletedMember(Long memberId) {
+        List<WishlistFolder> wishListFolders = wishListFolderRepositoryImpl.findByMemberId(memberId);
+        for (WishlistFolder wishListFolder : wishListFolders) {
+            wishListFolder.delete();
+        }
+    }
 }
