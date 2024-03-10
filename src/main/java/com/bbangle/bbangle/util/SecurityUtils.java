@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class SecurityUtils {
 
     private static final String ANONYMOUS_USER_PRINCIPLE = "anonymousUser";
+    private static final Long ANONYMOUS_ID = 1L;
 
     public static Long getMemberId() {
         return Long.valueOf(String.valueOf(SecurityContextHolder
@@ -29,14 +30,14 @@ public class SecurityUtils {
         if (authentication != null && authentication.getPrincipal() != null) {
             // 익명의 사용자라면 null값 반환
             if (authentication instanceof AnonymousAuthenticationToken) {
-                return null;
+                return ANONYMOUS_ID;
             }
 
             //아이디 값이 있다면 아이디값 Long으로 반환
             return Long.valueOf(String.valueOf(authentication.getPrincipal()));
         }
 
-        return null;
+        return ANONYMOUS_ID;
     }
 
 
