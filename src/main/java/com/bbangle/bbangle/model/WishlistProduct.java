@@ -46,4 +46,7 @@ public class WishlistProduct extends BaseEntity {
         return isDeleted;
     }
 
+    public void delete() {
+        this.isDeleted = true;
+    }
 }

@@ -5,6 +5,7 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.QBoard;
 import com.bbangle.bbangle.model.QWishlistFolder;
 import com.bbangle.bbangle.model.QWishlistProduct;
+import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.queryDsl.WishListFolderQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -72,5 +73,12 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
             .collect(Collectors.toList());
 
     }
+
+    @Override
+    public List<WishlistFolder> findByMemberId(Long memberId) {
+        return queryFactory.selectFrom(wishlistFolder)
+                .where(wishlistFolder.member.id.eq(memberId).and(wishlistFolder.isDeleted.eq(false)))
+                .fetch();
+    };
 
 }
