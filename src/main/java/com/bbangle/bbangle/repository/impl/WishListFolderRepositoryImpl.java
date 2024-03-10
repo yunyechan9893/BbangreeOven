@@ -56,16 +56,19 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
 
                 String title = tuples.get(0)
                     .get(folder.folderName);
-                int count = tuples.size();
+
                 List<String> productImages = tuples.stream()
                     .map(tuple -> tuple.get(board.profile))
                     .filter(Objects::nonNull)
                     .limit(4)
                     .collect(Collectors.toList());
 
+                int count = productImages.isEmpty() ? 0 : tuples.size();
+
                 return new FolderResponseDto(folderId, title, count, productImages);
             })
-            .sorted(Comparator.comparing(FolderResponseDto::folderId).reversed())
+            .sorted(Comparator.comparing(FolderResponseDto::folderId)
+                .reversed())
             .collect(Collectors.toList());
 
     }
