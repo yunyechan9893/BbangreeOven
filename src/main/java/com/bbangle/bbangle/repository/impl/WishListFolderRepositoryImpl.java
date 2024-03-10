@@ -8,11 +8,14 @@ import com.bbangle.bbangle.model.QWishlistProduct;
 import com.bbangle.bbangle.repository.queryDsl.WishListFolderQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -62,6 +65,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
 
                 return new FolderResponseDto(folderId, title, count, productImages);
             })
+            .sorted(Comparator.comparing(FolderResponseDto::folderId).reversed())
             .collect(Collectors.toList());
 
     }
