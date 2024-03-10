@@ -36,8 +36,6 @@ public class MemberController {
     @PatchMapping
     public ResponseEntity<MessageResDto> deleteMember(@RequestBody WithdrawalRequestDto withdrawalRequestDto){
         Long memberId = SecurityUtils.getMemberId();
-        //TEST
-        memberId = 4L;
         memberService.saveDeleteReason(withdrawalRequestDto, memberId);
         memberService.deleteMember(memberId);
         return ResponseEntity.status(HttpStatus.OK).body(new MessageResDto("회원 탈퇴에 성공했습니다"));
