@@ -34,7 +34,6 @@ public class StoreController {
             Long storeId
     ){
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-        memberId = (memberId != null) ? memberId : 1L;
 
         StoreDetailResponseDto storeDetailResponse = storeService.getStoreDetailResponse(memberId, storeId);
         ResponseEntity<StoreDetailResponseDto> response = ResponseEntity.ok().body(storeDetailResponse);
@@ -49,7 +48,6 @@ public class StoreController {
             Long storeId
     ){
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-        memberId = (memberId != null) ? memberId : 1L;
 
         SliceImpl<StoreAllBoardDto> storeAllBoardDtos = storeService.getAllBoard(page, memberId, storeId);
         return ResponseEntity.ok().body(storeAllBoardDtos);
