@@ -94,4 +94,9 @@ public class Board extends BaseEntity {
         }
     }
 
+    public Board updateProfile(String profile) {
+        this.profile = profile;
+        return this;
+    }
+
 }
