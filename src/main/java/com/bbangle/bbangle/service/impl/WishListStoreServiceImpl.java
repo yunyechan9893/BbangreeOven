@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.service.impl;
 
 import com.bbangle.bbangle.dto.WishListStorePagingDto;
+import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.exception.NoSuchMemberidOrStoreIdException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -35,9 +36,9 @@ public class WishListStoreServiceImpl implements WishListStoreService {
     @Transactional
     public void save(Long memberId, Long storeId) {
         Store store = storeRepository.findById(storeId)
-            .orElseThrow(() -> new IllegalArgumentException("no store about " + storeId));
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 스토어 입니다"));
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("no member about " + memberId));
+            .orElseThrow(MemberNotFoundException::new);
         wishListStoreRepository.save(WishlistStore.builder()
             .member(member)
             .store(store)
