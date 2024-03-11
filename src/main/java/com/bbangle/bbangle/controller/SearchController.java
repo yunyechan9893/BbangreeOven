@@ -27,7 +27,6 @@ public class SearchController {
     private final String GET_BEST_KEYWORD_SEARCH_API = "/best-keyword";
     private final String GET_AUTO_KEYWORD_SEARCH_API = "/auto-keyword";
     private final String SUCCESS_SAVEKEYWORD = "검색어 저장 완료";
-    private final Long ANONYMOUS_ID = 1L;
 
     private final SearchService searchService;
   
@@ -60,7 +59,6 @@ public class SearchController {
     ){
 
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-        memberId = (memberId != null) ? memberId : 1L;
 
         return ResponseEntity.ok().body(searchService.getSearchBoardDtos(
                 memberId, page, keyword,
@@ -78,7 +76,6 @@ public class SearchController {
             String keyword
     ){
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-        memberId = (memberId != null) ? memberId : 1L;
 
         return ResponseEntity.ok().body(
                 searchService.getSearchStoreDtos(memberId, page, keyword)
@@ -94,11 +91,6 @@ public class SearchController {
     ) {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
-        // 유저가 아니라면 비회원 아이디를 사용
-        if (memberId == null) {
-            memberId = ANONYMOUS_ID;
-        }
-
         searchService.saveKeyword(memberId, keyword);
         return ResponseEntity.ok()
             .body(Map.of("content", new MessageResDto(SUCCESS_SAVEKEYWORD)));
@@ -108,8 +100,7 @@ public class SearchController {
     public ResponseEntity<RecencySearchResponse> getRecencyKeyword() {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
-        return memberId <= 1L ? ResponseEntity.ok().body(RecencySearchResponse.builder().build()) :
-            ResponseEntity.ok().body(searchService.getRecencyKeyword(memberId));
+        return ResponseEntity.ok().body(searchService.getRecencyKeyword(memberId));
     }
 
     @DeleteMapping(DELETE_RECENCY_KEYWORD_SEARCH_API)

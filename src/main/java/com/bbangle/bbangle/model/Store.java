@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
+import java.time.LocalDate;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -44,5 +46,8 @@ public class Store extends BaseEntity {
     @OneToMany(mappedBy = "store")
     private List<WishlistStore> wishlistStores;
 
-
+    public Store updateProfile(String profile){
+        this.profile = profile;
+        return this;
+    }
 }

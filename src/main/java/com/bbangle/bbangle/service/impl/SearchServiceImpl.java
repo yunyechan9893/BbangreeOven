@@ -257,12 +257,16 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public RecencySearchResponse getRecencyKeyword(Long memberId) {
-        return RecencySearchResponse.builder()
-            .content(searchRepository.getRecencyKeyword(
-                Member.builder()
-                    .id(memberId)
-                    .build()))
-            .build();
+        return memberId==1L ?
+                RecencySearchResponse.builder()
+                        .content(List.of())
+                        .build():
+                RecencySearchResponse.builder()
+                        .content(searchRepository.getRecencyKeyword(
+                            Member.builder()
+                                .id(memberId)
+                                .build()))
+                        .build();
     }
 
     @Override

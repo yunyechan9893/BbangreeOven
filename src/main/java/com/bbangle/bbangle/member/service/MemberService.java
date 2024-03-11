@@ -2,16 +2,26 @@ package com.bbangle.bbangle.member.service;
 
 import com.bbangle.bbangle.common.image.service.S3Service;
 import com.bbangle.bbangle.common.image.validation.ImageValidator;
+import com.bbangle.bbangle.dto.WithdrawalRequestDto;
+import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
+import com.bbangle.bbangle.member.domain.Withdrawal;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
+import com.bbangle.bbangle.repository.WithdrawalRepository;
+import com.bbangle.bbangle.service.WishListFolderService;
+import com.bbangle.bbangle.service.WishListProductService;
+import com.bbangle.bbangle.service.WishListStoreService;
+import com.bbangle.bbangle.service.impl.WishListStoreServiceImpl;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +42,10 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final SignatureAgreementRepository signatureAgreementRepository;
+    private final WishListStoreServiceImpl wishListStoreServiceImpl;
+    private final WishListProductService wishListProductService;
+    private final WishListFolderService wishListFolderService;
+    private final WithdrawalRepository withdrawalRepository;
 
     @PostConstruct
     public void initSetting() {
@@ -54,7 +68,7 @@ public class MemberService {
 
     public Member findById(Long id) {
         return memberRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("findById() >>>>> no Member by Id"));
+            .orElseThrow(MemberNotFoundException::new);
     }
 
     public Member findByEmail(String email) {
@@ -122,4 +136,32 @@ public class MemberService {
         }
     }
 
+    @Transactional
+    public void deleteMember(Long memberId) {
+        Member member = findById(memberId);
+        //멤버 탈퇴 표시
+        member.delete();
+
+        //위시리스트 스토어 삭제 표시
+        wishListStoreServiceImpl.deletedByDeletedMember(memberId);
+
+        //위시리스트 상품 삭제 표시
+        wishListProductService.deletedByDeletedMember(memberId);
+
+        //위시리스트 폴더 삭제 표시
+        wishListFolderService.deletedByDeletedMember(memberId);
+    }
+
+    @Transactional
+    public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberNotFoundException::new);
+        String[] reasons = withdrawalRequestDto.getReasons().split(",");
+        for (String reason : reasons) {
+            withdrawalRepository.save(Withdrawal.builder()
+                    .reason(reason)
+                    .member(member)
+                    .build());
+        }
+    }
 }
