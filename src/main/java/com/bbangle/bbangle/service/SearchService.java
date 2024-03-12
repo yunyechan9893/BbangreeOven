@@ -13,7 +13,18 @@ public interface SearchService {
     void updateRedisAtBestKeyword();
     void saveKeyword(Long memberId,String keyword);
 
-    SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
+    SearchBoardDto
+
+
+
+
+
+
+
+
+
+
+    getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                       Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
                                       Boolean orderAvailableToday, String category, Integer minPrice, Integer maxPrice);
 
