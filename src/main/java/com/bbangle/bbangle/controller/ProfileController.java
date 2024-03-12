@@ -3,12 +3,14 @@ package com.bbangle.bbangle.controller;
 import com.bbangle.bbangle.dto.MessageResDto;
 import com.bbangle.bbangle.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.exception.ExceedNicknameLengthException;
+import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.service.impl.ProfileServiceImpl;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,5 +49,18 @@ public class ProfileController {
         }
         profileService.doubleCheckNickname(nickname);
         return ResponseEntity.ok().body(new MessageResDto("사용가능한 닉네임이에요!"));
+    }
+
+    @PutMapping
+    public ResponseEntity<Void> update(
+        @RequestPart(required = false)
+        InfoUpdateRequest infoUpdateRequest,
+        @RequestPart(required = false)
+        MultipartFile profileImg
+    ) {
+        Long memberId = SecurityUtils.getMemberId();
+        profileService.updateProfileInfo(infoUpdateRequest, memberId, profileImg);
+        return ResponseEntity.ok()
+            .build();
     }
 }
