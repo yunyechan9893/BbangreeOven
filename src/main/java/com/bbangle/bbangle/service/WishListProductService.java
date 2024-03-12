@@ -52,6 +52,9 @@ public class WishListProductService {
         wishListProductRepository.findByBoardAndFolderId(boardId, wishlistFolder)
             .ifPresentOrElse(
                 product -> {
+                    if(!product.isDeleted()){
+                        throw new IllegalArgumentException("이미 위시리스트 폴더에 있는 게시물입니다.");
+                    }
                     boolean status = product.updateWishStatus();
                     product.getBoard()
                         .updateWishCnt(status);
@@ -61,16 +64,6 @@ public class WishListProductService {
                             .incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 1);
                         redisTemplate.opsForZSet()
                             .incrementScore(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(boardId), 1);
-                        boardLikeInfoRedisTemplate.opsForList()
-                            .rightPush(LocalDateTime.now()
-                                    .format(formatter),
-                                new BoardLikeInfo(boardId, 1, LocalDateTime.now(), ScoreType.WISH));
-                    } else {
-                        redisTemplate.opsForZSet()
-                            .incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), -1);
-                        redisTemplate.opsForZSet()
-                            .incrementScore(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(boardId),
-                                -1);
                         boardLikeInfoRedisTemplate.opsForList()
                             .rightPush(LocalDateTime.now()
                                     .format(formatter),
@@ -104,13 +97,41 @@ public class WishListProductService {
                 .updateWishCnt(true);
         };
     }
+
     @Transactional
     public void deletedByDeletedMember(Long memberId) {
-        Optional<List<WishlistProduct>> wishlistProducts = wishListProductRepository.findByMemberId(memberId);
-        if(wishlistProducts.isPresent()){
+        Optional<List<WishlistProduct>> wishlistProducts = wishListProductRepository.findByMemberId(
+            memberId);
+        if (wishlistProducts.isPresent()) {
             for (WishlistProduct wishlistProduct : wishlistProducts.get()) {
                 wishlistProduct.delete();
             }
         }
     }
+
+    @Transactional
+    public void cancel(Long memberId, Long boardId) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(MemberNotFoundException::new);
+
+        WishlistProduct product = wishListProductRepository.findByBoardId(boardId, memberId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+
+        if (product.isDeleted()) {
+            throw new IllegalArgumentException("이미 위시리스트 항목에서 삭제된 게시글입니다.");
+        }
+
+        product.updateWishStatus();
+
+        redisTemplate.opsForZSet()
+            .incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), -1);
+        redisTemplate.opsForZSet()
+            .incrementScore(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(boardId),
+                -1);
+        boardLikeInfoRedisTemplate.opsForList()
+            .rightPush(LocalDateTime.now()
+                    .format(formatter),
+                new BoardLikeInfo(boardId, 1, LocalDateTime.now(), ScoreType.WISH));
+    }
+
 }
