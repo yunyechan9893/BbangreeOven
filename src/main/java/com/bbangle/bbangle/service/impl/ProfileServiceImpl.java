@@ -50,11 +50,11 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public void doubleCheckNickname(String nickname) {
+    public String doubleCheckNickname(String nickname) {
         Optional<Member> member = profileRepository.findByNickname(nickname);
         if (!member.isEmpty()) {
-            throw new DuplicateNicknameException();
+            return nickname;
         }
+        return "";
     }
-
 }
