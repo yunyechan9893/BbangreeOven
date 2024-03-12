@@ -15,6 +15,9 @@ import com.bbangle.bbangle.repository.WishListProductRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -101,5 +104,13 @@ public class WishListProductService {
                 .updateWishCnt(true);
         };
     }
-
+    @Transactional
+    public void deletedByDeletedMember(Long memberId) {
+        Optional<List<WishlistProduct>> wishlistProducts = wishListProductRepository.findByMemberId(memberId);
+        if(wishlistProducts.isPresent()){
+            for (WishlistProduct wishlistProduct : wishlistProducts.get()) {
+                wishlistProduct.delete();
+            }
+        }
+    }
 }

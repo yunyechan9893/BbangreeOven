@@ -4,12 +4,11 @@ import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.exception.UserValidator;
 import com.bbangle.bbangle.model.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.bbangle.bbangle.model.WishlistFolder;
+import com.bbangle.bbangle.model.WishlistStore;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.AccessLevel;
@@ -50,6 +49,15 @@ public class Member extends BaseEntity implements UserDetails {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
+
+    @OneToMany(mappedBy = "member")
+    List<Withdrawal> withdrawals = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    List<WishlistFolder> wishlistFolders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    List<WishlistStore> wishlistStores = new ArrayList<>();
 
     @Builder
     public Member(
@@ -137,6 +145,15 @@ public class Member extends BaseEntity implements UserDetails {
             UserValidator.validateNickname(request.nickname());
             this.nickname = request.nickname();
         }
+    }
+
+    public void delete(){
+        this.isDeleted = true;
+        this.email = "-";
+        this.phone = "-";
+        this.name = "-";
+        this.nickname = "-";
+        this.birth = "-";
     }
 
 }

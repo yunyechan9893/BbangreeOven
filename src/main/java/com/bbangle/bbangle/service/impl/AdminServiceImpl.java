@@ -20,7 +20,7 @@ public class AdminServiceImpl implements AdminService {
     private final ObjectStorageRepository objectStorageRepository;
 
 
-    String CDN_URL = "bbangree-oven.cdn.ntruss.com";
+    String CDN_URL = "https://bbangree-oven.cdn.ntruss.com";
     String DEFAULT_PROFILE_FILE_NAME = "profile.jpg";
     String DEFAULT_SUBIMAGE_FOLDER_NAME = "subimage";
     @Value("${cloud.aws.s3.bucket}")
@@ -30,23 +30,18 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public Long uploadStore(AdminStoreRequestDto adminStoreRequestDto, MultipartFile profile) {
 
-        Long storeId = adminStoreRepository.save(Store.builder()
+        var store = adminStoreRepository.save(Store.builder()
                 .identifier(adminStoreRequestDto.identifier())
                 .name(adminStoreRequestDto.title())
                 .introduce(adminStoreRequestDto.introduce())
-                .build()).getId();
+                .build());
+
+        Long storeId = store.getId();
 
         String profileUrl = String.format("%s/%s", storeId, DEFAULT_PROFILE_FILE_NAME);
         objectStorageRepository.createFile(BUCKET_NAME, profileUrl, profile);
         String profileCdnUrl = String.format("%s/%s", CDN_URL, profileUrl);
-
-        adminStoreRepository.save(Store.builder()
-                .id(storeId)
-                .identifier(adminStoreRequestDto.identifier())
-                .name(adminStoreRequestDto.title())
-                .introduce(adminStoreRequestDto.introduce())
-                .profile(profileCdnUrl)
-                .build());
+        adminStoreRepository.save(store.updateProfile(profileCdnUrl));
 
         return storeId;
     }
@@ -54,7 +49,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public Long uploadBoard(MultipartFile profile, Long storeId, AdminBoardRequestDto adminBoardRequestDto) {
 
-        Long boardId = adminBoardRepository.save(Board.builder()
+        var board = adminBoardRepository.save(Board.builder()
                         .store(Store.builder().id(storeId).build())
                         .title(adminBoardRequestDto.title())
                         .price(adminBoardRequestDto.price())
@@ -68,29 +63,14 @@ public class AdminServiceImpl implements AdminService {
                         .friday(adminBoardRequestDto.fri())
                         .saturday(adminBoardRequestDto.sat())
                         .sunday(adminBoardRequestDto.sun())
-                .build()).getId();
+                        .status(true)
+                .build());
 
+        Long boardId = board.getId();
         String profileUrl = String.format("%s/%s/%s", storeId, boardId, DEFAULT_PROFILE_FILE_NAME);
         objectStorageRepository.createFile(BUCKET_NAME, profileUrl, profile);
         String profileCdnUrl = String.format("%s/%s", CDN_URL, profileUrl);
-
-        adminBoardRepository.save(Board.builder()
-                .id(boardId)
-                .store(Store.builder().id(storeId).build())
-                .title(adminBoardRequestDto.title())
-                .price(adminBoardRequestDto.price())
-                .profile(profileCdnUrl)
-                .purchaseUrl(adminBoardRequestDto.purchaseUrl())
-                .status(adminBoardRequestDto.status())
-                .detail(adminBoardRequestDto.detailUrl())
-                .monday(adminBoardRequestDto.mon())
-                .tuesday(adminBoardRequestDto.tue())
-                .wednesday(adminBoardRequestDto.wed())
-                .thursday(adminBoardRequestDto.thr())
-                .friday(adminBoardRequestDto.fri())
-                .saturday(adminBoardRequestDto.sat())
-                .sunday(adminBoardRequestDto.sun())
-                .build());
+        adminBoardRepository.save(board.updateProfile(profileCdnUrl));
 
         return boardId;
     }
