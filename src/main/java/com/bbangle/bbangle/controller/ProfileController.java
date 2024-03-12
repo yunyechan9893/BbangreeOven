@@ -45,9 +45,12 @@ public class ProfileController {
             ResponseEntity.ok().body(new MessageResDto("닉네임을 입력해주세요!"));
         }
         if(nickname.length() > 20){
-            throw new ExceedNicknameLengthException();
+            return ResponseEntity.ok().body(new MessageResDto("닉네임은 20자 제한이에요!"));
         }
-        profileService.doubleCheckNickname(nickname);
+        String existedNickname = profileService.doubleCheckNickname(nickname);
+        if (!existedNickname.isEmpty()){
+            return ResponseEntity.ok().body(new MessageResDto("중복된 닉네임이에요"));
+        }
         return ResponseEntity.ok().body(new MessageResDto("사용가능한 닉네임이에요!"));
     }
 

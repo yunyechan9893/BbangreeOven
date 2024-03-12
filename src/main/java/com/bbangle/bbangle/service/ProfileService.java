@@ -6,6 +6,6 @@ public interface ProfileService {
 
     ProfileInfoResponseDto getProfileInfo(Long memberId);
 
-    void doubleCheckNickname(String nickname);
+    String doubleCheckNickname(String nickname);
 
 }
