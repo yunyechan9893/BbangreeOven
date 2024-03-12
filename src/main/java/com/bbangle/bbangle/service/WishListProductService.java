@@ -115,7 +115,7 @@ public class WishListProductService {
             .orElseThrow(MemberNotFoundException::new);
 
         WishlistProduct product = wishListProductRepository.findByBoardId(boardId, memberId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+            .orElseThrow(() -> new IllegalArgumentException("사용자의 위시리스트 항목에 존재하지 않는 게시글입니다."));
 
         if (product.isDeleted()) {
             throw new IllegalArgumentException("이미 위시리스트 항목에서 삭제된 게시글입니다.");
