@@ -24,4 +24,8 @@ public interface WishListProductRepository extends JpaRepository<WishlistProduct
         value = "select wish from WishlistProduct wish where wish.memberId = :memberId and wish.isDeleted = false"
     )
     Optional<List<WishlistProduct>> findByMemberId(@Param("memberId") Long memberId);
+
+    @Query(value = "select wish from WishlistProduct wish where wish.board.id = :boardId and wish.memberId = :memberId")
+    Optional<WishlistProduct> findByBoardId(Long boardId, Long memberId);
+
 }

@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
 
+    private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
+
     private final MemberRepository memberRepository;
     private final WishListFolderService folderService;
 
@@ -54,7 +56,7 @@ public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
                     memberRepository.save(newMember);
                     Long newMemberId = newMember.getId();
                     //기본 위시리스트 폴더 추가
-                    folderService.create(newMemberId, new FolderRequestDto("default"));
+                    folderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
                     return newMember;
                 });
         } else if (provider.equals("kakao")) {

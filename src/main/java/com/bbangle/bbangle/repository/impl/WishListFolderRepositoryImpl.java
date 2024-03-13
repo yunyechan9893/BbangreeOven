@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.repository.impl;
 
+import static com.bbangle.bbangle.model.QWishlistFolder.wishlistFolder;
+
 import com.bbangle.bbangle.dto.FolderResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.model.QBoard;
@@ -9,14 +11,12 @@ import com.bbangle.bbangle.model.WishlistFolder;
 import com.bbangle.bbangle.repository.queryDsl.WishListFolderQueryDSLRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,7 +27,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
 
     @Override
     public List<FolderResponseDto> findMemberFolderList(Member member) {
-        QWishlistFolder folder = QWishlistFolder.wishlistFolder;
+        QWishlistFolder folder = wishlistFolder;
         QWishlistProduct wishedBoard = QWishlistProduct.wishlistProduct;
         QBoard board = QBoard.board;
 
@@ -49,7 +49,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
         Map<Long, List<Tuple>> groupedByFolderId = fetch.stream()
             .collect(Collectors.groupingBy(tuple -> tuple.get(folder.id)));
 
-        return groupedByFolderId.entrySet()
+        List<FolderResponseDto> response = groupedByFolderId.entrySet()
             .stream()
             .map(entry -> {
                 Long folderId = entry.getKey();
@@ -72,6 +72,17 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
                 .reversed())
             .collect(Collectors.toList());
 
+        FolderResponseDto defaultFolder = response.stream()
+            .filter(folderResponse -> "기본 폴더".equals(folderResponse.title()))
+            .findFirst()
+            .orElse(null);
+
+        if (defaultFolder != null) {
+            response.remove(defaultFolder);
+            response.add(0, defaultFolder);
+        }
+
+        return response;
     }
 
     @Override
