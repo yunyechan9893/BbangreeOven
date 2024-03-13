@@ -76,6 +76,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
 
     @Override
     public List<WishlistFolder> findByMemberId(Long memberId) {
+        QWishlistFolder wishlistFolder = QWishlistFolder.wishlistFolder;
         return queryFactory.selectFrom(wishlistFolder)
                 .where(wishlistFolder.member.id.eq(memberId).and(wishlistFolder.isDeleted.eq(false)))
                 .fetch();

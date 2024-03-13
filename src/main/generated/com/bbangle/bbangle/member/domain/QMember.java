@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -42,6 +43,12 @@ public class QMember extends EntityPathBase<Member> {
     public final StringPath phone = createString("phone");
 
     public final StringPath profile = createString("profile");
+
+    public final ListPath<com.bbangle.bbangle.model.WishlistFolder, com.bbangle.bbangle.model.QWishlistFolder> wishlistFolders = this.<com.bbangle.bbangle.model.WishlistFolder, com.bbangle.bbangle.model.QWishlistFolder>createList("wishlistFolders", com.bbangle.bbangle.model.WishlistFolder.class, com.bbangle.bbangle.model.QWishlistFolder.class, PathInits.DIRECT2);
+
+    public final ListPath<com.bbangle.bbangle.model.WishlistStore, com.bbangle.bbangle.model.QWishlistStore> wishlistStores = this.<com.bbangle.bbangle.model.WishlistStore, com.bbangle.bbangle.model.QWishlistStore>createList("wishlistStores", com.bbangle.bbangle.model.WishlistStore.class, com.bbangle.bbangle.model.QWishlistStore.class, PathInits.DIRECT2);
+
+    public final ListPath<Withdrawal, QWithdrawal> withdrawals = this.<Withdrawal, QWithdrawal>createList("withdrawals", Withdrawal.class, QWithdrawal.class, PathInits.DIRECT2);
 
     public QMember(String variable) {
         super(Member.class, forVariable(variable));
