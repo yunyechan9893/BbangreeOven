@@ -200,6 +200,19 @@ public class SearchServiceImpl implements SearchService {
     public SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                              Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
                                              Boolean orderAvailableToday, String category, Integer minPrice, Integer maxPrice) {
+
+        Pageable pageable = PageRequest.of(boardPage, DEFAULT_PAGE);
+        if (keyword.isBlank()){
+            return SearchBoardDto.builder()
+                    .content(List.of())
+                    .itemAllCount(0)
+                    .pageNumber(pageable.getPageNumber())
+                    .limitItemCount(DEFAULT_PAGE)
+                    .currentItemCount(0)
+                    .existNextPage(false)
+                    .build();
+        }
+
         // 검색어 토큰화
         List<String> keys = getAllTokenizer(keyword);
 
@@ -214,11 +227,22 @@ public class SearchServiceImpl implements SearchService {
         return searchRepository.getSearchResult(
                         memberId, boardIndexs, sort, glutenFreeTag, highProteinTag,
                         sugarFreeTag, veganTag, ketogenicTag, orderAvailableToday,
-                        category, minPrice, maxPrice, PageRequest.of(boardPage, DEFAULT_PAGE));
+                        category, minPrice, maxPrice, pageable);
     }
 
     @Override
     public SearchStoreDto getSearchStoreDtos(Long memberId, int page, String keyword){
+
+        if (keyword.isBlank()){
+            return SearchStoreDto.builder()
+                    .content(List.of())
+                    .itemAllCount(0)
+                    .pageNumber(page)
+                    .limitItemCount(DEFAULT_PAGE)
+                    .currentItemCount(0)
+                    .existNextPage(false)
+                    .build();
+        }
 
         // 검색어 토큰화
         List<String> keys = getAllTokenizer(keyword);
