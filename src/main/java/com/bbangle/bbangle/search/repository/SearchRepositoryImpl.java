@@ -191,15 +191,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .currentItemCount(content.size())
                 .existNextPage(queryAllCount - ((pageable.getPageNumber() + 1) * DEFAULT_ITEM_SIZE) > 0)
                 .build();
-
-        /*
-        * .itemAllCount(0)
-                    .pageNumber(pageable.getPageNumber())
-                    .limitItemCount(DEFAULT_ITEM_SIZE)
-                    .(0)
-                    .(false)
-                    .build();
-                    * */
     }
     private OrderSpecifier<?> orderByFieldList(List<Long> boardIds, NumberPath<Long> id) {
         String ids = boardIds.stream().map(String::valueOf).collect(Collectors.joining(", "));

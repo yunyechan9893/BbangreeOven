@@ -71,7 +71,7 @@ public class OAuth2MemberCustomService extends DefaultOAuth2UserService {
                     memberRepository.save(newMember);
                     Long newMemberId = newMember.getId();
                     //기본 위시리스트 폴더 추가
-                    folderService.create(newMemberId, new FolderRequestDto("default"));
+                    folderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
                     return newMember;
                 });
         }
