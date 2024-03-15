@@ -1,10 +1,10 @@
 //package com.bbangle.bbangle.service;
 //
 //import com.bbangle.bbangle.model.*;
-//import com.bbangle.bbangle.repository.BoardRepository;
-//import com.bbangle.bbangle.repository.ProductRepository;
-//import com.bbangle.bbangle.repository.RedisRepository;
-//import com.bbangle.bbangle.repository.StoreRepository;
+//import com.bbangle.bbangle.board.repository.BoardRepository;
+//import com.bbangle.bbangle.board.repository.ProductRepository;
+//import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+//import com.bbangle.bbangle.store.repository.StoreRepository;
 //import com.bbangle.bbangle.util.KomoranUtil;
 //import com.bbangle.bbangle.util.TrieUtil;
 //import jakarta.persistence.EntityManager;

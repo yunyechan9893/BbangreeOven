@@ -16,7 +16,7 @@ public class TokenGenerator {
     @Test
     public void 토큰_생성_테스트() throws Exception {
         //given
-        Member member = Member.builder().id(4L).build();
+        Member member = Member.builder().id(23L).build();
         String token = tokenProvider.generateToken(member, Duration.ofDays(1));
 
         //when

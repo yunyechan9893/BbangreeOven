@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.config.ranking;
 
-import com.bbangle.bbangle.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
