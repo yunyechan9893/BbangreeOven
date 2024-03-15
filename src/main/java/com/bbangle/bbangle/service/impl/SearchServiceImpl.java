@@ -97,14 +97,14 @@ public class SearchServiceImpl implements SearchService {
             String title = entry.getValue();
             trie.insert(title);
             List<String> boardTitleList = targetType == RedisEnum.STORE.name() ? getAllTokenizer(
-                title) : getNTokenizer(title);
+                    title) : getNTokenizer(title);
 
             for (String item : boardTitleList) {
                 trie.insert(item);
 
                 if (resultMap.containsKey(item)) {
                     resultMap.get(item)
-                        .add(id);  // 이미 있는 키에 대해 아이디를 추가
+                            .add(id);  // 이미 있는 키에 대해 아이디를 추가
                 } else {
                     List<Long> idList = new ArrayList<>();
                     idList.add(id);
@@ -120,16 +120,16 @@ public class SearchServiceImpl implements SearchService {
         // resultMap을 토큰 : [BoardId,...] 로 변경하여 저장
         for (Map.Entry<String, List<Long>> entry : resultMap.entrySet()) {
             redisRepository.set(targetType, entry.getKey(),
-                entry.getValue()
-                    .stream()
-                    .map(id -> id.toString())
-                    .toArray(String[]::new));
+                    entry.getValue()
+                            .stream()
+                            .map(id -> id.toString())
+                            .toArray(String[]::new));
         }
     }
 
     private KomoranResult getTokenizer(String title) {
         return KomoranUtil.getInstance()
-            .analyze(title);
+                .analyze(title);
     }
 
     private void synchronizeRedis(Map<String, List<Long>> resultMap, String migrationType) {
@@ -138,16 +138,16 @@ public class SearchServiceImpl implements SearchService {
 
         String migration = redisRepository.getString(RedisEnum.MIGRATION.name(), migrationType);
         String redisNamespace = migrationType == BOARD_MIGRATION ? RedisEnum.BOARD.name()
-            : RedisEnum.STORE.name();
+                : RedisEnum.STORE.name();
 
         if (
-            migration == null ||
-                LocalDateTime.parse(migration)
-                    .isBefore(oneHourAgo)
+                migration == null ||
+                        LocalDateTime.parse(migration)
+                                .isBefore(oneHourAgo)
         ) {
             redisRepository.setFromString(RedisEnum.MIGRATION.name(), migrationType,
-                LocalDateTime.now()
-                    .toString());
+                    LocalDateTime.now()
+                            .toString());
             uploadRedis(resultMap, redisNamespace);
             log.info("[완료] 보드 동기화");
         }
@@ -164,7 +164,7 @@ public class SearchServiceImpl implements SearchService {
         // 만약 베스트 키워드가 없을 시 기존 데이터 사용
         if (bestKeyword == null || bestKeyword.length == 0) {
             List isRedisKeywordData = redisRepository.getStringList(bestKeywordKey,
-                BEST_KEYWORD_KEY);
+                    BEST_KEYWORD_KEY);
 
             // 레디스 값도 없을때 기본 데이터 저장
             if (isRedisKeywordData.size() == 0) {
@@ -186,13 +186,13 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public void saveKeyword(Long memberId, String keyword) {
         searchRepository.save(
-            Search.builder()
-                .member(Member.builder()
-                    .id(memberId)
-                    .build())
-                .keyword(keyword)
-                .createdAt(LocalDateTime.now())
-                .build());
+                Search.builder()
+                        .member(Member.builder()
+                                .id(memberId)
+                                .build())
+                        .keyword(keyword)
+                        .createdAt(LocalDateTime.now())
+                        .build());
     }
 
     @Override
@@ -224,10 +224,21 @@ public class SearchServiceImpl implements SearchService {
             .distinct()
             .collect(Collectors.toList());
 
+        if (boardIndexs.size() <= 0){
+            return SearchBoardDto.builder()
+                    .content(List.of())
+                    .itemAllCount(0)
+                    .pageNumber(pageable.getPageNumber())
+                    .limitItemCount(DEFAULT_PAGE)
+                    .currentItemCount(0)
+                    .existNextPage(false)
+                    .build();
+        }
+
         return searchRepository.getSearchResult(
-                        memberId, boardIndexs, sort, glutenFreeTag, highProteinTag,
-                        sugarFreeTag, veganTag, ketogenicTag, orderAvailableToday,
-                        category, minPrice, maxPrice, pageable);
+                memberId, boardIndexs, sort, glutenFreeTag, highProteinTag,
+                sugarFreeTag, veganTag, ketogenicTag, orderAvailableToday,
+                category, minPrice, maxPrice, pageable);
     }
 
     @Override
@@ -287,9 +298,9 @@ public class SearchServiceImpl implements SearchService {
                         .build():
                 RecencySearchResponse.builder()
                         .content(searchRepository.getRecencyKeyword(
-                            Member.builder()
-                                .id(memberId)
-                                .build()))
+                                Member.builder()
+                                        .id(memberId)
+                                        .build()))
                         .build();
     }
 
@@ -298,17 +309,17 @@ public class SearchServiceImpl implements SearchService {
     public Boolean deleteRecencyKeyword(String keyword, Long memberId) {
         // UPDATE search SET search.isDeleted WHERE id=keywordId AND member = member;
         searchRepository.markAsDeleted(keyword,
-            Member.builder().
-                id(memberId).
-                build());
+                Member.builder().
+                        id(memberId).
+                        build());
         return true;
     }
 
     @Override
     public List<String> getBestKeyword() {
         return redisRepository.getStringList(
-            RedisEnum.BEST_KEYWORD.name(),
-            BEST_KEYWORD_KEY
+                RedisEnum.BEST_KEYWORD.name(),
+                BEST_KEYWORD_KEY
         );
     }
 
@@ -326,8 +337,8 @@ public class SearchServiceImpl implements SearchService {
     private List<String> getAllTokenizer(String title) {
         // 토큰화된 단어를 전부 반환
         return getTokenizer(title).getTokenList()
-            .stream()
-            .map(token -> token.getMorph())
-            .toList();
+                .stream()
+                .map(token -> token.getMorph())
+                .toList();
     }
 }
