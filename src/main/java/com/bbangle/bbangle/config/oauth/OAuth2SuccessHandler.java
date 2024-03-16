@@ -48,7 +48,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }else if(requestURL.equals("https://api.bbangle.store")){
             redirectPath = "https://api.bbangle.store/";
         }else if(requestURL.equals("http://www.bbangle.store")){
-            redirectPath = "https://www.bbangle.store";
+            redirectPath = "http://www.bbangle.store/";
         }
 
 
