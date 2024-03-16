@@ -1,12 +1,26 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.dto.ProductDto;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.ProductImg;
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.dto.ProductDto;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.model.*;
-import com.bbangle.bbangle.repository.*;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishListBoard.domain.WishlistProduct;
+import com.bbangle.bbangle.wishListBoard.repository.WishListProductRepository;
+import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
+import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
+import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;

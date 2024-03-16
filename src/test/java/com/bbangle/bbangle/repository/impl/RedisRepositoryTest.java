@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.model.RedisEnum;
-import com.bbangle.bbangle.repository.RedisRepository;
+import com.bbangle.bbangle.common.redis.domain.RedisEnum;
+import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;

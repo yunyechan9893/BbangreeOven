@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.repository.impl;
 
-import com.bbangle.bbangle.model.ProductImg;
-import lombok.RequiredArgsConstructor;
+import com.bbangle.bbangle.board.domain.ProductImg;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

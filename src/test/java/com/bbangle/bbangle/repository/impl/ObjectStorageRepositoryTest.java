@@ -2,7 +2,7 @@ package com.bbangle.bbangle.repository.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bbangle.bbangle.repository.ObjectStorageRepository;
+import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;

@@ -6,7 +6,7 @@ import com.bbangle.bbangle.config.oauth.OAuth2AuthorizationReqBasedOnCookieRepos
 import com.bbangle.bbangle.config.oauth.OAuth2MemberCustomService;
 import com.bbangle.bbangle.config.oauth.OAuth2SuccessHandler;
 import com.bbangle.bbangle.member.service.MemberService;
-import com.bbangle.bbangle.repository.RefreshTokenRepository;
+import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
