@@ -2,16 +2,17 @@ package com.bbangle.bbangle.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.bbangle.bbangle.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.exception.CategoryTypeException;
-import com.bbangle.bbangle.model.Board;
-import com.bbangle.bbangle.model.Category;
-import com.bbangle.bbangle.model.Product;
-import com.bbangle.bbangle.model.Store;
-import com.bbangle.bbangle.model.TagEnum;
-import com.bbangle.bbangle.repository.BoardRepository;
-import com.bbangle.bbangle.repository.ProductRepository;
-import com.bbangle.bbangle.repository.StoreRepository;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;

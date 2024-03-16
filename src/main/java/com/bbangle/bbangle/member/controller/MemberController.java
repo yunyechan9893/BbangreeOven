@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.member.controller;
 
-import com.bbangle.bbangle.dto.MessageResDto;
-import com.bbangle.bbangle.dto.WithdrawalRequestDto;
+import com.bbangle.bbangle.common.message.MessageResDto;
+import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.util.SecurityUtils;

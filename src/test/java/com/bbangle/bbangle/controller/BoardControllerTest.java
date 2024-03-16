@@ -5,14 +5,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bbangle.bbangle.model.Board;
-import com.bbangle.bbangle.model.Category;
-import com.bbangle.bbangle.model.Product;
-import com.bbangle.bbangle.model.Store;
-import com.bbangle.bbangle.repository.BoardRepository;
-import com.bbangle.bbangle.repository.ProductRepository;
-import com.bbangle.bbangle.repository.StoreRepository;
-import com.bbangle.bbangle.service.BoardService;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.board.service.BoardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
