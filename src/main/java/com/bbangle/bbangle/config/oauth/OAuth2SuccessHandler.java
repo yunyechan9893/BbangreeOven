@@ -43,11 +43,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String redirectPath = "";
         String requestURL = request.getRequestURL().toString();
         requestURL = requestURL.substring(0, requestURL.indexOf("/login"));
-        if(requestURL.equals("http://localhost:8000")){
+        if(requestURL.equals("http://dev.bbangle.store")){
             redirectPath = "http://localhost:3000/";
         }else if(requestURL.equals("https://api.bbangle.store")){
-            redirectPath = "https://api.bbangle.store/";
-        }else if(requestURL.equals("http://www.bbangle.store")){
             redirectPath = "http://www.bbangle.store/";
         }
 
