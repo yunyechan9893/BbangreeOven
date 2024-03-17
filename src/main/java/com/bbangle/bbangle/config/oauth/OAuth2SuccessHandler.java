@@ -27,7 +27,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
-    public static final String REDIRECT_PATH = "http://www.bbangle.store/";
 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -41,6 +40,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Authentication authentication
     ) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        String redirectPath = "";
+        String requestURL = request.getRequestURL().toString();
+        requestURL = requestURL.substring(0, requestURL.indexOf("/login"));
+        if(requestURL.equals("http://dev.bbangle.store")){
+            redirectPath = "http://localhost:3000/";
+        }else if(requestURL.equals("https://api.bbangle.store")){
+            redirectPath = "http://www.bbangle.store/";
+        }
+
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
         Member member = null;
@@ -61,7 +69,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = tokenProvider.generateToken(member, ACCESS_TOKEN_DURATION);
         addTokensToCookie(request, response, refreshToken, accessToken);
 
-        String targetUrl = UriComponentsBuilder.fromUriString(REDIRECT_PATH)
+        String targetUrl = UriComponentsBuilder.fromUriString(redirectPath)
             .build()
             .toUriString();
 
