@@ -83,23 +83,35 @@ public class SearchServiceImpl implements SearchService {
         }
     }
 
-    // 최적화 예정
     private Map<String, List<Long>> getWord(HashMap<Long, String> targetTitles, String targetType) {
+        /*
+        * {id1:title, id2:title, ...} => {title:[id1, id2]} 로 리턴
+        * */
+
+
         Map<String, List<Long>> resultMap = new HashMap<>();
 
         for (Map.Entry<Long, String> entry : targetTitles.entrySet()) {
+            // 게시판 혹은 스토어 아이디
             Long id = entry.getKey();
+            // 게시판 제목 혹은 스토어 명
             String title = entry.getValue();
+            //trie 알고리즘에 전체 title 저장
             trie.insert(title);
-            List<String> boardTitleList = targetType == RedisEnum.STORE.name() ? getAllTokenizer(
+
+            // 스토어라면, 토큰화 후 전체 문자 반환
+            // 게시판이라면, 토큰화 후 명사만 반환
+            //   ~'의'와 같이 '의', '을', '를' 이런 것도 검색어로 저장되기 때문
+            List<String> titleList = targetType == RedisEnum.STORE.name() ? getAllTokenizer(
                     title) : getNTokenizer(title);
 
-            for (String item : boardTitleList) {
+
+            for (String item : titleList) {
+                //trie 알고리즘에 토큰화된 title 저장
                 trie.insert(item);
 
                 if (resultMap.containsKey(item)) {
-                    resultMap.get(item)
-                            .add(id);  // 이미 있는 키에 대해 아이디를 추가
+                    resultMap.get(item).add(id);  // 이미 있는 키에 대해 아이디를 추가
                 } else {
                     List<Long> idList = new ArrayList<>();
                     idList.add(id);
@@ -123,19 +135,22 @@ public class SearchServiceImpl implements SearchService {
     }
 
     private KomoranResult getTokenizer(String title) {
-        return KomoranUtil.getInstance()
-                .analyze(title);
+        // title 토큰화 => "맛있는 비건 베이커리" => ["맛있", "는", "비건", "베이커리"] 
+        return KomoranUtil.getInstance().analyze(title);
     }
 
     private void synchronizeRedis(Map<String, List<Long>> resultMap, String migrationType) {
+        //현재날짜와 시간을 얻어옴
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneHourAgo = now.minusHours(1);
 
+        //레디스에서 마이그레이션의 키값을 가져옴
         String migration = redisRepository.getString(RedisEnum.MIGRATION.name(), migrationType);
         String redisNamespace = migrationType == BOARD_MIGRATION ? RedisEnum.BOARD.name()
                 : RedisEnum.STORE.name();
 
         if (
+                // 키값이 없거나 한시간 전이라면 레디스 업데이트
                 migration == null ||
                         LocalDateTime.parse(migration)
                                 .isBefore(oneHourAgo)
@@ -191,21 +206,14 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-
     public SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
                                              Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
                                              Boolean orderAvailableToday, String category, Integer minPrice, Integer maxPrice) {
 
         Pageable pageable = PageRequest.of(boardPage, DEFAULT_PAGE);
+        // 검색어가 없다면 빈 DTO 반환
         if (keyword.isBlank()){
-            return SearchBoardDto.builder()
-                    .content(List.of())
-                    .itemAllCount(0)
-                    .pageNumber(pageable.getPageNumber())
-                    .limitItemCount(DEFAULT_PAGE)
-                    .currentItemCount(0)
-                    .existNextPage(false)
-                    .build();
+            return SearchBoardDto.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE);
         }
 
         // 검색어 토큰화
@@ -219,15 +227,9 @@ public class SearchServiceImpl implements SearchService {
             .distinct()
             .collect(Collectors.toList());
 
+        // 게시판 Id 리스트가 비었다면 빈 DTO 반환
         if (boardIndexs.size() <= 0){
-            return SearchBoardDto.builder()
-                    .content(List.of())
-                    .itemAllCount(0)
-                    .pageNumber(pageable.getPageNumber())
-                    .limitItemCount(DEFAULT_PAGE)
-                    .currentItemCount(0)
-                    .existNextPage(false)
-                    .build();
+            return SearchBoardDto.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE);
         }
 
         return searchRepository.getSearchResult(
@@ -238,16 +240,9 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public SearchStoreDto getSearchStoreDtos(Long memberId, int page, String keyword){
-
+        // 검색 키워드가 없다면 빈 DTO 반환
         if (keyword.isBlank()){
-            return SearchStoreDto.builder()
-                    .content(List.of())
-                    .itemAllCount(0)
-                    .pageNumber(page)
-                    .limitItemCount(DEFAULT_PAGE)
-                    .currentItemCount(0)
-                    .existNextPage(false)
-                    .build();
+            return SearchStoreDto.getEmpty(page, DEFAULT_PAGE);
         }
 
         // 검색어 토큰화
@@ -261,15 +256,9 @@ public class SearchServiceImpl implements SearchService {
                 .distinct()
                 .collect(Collectors.toList());
 
+        // 스토어 Id 리스트가 비었다면 빈 DTO 반환
         if (storeIndexs.size() <= 0) {
-            return SearchStoreDto.builder()
-                    .content(List.of())
-                    .itemAllCount(0)
-                    .pageNumber(page)
-                    .limitItemCount(DEFAULT_PAGE)
-                    .currentItemCount(0)
-                    .existNextPage(false)
-                    .build();
+            return SearchStoreDto.getEmpty(page, DEFAULT_PAGE);
         }
 
         var content = searchRepository.getSearchedStore(memberId, storeIndexs, PageRequest.of(page, DEFAULT_PAGE));
@@ -282,11 +271,11 @@ public class SearchServiceImpl implements SearchService {
                 .currentItemCount(content.size())
                 .existNextPage(storeIndexs.size() - ((page + 1) * DEFAULT_PAGE) > 0)
                 .build();
-
     }
 
     @Override
     public RecencySearchResponse getRecencyKeyword(Long memberId) {
+        // 회원이라면 검색어 반환 아니라면 빈 DTO 반환
         return memberId==1L ?
                 RecencySearchResponse.builder()
                         .content(List.of())
@@ -302,7 +291,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     @Transactional
     public Boolean deleteRecencyKeyword(String keyword, Long memberId) {
-        // UPDATE search SET search.isDeleted WHERE id=keywordId AND member = member;
+        // 키워드 isDeleted 처리 ;
         searchRepository.markAsDeleted(keyword,
                 Member.builder().
                         id(memberId).
