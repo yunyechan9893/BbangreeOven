@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.service;
+package com.bbangle.bbangle.board.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

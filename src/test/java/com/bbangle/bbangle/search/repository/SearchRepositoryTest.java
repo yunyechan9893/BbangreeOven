@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.repository.impl;
+package com.bbangle.bbangle.search.repository;
 
 import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.member.domain.Member;

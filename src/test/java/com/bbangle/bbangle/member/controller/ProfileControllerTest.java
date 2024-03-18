@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.controller;
+package com.bbangle.bbangle.member.controller;
 
 
 import com.bbangle.bbangle.member.controller.ProfileController;

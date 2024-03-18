@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.service;
+package com.bbangle.bbangle.admin.service;
 
 import com.bbangle.bbangle.admin.service.AdminService;
 import org.junit.jupiter.api.Test;

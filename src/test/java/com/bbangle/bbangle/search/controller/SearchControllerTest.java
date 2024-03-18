@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.controller;
+package com.bbangle.bbangle.search.controller;
 
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;

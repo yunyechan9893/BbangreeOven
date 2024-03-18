@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.controller;
+package com.bbangle.bbangle.board.controller;
 
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

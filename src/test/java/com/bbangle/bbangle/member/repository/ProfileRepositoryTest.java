@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.repository.impl;
+package com.bbangle.bbangle.member.repository;
 
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.ProfileRepository;

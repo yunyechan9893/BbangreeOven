@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.repository.impl;
+package com.bbangle.bbangle.etc.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.repository.impl;
+package com.bbangle.bbangle.etc.repository;
 
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
