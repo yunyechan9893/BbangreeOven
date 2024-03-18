@@ -64,7 +64,10 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
                     .limit(4)
                     .collect(Collectors.toList());
 
-                int count = productImages.isEmpty() ? 0 : tuples.size();
+                int count = productImages.isEmpty() ? 0 : (int) tuples.stream()
+                    .map(tuple -> tuple.get(board.profile))
+                    .filter(Objects::nonNull)
+                    .count();
 
                 return new FolderResponseDto(folderId, title, count, productImages);
             })
