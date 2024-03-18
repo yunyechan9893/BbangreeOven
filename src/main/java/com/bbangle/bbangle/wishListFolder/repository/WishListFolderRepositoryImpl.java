@@ -40,11 +40,10 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
             .leftJoin(wishedBoard)
             .on(wishedBoard.wishlistFolder.eq(folder))
             .leftJoin(board)
-            .on(wishedBoard.board.eq(board))
+            .on(wishedBoard.board.eq(board)
+                .and(wishedBoard.isDeleted.eq(false)))
             .where(folder.member.eq(member)
-                .and(folder.isDeleted.eq(false))
-                .and(wishedBoard.isDeleted.eq(false)
-                    .or(wishedBoard.isNull())))
+                .and(folder.isDeleted.eq(false)))
             .fetch();
 
         Map<Long, List<Tuple>> groupedByFolderId = fetch.stream()
@@ -90,8 +89,11 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
     public List<WishlistFolder> findByMemberId(Long memberId) {
         QWishlistFolder wishlistFolder = QWishlistFolder.wishlistFolder;
         return queryFactory.selectFrom(wishlistFolder)
-                .where(wishlistFolder.member.id.eq(memberId).and(wishlistFolder.isDeleted.eq(false)))
-                .fetch();
-    };
+            .where(wishlistFolder.member.id.eq(memberId)
+                .and(wishlistFolder.isDeleted.eq(false)))
+            .fetch();
+    }
+
+    ;
 
 }
