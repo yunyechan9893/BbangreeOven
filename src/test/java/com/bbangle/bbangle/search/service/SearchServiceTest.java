@@ -1,4 +1,5 @@
 package com.bbangle.bbangle.search.service;
+
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.store.domain.Store;
