@@ -1,19 +1,18 @@
 package com.bbangle.bbangle.search.repository;
 
-import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
-import com.bbangle.bbangle.search.repository.SearchRepository;
-import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.search.domain.Search;
+import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.service.SearchService;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
