@@ -14,4 +14,13 @@ public record SearchBoardDto(
     boolean existNextPage
 ) {
 
+    public static SearchBoardDto getEmpty(int pageNumber, int limitItemCount){
+        return SearchBoardDto.builder().content(List.of())
+                .itemAllCount(0)
+                .pageNumber(pageNumber)
+                .limitItemCount(limitItemCount)
+                .currentItemCount(0)
+                .existNextPage(false)
+                .build();
+    }
 }

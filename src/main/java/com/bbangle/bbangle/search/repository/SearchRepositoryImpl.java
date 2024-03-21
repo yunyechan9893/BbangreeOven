@@ -64,6 +64,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         product,
                         board);
 
+        // 인가 상품인 경우
+        // 조회수 1점, 위시리스트 10점 점수가 가장 높은 순으로 정렬
         var orderByBuilder =
                 sort.equals(SortType.POPULAR.getValue())?
                         board.view.add(board.wishCnt.multiply(10)).desc():
@@ -81,24 +83,21 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 )
                 .orderBy(orderByBuilder);
 
+        // 검색된 게시물 전체 개수
         var queryAllCount = defaultQuery.fetch().stream().toList().size();
 
+        // 게시글이 없다면 빈 DTO 반환
         if (queryAllCount <= 0){
-            return SearchBoardDto.builder()
-                    .content(List.of())
-                    .itemAllCount(0)
-                    .pageNumber(pageable.getPageNumber())
-                    .limitItemCount(DEFAULT_ITEM_SIZE)
-                    .currentItemCount(0)
-                    .existNextPage(false)
-                    .build();
+            return SearchBoardDto.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE);
         }
 
+        // 필터링된 board의 id를 10개의 데이터를 끊어서 가져옴
         var filterQuery = defaultQuery
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        // 가져올 컬럼명 입력
         List<Expression<?>> columns = new ArrayList<>();
         columns.add(product.board.store.id);
         columns.add(product.board.store.name);
@@ -113,10 +112,12 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         columns.add(product.veganTag);
         columns.add(product.ketogenicTag);
 
+        // 회원이라면 위시리스트 등록 여부도 파악
         if (memberId != null && memberId > 0) {
             columns.add(wishlistProduct.id);
         }
 
+        // 위에서 찾은 10개 이하의 게시판의 정보들을 가져오는 쿼리 작성
         var boards = queryFactory
                 .select(columns.toArray(new Expression[0]))
                 .from(product)
@@ -125,7 +126,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .where(board.id.in(filterQuery))
                 .orderBy(orderByFieldList(filterQuery, product.board.id));
 
-
+        // 회원이라면 위시리스트 조인
         if (memberId != null && memberId > 0) {
             boards = boards.leftJoin(wishlistProduct).on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId), wishlistProduct.isDeleted.eq(false));
         }
@@ -137,6 +138,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         for (Tuple tuple:boards.fetch()) {
             Long boardId =  tuple.get(product.board.id);
 
+            // 이전 게시판 아이디와 현재 게시판 아이디가 다르다면 Map에 저장
             if (!boardMap.containsKey(boardId)) {
                 boardMap.put(boardId,
                         BoardResponseDto.builder()
@@ -154,8 +156,11 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 categories.clear();
             }
 
+            // 묶음 상품 표시를 위해 카테고리 SetMap에 저장
+            // 중복값은 저절로 제거됨
             categories.add(tuple.get(product.category));
 
+            // 게시판에 표시할 전체태그 구성
             BoardResponseDto boardResponseDto = boardMap.get(tuple.get(product.board.id));
 
             if (tuple.get(product.glutenFreeTag)) {
@@ -177,6 +182,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             boardMap.put(tuple.get(product.board.id), boardResponseDto);
         }
 
+        // DTO 중복제거
         var content = boardMap.entrySet().stream().map(
                 longBoardResponseDtoEntry -> longBoardResponseDtoEntry.getValue()
         ).map(
@@ -193,6 +199,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .build();
     }
     private OrderSpecifier<?> orderByFieldList(List<Long> boardIds, NumberPath<Long> id) {
+        // 커스텀한 순서대로 데이터베이스 값을 뽑아올 수 있음
         String ids = boardIds.stream().map(String::valueOf).collect(Collectors.joining(", "));
         return Expressions.stringTemplate("FIELD({0}, " + ids + ")", id).asc();
     }
@@ -202,12 +209,14 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         QStore store = QStore.store;
         QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
 
+
         List<Expression<?>> columns = new ArrayList<>();
         columns.add(store.id);
         columns.add(store.name);
         columns.add(store.introduce);
         columns.add(store.profile);
 
+        // 회원이라면 위시리스트 유무 확인
         if (memberId > 1L){
             columns.add(wishlistStore.id);
         }
@@ -220,11 +229,10 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .where(store.id.in(storeIndexList))
                 .orderBy(orderByFieldList(storeIndexList, store.id));
 
+        // 회원이라면 위시리스트 테이블 Join
         if (memberId > 1L){
             stores.leftJoin(wishlistStore).on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId), wishlistStore.isDeleted.eq(false));
         }
-
-
 
         return stores.fetch().stream().map(
                 tuple -> StoreResponseDto.builder()
