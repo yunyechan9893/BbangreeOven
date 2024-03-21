@@ -19,8 +19,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -64,12 +63,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         product,
                         board);
 
-        // 인가 상품인 경우
-        // 조회수 1점, 위시리스트 10점 점수가 가장 높은 순으로 정렬
-        var orderByBuilder =
-                sort.equals(SortType.POPULAR.getValue())?
-                        board.view.add(board.wishCnt.multiply(10)).desc():
-                        orderByFieldList(boardIds, product.board.id);
+
 
 
         var defaultQuery = queryFactory
@@ -80,8 +74,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
                         board.id.in(boardIds),
                         filter
-                )
-                .orderBy(orderByBuilder);
+                );
+
 
         // 검색된 게시물 전체 개수
         var queryAllCount = defaultQuery.fetch().stream().toList().size();
@@ -91,8 +85,17 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             return SearchBoardDto.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE);
         }
 
+        // 인가 상품인 경우
+        // 조회수 1점, 위시리스트 10점 점수가 가장 높은 순으로 정렬
+        var orderByBuilder =
+                sort.equals(SortType.POPULAR.getValue())?
+                        board.view.add(board.wishCnt.multiply(10)).desc():
+                        orderByFieldList(boardIds, product.board.id);
+
+
         // 필터링된 board의 id를 10개의 데이터를 끊어서 가져옴
         var filterQuery = defaultQuery
+                .orderBy(orderByBuilder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -122,8 +125,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .select(columns.toArray(new Expression[0]))
                 .from(product)
                 .join(product.board, board)
-                .join(board.store, store)
-                .where(board.id.in(filterQuery))
+                .join(product.board.store, store)
+                .where(product.board.id.in(filterQuery))
                 .orderBy(orderByFieldList(filterQuery, product.board.id));
 
         // 회원이라면 위시리스트 조인
