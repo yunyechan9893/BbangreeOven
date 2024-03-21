@@ -1,20 +1,7 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.domain.QProductImg;
-import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardAvailableDayDto;
-import com.bbangle.bbangle.board.dto.BoardDetailDto;
-import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
-import com.bbangle.bbangle.board.dto.BoardImgDto;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.ProductBoardLikeStatus;
-import com.bbangle.bbangle.board.dto.ProductDto;
-import com.bbangle.bbangle.board.dto.ProductTagDto;
+import com.bbangle.bbangle.board.domain.*;
+import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
@@ -293,6 +280,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QProduct product = QProduct.product;
         QStore store = QStore.store;
         QProductImg productImg = QProductImg.productImg;
+        QBoardDetail boardDetail = QBoardDetail.boardDetail;
+
 
         QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
         QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
@@ -343,6 +332,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId),
                 wishlistStore.isDeleted.eq(false))
             .fetch();
+
+        var boardDetails = queryFactory.select(new QDetailResponseDto(
+                    boardDetail.id,
+                    boardDetail.imgIndex,
+                    boardDetail.url
+                ))
+                .from(boardDetail)
+                .where(board.id.eq(boardId)).stream().toList();
 
         int index = 0;
         int resultSize = fetch.size();
@@ -418,7 +415,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                             .build()
                     )
                     .purchaseUrl(tuple.get(board.purchaseUrl))
-                    .detail(tuple.get(board.detail))
+                    .detail(boardDetails)
                     .products(productDtos)
                     .images(boardImgDtos.stream()
                         .toList())
@@ -442,6 +439,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QProduct product = QProduct.product;
         QStore store = QStore.store;
         QProductImg productImg = QProductImg.productImg;
+        QBoardDetail boardDetail =QBoardDetail.boardDetail;
 
         List<Tuple> fetch = queryFactory
             .select(
@@ -481,6 +479,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(productImg)
             .on(board.id.eq(productImg.board.id))
             .fetch();
+
+        var boardDetails = queryFactory.select(new QDetailResponseDto(
+                        boardDetail.id,
+                        boardDetail.imgIndex,
+                        boardDetail.url
+                ))
+                .from(boardDetail)
+                .where(board.id.eq(boardId)).stream().toList();
 
         int index = 0;
         int resultSize = fetch.size();
@@ -556,7 +562,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                             .build()
                     )
                     .purchaseUrl(tuple.get(board.purchaseUrl))
-                    .detail(tuple.get(board.detail))
+                    .detail(boardDetails)
                     .products(productDtos.stream()
                         .toList())
                     .images(boardImgDtos.stream()
