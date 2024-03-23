@@ -10,7 +10,8 @@ import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.search.domain.QSearch;
 import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.dto.SearchBoardDto;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
+import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct;
@@ -41,9 +42,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
 
     @Override
-    public SearchBoardDto getSearchResult(Long memberId, List<Long> boardIds, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                          Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag, Boolean orderAvailableToday,
-                                          String category, Integer minPrice, Integer maxPrice, Pageable pageable) {
+    public SearchBoardResponse getSearchedBoard(Long memberId, List<Long> boardIds, SearchBoardRequest boardRequest, Pageable pageable) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
@@ -51,15 +50,15 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
 
         BooleanBuilder filter =
-                setFilteringCondition(glutenFreeTag,
-                        highProteinTag,
-                        sugarFreeTag,
-                        veganTag,
-                        ketogenicTag,
-                        orderAvailableToday,
-                        category,
-                        minPrice,
-                        maxPrice,
+                setFilteringCondition(boardRequest.glutenFreeTag(),
+                        boardRequest.highProteinTag(),
+                        boardRequest.sugarFreeTag(),
+                        boardRequest.veganTag(),
+                        boardRequest.ketogenicTag(),
+                        boardRequest.orderAvailableToday(),
+                        boardRequest.category(),
+                        boardRequest.minPrice(),
+                        boardRequest.maxPrice(),
                         product,
                         board);
 
@@ -82,13 +81,13 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
         // 게시글이 없다면 빈 DTO 반환
         if (queryAllCount <= 0){
-            return SearchBoardDto.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE);
+            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE, queryAllCount);
         }
 
         // 인가 상품인 경우
         // 조회수 1점, 위시리스트 10점 점수가 가장 높은 순으로 정렬
         var orderByBuilder =
-                sort.equals(SortType.POPULAR.getValue())?
+                boardRequest.sort().equals(SortType.POPULAR.getValue())?
                         board.view.add(board.wishCnt.multiply(10)).desc():
                         orderByFieldList(boardIds, product.board.id);
 
@@ -99,6 +98,10 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        if (filterQuery.size() <= 0){
+            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE, queryAllCount);
+        }
 
         // 가져올 컬럼명 입력
         List<Expression<?>> columns = new ArrayList<>();
@@ -192,7 +195,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
         ).toList();
 
-        return SearchBoardDto.builder()
+        return SearchBoardResponse.builder()
                 .content(content)
                 .pageNumber(pageable.getPageNumber())
                 .itemAllCount(queryAllCount)
