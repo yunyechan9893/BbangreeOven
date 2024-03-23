@@ -23,9 +23,7 @@ public interface BoardQueryDSLRepository {
         WishlistFolder wishlistFolder
     );
 
-    BoardDetailResponseDto getBoardDetailResponseDto(Long boardId);
-
-    BoardDetailResponseDto getBoardDetailResponseDtoWithLike(Long memberId, Long boardId);
+    BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId);
 
     HashMap<Long, String> getAllBoardTitle();
 
