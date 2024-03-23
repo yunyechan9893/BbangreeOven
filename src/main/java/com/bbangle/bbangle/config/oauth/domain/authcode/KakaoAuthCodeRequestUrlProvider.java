@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.config.oauth.domain.authcode;
 
 import com.bbangle.bbangle.config.oauth.domain.OauthServerType;
-import com.bbangle.bbangle.config.oauth.infra.kakao.KakaoOauthConfig;
+import com.bbangle.bbangle.config.oauth.infra.KakaoOauthConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
