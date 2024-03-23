@@ -195,18 +195,23 @@ public class SearchServiceImpl implements SearchService {
 
 
     @Override
+    @Transactional
     public void saveKeyword(Long memberId, String keyword) {
+        var result = Search.builder()
+                .member(Member.builder()
+                        .id(memberId)
+                        .build())
+                .keyword(keyword)
+                .createdAt(LocalDateTime.now())
+                .build();
+        System.out.println(memberId);
+        System.out.println(result.getKeyword());
         searchRepository.save(
-                Search.builder()
-                        .member(Member.builder()
-                                .id(memberId)
-                                .build())
-                        .keyword(keyword)
-                        .createdAt(LocalDateTime.now())
-                        .build());
+                result);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SearchBoardResponse getSearchBoardDtos(Long memberId, SearchBoardRequest boardRequest) {
 
         Pageable pageable = PageRequest.of(boardRequest.page(), DEFAULT_PAGE);
@@ -235,6 +240,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SearchStoreResponse getSearchStoreDtos(Long memberId, int page, String keyword){
         // 검색 키워드가 없다면 빈 DTO 반환
         if (keyword.isBlank()){
@@ -269,6 +275,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RecencySearchResponse getRecencyKeyword(Long memberId) {
         // 회원이라면 검색어 반환 아니라면 빈 DTO 반환
         return memberId==1L ?
@@ -295,6 +302,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getBestKeyword() {
         return redisRepository.getStringList(
                 RedisEnum.BEST_KEYWORD.name(),
@@ -303,6 +311,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getAutoKeyword(String keyword) {
         // 초기에 등록된 트리 데이터를 이용해, 자동완성 데이터를 반환
         return trie.autoComplete(keyword, 7);
