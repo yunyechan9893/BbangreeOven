@@ -2,6 +2,7 @@ package com.bbangle.bbangle.search.service;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -102,24 +103,26 @@ public class SearchServiceTest {
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
     public void getSearchBoard() {
+
         Long memberId = 1L;
-        String sort = "LATEST";
-        Boolean glutenFreeTag = true;
-        Boolean highProteinTag = false;
-        Boolean sugarFreeTag = false;
-        Boolean veganTag = false;
-        Boolean ketogenicTag = false;
-        Boolean orderAvailableToday = true;
-        String category = "COOKIE";
-        Integer minPrice = 0;
-        Integer maxPrice = 6000;
-        int page = 0;
+        var searchBoardRequest= SearchBoardRequest.builder()
+                .keyword(SEARCH_KEYWORD)
+                .sort("LATEST")
+                .glutenFreeTag(true)
+                .highProteinTag(false)
+                .sugarFreeTag(false)
+                .veganTag(false)
+                .ketogenicTag(false)
+                .orderAvailableToday(true)
+                .category("Cookie")
+                .minPrice(0)
+                .maxPrice(6000)
+                .page(0)
+                .build();
+
 
         var searchBoardResult = searchService.getSearchBoardDtos(
-            memberId, BOARD_PAGE, SEARCH_KEYWORD,
-            sort, glutenFreeTag, highProteinTag,
-            sugarFreeTag, veganTag, ketogenicTag,
-            orderAvailableToday, category, minPrice, maxPrice);
+            memberId,searchBoardRequest);
 
         var boards = searchBoardResult.content();
 
