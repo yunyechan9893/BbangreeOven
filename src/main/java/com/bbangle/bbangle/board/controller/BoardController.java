@@ -6,12 +6,14 @@ import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.common.message.MessageResDto;
 import com.bbangle.bbangle.board.service.BoardServiceImpl;
+import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ public class BoardController {
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @GetMapping
-    public ResponseEntity<Slice<BoardResponseDto>> getList(
+    public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
         @RequestParam(required = false)
         String sort,
         @RequestParam(required = false)
