@@ -7,6 +7,7 @@ import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
@@ -23,7 +24,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +62,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public Slice<BoardResponseDto> getBoardList(
+    public CustomPage<List<BoardResponseDto>> getBoardList(
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
         String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday,
@@ -114,7 +114,7 @@ public class BoardServiceImpl implements BoardService {
             pageContent = Collections.emptyList();
         }
 
-        return new SliceImpl<>(pageContent, pageable, hasNext);
+        return new CustomPage<>(pageContent, currentPage, hasNext);
     }
 
     private List<Long> getListAdaptingSort(List<Long> boardResponseDtoIdx, String sort) {
