@@ -13,12 +13,14 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @EnableScheduling
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class BbangleApplication {
 
     public static void main(String[] args) {

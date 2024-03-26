@@ -68,7 +68,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         saveRefreshToken(member.getId(), refreshToken);
         String accessToken = tokenProvider.generateToken(member, ACCESS_TOKEN_DURATION);
         addTokensToCookie(request, response, refreshToken, accessToken);
-
         String targetUrl = UriComponentsBuilder.fromUriString(redirectPath)
             .build()
             .toUriString();
