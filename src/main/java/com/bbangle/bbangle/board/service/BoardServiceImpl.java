@@ -62,7 +62,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public CustomPage<List<BoardResponseDto>> getBoardList(
+    public CustomPage<?> getBoardList(
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
         String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday,
@@ -114,7 +114,11 @@ public class BoardServiceImpl implements BoardService {
             pageContent = Collections.emptyList();
         }
 
-        return new CustomPage<>(pageContent, currentPage, hasNext);
+        return CustomPage.builder()
+            .content(pageContent)
+            .page(currentPage)
+            .isLast(hasNext)
+            .build();
     }
 
     private List<Long> getListAdaptingSort(List<Long> boardResponseDtoIdx, String sort) {

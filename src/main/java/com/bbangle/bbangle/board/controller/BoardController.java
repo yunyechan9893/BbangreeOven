@@ -47,7 +47,7 @@ public class BoardController {
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @GetMapping
-    public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
+    public ResponseEntity<CustomPage<?>> getList(
         @RequestParam(required = false)
         String sort,
         @RequestParam(required = false)
