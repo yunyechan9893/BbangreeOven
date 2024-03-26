@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.config.oauth.domain.authcode;
 
 import com.bbangle.bbangle.config.oauth.domain.OauthServerType;
-import com.bbangle.bbangle.config.oauth.infra.GoogleOauthConfig;
+import com.bbangle.bbangle.config.oauth.infra.google.GoogleOauthConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -27,8 +27,6 @@ public class GoogleAuthCodeRequestUrlProvider implements AuthCodeRequestUrlProvi
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", googleOauthConfig.scope()))
                 .toUriString();
-
-        //https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=191791280887-ij6l3b2eav7n2eibubo3pq0msahvha04.apps.googleusercontent.com&scope=email profile&state
 
     }
 }

@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.config.oauth.infra;
+package com.bbangle.bbangle.config.oauth.infra.kakao;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
