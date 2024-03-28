@@ -89,13 +89,11 @@ public class BoardServiceImpl implements BoardService {
             matchedIdx
         );
 
-        List<BoardResponseDto> sortedResponse = sortingList(boardResponseDto, matchedIdx);
-
         if (SecurityUtils.isLogin()) {
-            sortedResponse = boardRepository.updateLikeStatus(matchedIdx, sortedResponse);
+            boardResponseDto = boardRepository.updateLikeStatus(matchedIdx, boardResponseDto);
         }
 
-        return getCustomPage(cursorInfo.rank(), cursorId, sortedResponse, cursorInfo.hasNext());
+        return getCustomPage(cursorInfo.rank(), cursorId, boardResponseDto, cursorInfo.hasNext());
     }
 
     private CustomPage<List<BoardResponseDto>> getCustomPage(

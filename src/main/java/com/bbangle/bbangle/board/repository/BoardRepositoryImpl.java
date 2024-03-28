@@ -99,7 +99,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             content.add(BoardResponseDto.from(board1, tags));
         }
 
-        return content;
+        return content.stream()
+            .sorted(Comparator.comparingInt(
+                dto -> matchedIdx.indexOf(dto.boardId())))
+            .toList();
     }
 
     @Override
