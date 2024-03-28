@@ -60,7 +60,7 @@ public class SearchController {
             @RequestParam(value = "maxPrice", required = false, defaultValue = "0")
             Integer maxPrice
     ){
-
+        // 회원, 비회원 둘 다 사용 가능
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
         return ResponseEntity.ok().body(searchService.getSearchBoardDtos(
