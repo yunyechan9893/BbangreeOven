@@ -3,7 +3,7 @@ package com.bbangle.bbangle.config.oauth;
 import com.bbangle.bbangle.wishListFolder.dto.FolderRequestDto;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.BbangleApplication.WishListFolderService;
+import com.bbangle.bbangle.wishListFolder.service.WishListFolderService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;

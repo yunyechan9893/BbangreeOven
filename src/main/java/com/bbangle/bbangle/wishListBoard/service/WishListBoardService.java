@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.wishListFolder.service;
+package com.bbangle.bbangle.wishListBoard.service;
 
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class WishListProductService {
+public class WishListBoardService {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
 
