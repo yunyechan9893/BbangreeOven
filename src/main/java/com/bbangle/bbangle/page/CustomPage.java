@@ -6,7 +6,6 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minidev.json.annotate.JsonIgnore;
 
 @Getter
 @RequiredArgsConstructor
