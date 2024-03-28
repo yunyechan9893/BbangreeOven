@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/boards/{boardId}/wish")
 @RequiredArgsConstructor
-public class WishListProductController {
+public class WishListBoardController {
 
     private final WishListProductService wishListProductService;
 
