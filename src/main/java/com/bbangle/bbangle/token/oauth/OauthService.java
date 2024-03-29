@@ -3,7 +3,6 @@ package com.bbangle.bbangle.token.oauth;
 import com.bbangle.bbangle.BbangleApplication.WishListFolderService;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
-import com.bbangle.bbangle.token.oauth.domain.authcode.AuthCodeRequestUrlProviderComposite;
 import com.bbangle.bbangle.token.oauth.domain.client.OauthMemberClientComposite;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
 import com.bbangle.bbangle.member.domain.Member;
@@ -17,33 +16,26 @@ import java.time.Duration;
 @Service
 @RequiredArgsConstructor
 public class OauthService {
-    private final AuthCodeRequestUrlProviderComposite authCodeRequestUrlProviderComposite;
+
     private final OauthMemberClientComposite oauthMemberClientComposite;
     private final MemberRepository memberRepository;
     private final WishListFolderService folderService;
-    public static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
-    public static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     public static final Duration REFRESH_TOKEN_DURATION = Duration.ofDays(14);
     public static final Duration ACCESS_TOKEN_DURATION = Duration.ofHours(3);
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
     private final TokenProvider tokenProvider;
 
-    public String getAuthCodeRequestUrl(OauthServerType oauthServerType){
-        return authCodeRequestUrlProviderComposite.provide(oauthServerType);
-    }
-
     public LoginTokenResponse login(OauthServerType oauthServerType, String authCode){
         Member oauthMember = oauthMemberClientComposite.fetch(oauthServerType, authCode);
         String nickname = oauthMember.getNickname();
-        String profile = oauthMember.getProfile();
         //TODO 구글, 카카오 식별자 필요
         //카카오
-        Member saved = memberRepository.findByNickname(nickname)
-                .map(entity -> entity.updateNickname(nickname))
+        Member saved = memberRepository.findByProviderAndProviderId(oauthMember.getProvider(), oauthMember.getProviderId())
                 .orElseGet(() -> {
                     Member newMember = Member.builder()
                             .nickname(nickname)
-                            .profile(profile)
+                            .provider(oauthMember.getProvider())
+                            .providerId(oauthMember.getProviderId())
                             .build();
                     memberRepository.save(newMember);
                     Long newMemberId = newMember.getId();
