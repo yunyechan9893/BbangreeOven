@@ -111,17 +111,6 @@ public class BoardServiceImpl implements BoardService {
         return CustomPage.from(sortedResponse, cursorId, hasNext);
     }
 
-    private static List<BoardResponseDto> sortingList(
-        List<BoardResponseDto> boardResponseDto,
-        List<Long> matchedIdx
-    ) {
-        List<BoardResponseDto> sortedBoardResponseDto = boardResponseDto.stream()
-            .sorted(Comparator.comparingInt(
-                dto -> matchedIdx.indexOf(dto.boardId())))
-            .toList();
-        return sortedBoardResponseDto;
-    }
-
     private List<Long> getListAdaptingSort(
         String sort,
         Long cursorId,
