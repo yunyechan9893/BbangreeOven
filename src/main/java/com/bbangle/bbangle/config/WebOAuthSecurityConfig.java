@@ -1,11 +1,11 @@
 package com.bbangle.bbangle.config;
 
-import com.bbangle.bbangle.config.jwt.TokenAuthenticationFilter;
-import com.bbangle.bbangle.config.jwt.TokenProvider;
-import com.bbangle.bbangle.config.oauth.OAuth2AuthorizationReqBasedOnCookieRepository;
-import com.bbangle.bbangle.config.oauth.OAuth2MemberCustomService;
-import com.bbangle.bbangle.config.oauth.OAuth2SuccessHandler;
-import com.bbangle.bbangle.config.oauth.OauthServerTypeConverter;
+import com.bbangle.bbangle.token.jwt.TokenAuthenticationFilter;
+import com.bbangle.bbangle.token.jwt.TokenProvider;
+import com.bbangle.bbangle.token.oauth.OAuth2AuthorizationReqBasedOnCookieRepository;
+import com.bbangle.bbangle.token.oauth.OAuth2MemberCustomService;
+import com.bbangle.bbangle.token.oauth.OAuth2SuccessHandler;
+import com.bbangle.bbangle.token.oauth.OauthServerTypeConverter;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,6 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -71,6 +70,8 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
 
         http.authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/api/token")
+            .permitAll()
+            .requestMatchers("/api/v1/oauth/**")
             .permitAll()
             .requestMatchers("/api/v1/search/**")
             .permitAll()
