@@ -15,18 +15,6 @@ public class OauthController {
 
     private final OauthService oauthService;
 
-    @SneakyThrows // 명시되어 있는 IO Exception을 처리
-    @GetMapping("/authorization/{oauthServerType}")
-    ResponseEntity<Void> redirectAuthCodeRequestUrl(
-            @PathVariable
-            OauthServerType oauthServerType,
-            HttpServletResponse response
-        ){
-        String redirectUrl = oauthService.getAuthCodeRequestUrl(oauthServerType);
-        response.sendRedirect(redirectUrl);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/login/{oauthServerType}")
     ResponseEntity<LoginTokenResponse> login(
             @PathVariable OauthServerType oauthServerType,

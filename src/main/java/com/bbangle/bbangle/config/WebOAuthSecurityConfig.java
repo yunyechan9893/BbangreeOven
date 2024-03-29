@@ -2,9 +2,6 @@ package com.bbangle.bbangle.config;
 
 import com.bbangle.bbangle.token.jwt.TokenAuthenticationFilter;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
-import com.bbangle.bbangle.token.oauth.OAuth2AuthorizationReqBasedOnCookieRepository;
-import com.bbangle.bbangle.token.oauth.OAuth2MemberCustomService;
-import com.bbangle.bbangle.token.oauth.OAuth2SuccessHandler;
 import com.bbangle.bbangle.token.oauth.OauthServerTypeConverter;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
@@ -32,10 +29,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Slf4j
 public class WebOAuthSecurityConfig implements WebMvcConfigurer {
 
-    private final OAuth2MemberCustomService oAuth2UserCustomService;
     private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final MemberService memberService;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -98,12 +92,6 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
             .anyRequest()
             .permitAll());
 
-        /*http.oauth2Login(oauth2 -> oauth2
-            .authorizationEndpoint(authorization -> authorization
-                .authorizationRequestRepository(oAuth2AuthorizationReqBasedOnCookieRepository()))
-            .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserCustomService))
-            .successHandler(oAuth2SuccessHandler()));*/
-
         http.logout(logout -> logout.logoutSuccessUrl("/login"));
 
         http.exceptionHandling(exp -> exp.defaultAuthenticationEntryPointFor(
@@ -113,27 +101,10 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
         return http.build();
     }
 
-
-    @Bean
-    public OAuth2SuccessHandler oAuth2SuccessHandler() {
-        return new OAuth2SuccessHandler(tokenProvider,
-            refreshTokenRepository,
-            oAuth2AuthorizationReqBasedOnCookieRepository(),
-            memberService
-        );
-    }
-
-
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
         return new TokenAuthenticationFilter(tokenProvider);
     }
-
-    @Bean
-    public OAuth2AuthorizationReqBasedOnCookieRepository oAuth2AuthorizationReqBasedOnCookieRepository() {
-        return new OAuth2AuthorizationReqBasedOnCookieRepository();
-    }
-
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();

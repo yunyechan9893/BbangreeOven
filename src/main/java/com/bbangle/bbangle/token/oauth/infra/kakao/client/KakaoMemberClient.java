@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KakaoMemberClient implements OAuthMemberClient {
     private final KakaoApiClient kakaoApiClient;
-    private final KakaoOauthConfig kakaoOauthConfig;
     @Override
     public Member fetch(String authcode) {
         KakaoToken kakaoToken = kakaoApiClient.fetchToken(authcode);
@@ -25,4 +24,5 @@ public class KakaoMemberClient implements OAuthMemberClient {
     public OauthServerType supportServer() {
         return OauthServerType.KAKAO;
     }
+
 }
