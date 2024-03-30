@@ -3,7 +3,6 @@ package com.bbangle.bbangle.board.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;

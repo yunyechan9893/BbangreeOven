@@ -1,8 +1,9 @@
 package com.bbangle.bbangle.search.service;
 
-import com.bbangle.bbangle.search.dto.RecencySearchResponse;
-import com.bbangle.bbangle.search.dto.SearchBoardDto;
-import com.bbangle.bbangle.search.dto.SearchStoreDto;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
+import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
+import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
+import com.bbangle.bbangle.search.dto.response.SearchStoreResponse;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.search.domain.Search;
@@ -194,30 +195,33 @@ public class SearchServiceImpl implements SearchService {
 
 
     @Override
+    @Transactional
     public void saveKeyword(Long memberId, String keyword) {
+        var result = Search.builder()
+                .member(Member.builder()
+                        .id(memberId)
+                        .build())
+                .keyword(keyword)
+                .createdAt(LocalDateTime.now())
+                .build();
+        System.out.println(memberId);
+        System.out.println(result.getKeyword());
         searchRepository.save(
-                Search.builder()
-                        .member(Member.builder()
-                                .id(memberId)
-                                .build())
-                        .keyword(keyword)
-                        .createdAt(LocalDateTime.now())
-                        .build());
+                result);
     }
 
     @Override
-    public SearchBoardDto getSearchBoardDtos(Long memberId, int boardPage, String keyword, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                             Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-                                             Boolean orderAvailableToday, String category, Integer minPrice, Integer maxPrice) {
+    @Transactional(readOnly = true)
+    public SearchBoardResponse getSearchBoardDtos(Long memberId, SearchBoardRequest boardRequest) {
 
-        Pageable pageable = PageRequest.of(boardPage, DEFAULT_PAGE);
+        Pageable pageable = PageRequest.of(boardRequest.page(), DEFAULT_PAGE);
         // 검색어가 없다면 빈 DTO 반환
-        if (keyword.isBlank()){
-            return SearchBoardDto.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE);
+        if (boardRequest.keyword().isBlank()){
+            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE, 0);
         }
 
         // 검색어 토큰화
-        List<String> keys = getAllTokenizer(keyword);
+        List<String> keys = getAllTokenizer(boardRequest.keyword());
 
         // 토큰화된 검색어를 통해 게시판 아이디 가져오기
         List<Long> boardIndexs = keys.stream()
@@ -229,22 +233,19 @@ public class SearchServiceImpl implements SearchService {
 
         // 게시판 Id 리스트가 비었다면 빈 DTO 반환
         if (boardIndexs.size() <= 0){
-            return SearchBoardDto.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE);
+            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE, 0);
         }
 
-        return searchRepository.getSearchResult(
-                memberId, boardIndexs, sort, glutenFreeTag, highProteinTag,
-                sugarFreeTag, veganTag, ketogenicTag, orderAvailableToday,
-                category, minPrice, maxPrice, pageable);
+        return searchRepository.getSearchedBoard(memberId, boardIndexs, boardRequest, pageable);
     }
 
     @Override
-    public SearchStoreDto getSearchStoreDtos(Long memberId, int page, String keyword){
+    @Transactional(readOnly = true)
+    public SearchStoreResponse getSearchStoreDtos(Long memberId, int page, String keyword){
         // 검색 키워드가 없다면 빈 DTO 반환
         if (keyword.isBlank()){
-            return SearchStoreDto.getEmpty(page, DEFAULT_PAGE);
+            return SearchStoreResponse.getEmpty(page, DEFAULT_PAGE);
         }
-
         // 검색어 토큰화
         List<String> keys = getAllTokenizer(keyword);
 
@@ -258,12 +259,12 @@ public class SearchServiceImpl implements SearchService {
 
         // 스토어 Id 리스트가 비었다면 빈 DTO 반환
         if (storeIndexs.size() <= 0) {
-            return SearchStoreDto.getEmpty(page, DEFAULT_PAGE);
+            return SearchStoreResponse.getEmpty(page, DEFAULT_PAGE);
         }
 
         var content = searchRepository.getSearchedStore(memberId, storeIndexs, PageRequest.of(page, DEFAULT_PAGE));
         //스토어 및 보드 검색 결과 가져오기
-        return SearchStoreDto.builder()
+        return SearchStoreResponse.builder()
                 .content(content)
                 .itemAllCount(storeIndexs.size())
                 .pageNumber(page)
@@ -274,6 +275,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RecencySearchResponse getRecencyKeyword(Long memberId) {
         // 회원이라면 검색어 반환 아니라면 빈 DTO 반환
         return memberId==1L ?
@@ -300,6 +302,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getBestKeyword() {
         return redisRepository.getStringList(
                 RedisEnum.BEST_KEYWORD.name(),
@@ -308,6 +311,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getAutoKeyword(String keyword) {
         // 초기에 등록된 트리 데이터를 이용해, 자동완성 데이터를 반환
         return trie.autoComplete(keyword, 7);
