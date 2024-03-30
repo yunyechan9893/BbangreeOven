@@ -4,7 +4,6 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-
 import java.time.LocalDateTime;
 
 @JsonNaming(SnakeCaseStrategy.class)
