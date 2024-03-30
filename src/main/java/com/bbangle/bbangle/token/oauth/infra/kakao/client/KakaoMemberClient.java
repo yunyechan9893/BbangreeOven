@@ -1,22 +1,21 @@
 package com.bbangle.bbangle.token.oauth.infra.kakao.client;
 
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.token.oauth.domain.client.OAuthMemberClient;
-import com.bbangle.bbangle.token.oauth.infra.kakao.KakaoOauthConfig;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.KakaoMemberResponse;
-import com.bbangle.bbangle.token.oauth.infra.kakao.dto.KakaoToken;
-import com.bbangle.bbangle.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class KakaoMemberClient implements OAuthMemberClient {
+
     private final KakaoApiClient kakaoApiClient;
+
     @Override
-    public Member fetch(String authcode) {
-        KakaoToken kakaoToken = kakaoApiClient.fetchToken(authcode);
-        KakaoMemberResponse kakaoMemberResponse = kakaoApiClient.fetchMember("Bearer " + kakaoToken.accessToken());
+    public Member fetch(String token) {
+        KakaoMemberResponse kakaoMemberResponse = kakaoApiClient.fetchMember("Bearer " + token);
         return kakaoMemberResponse.toMember();
     }
 
