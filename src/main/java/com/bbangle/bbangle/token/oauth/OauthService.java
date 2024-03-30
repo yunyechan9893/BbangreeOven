@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.token.oauth;
 
-import com.bbangle.bbangle.BbangleApplication.WishListFolderService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
@@ -8,6 +7,7 @@ import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.token.oauth.domain.client.OauthMemberClientComposite;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
 import com.bbangle.bbangle.wishListFolder.dto.FolderRequestDto;
+import com.bbangle.bbangle.wishListFolder.service.WishListFolderService;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -48,7 +48,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
         String category, Integer minPrice, Integer maxPrice,
-        Boolean orderAvailableToday
+        Boolean orderAvailableToday,
+        List<Long> matchedIdx
     ) {
 
         QBoard board = QBoard.board;
@@ -75,7 +76,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .fetchJoin()
             .leftJoin(board.store, store)
             .fetchJoin()
-            .where(filter)
+            .where(filter.and(board.id.in(matchedIdx)))
             .fetch();
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
@@ -88,7 +89,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             content.add(BoardResponseDto.from(board1, tags));
         }
 
-        return content;
+        return content.stream()
+            .sorted(Comparator.comparingInt(
+                dto -> matchedIdx.indexOf(dto.boardId())))
+            .toList();
     }
 
     @Override

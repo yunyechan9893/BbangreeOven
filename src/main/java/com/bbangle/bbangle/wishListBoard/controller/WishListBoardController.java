@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.wishListBoard.controller;
 
 import com.bbangle.bbangle.wishListBoard.dto.WishProductRequestDto;
-import com.bbangle.bbangle.wishListFolder.service.WishListProductService;
+import com.bbangle.bbangle.wishListBoard.service.WishListBoardService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/boards/{boardId}/wish")
 @RequiredArgsConstructor
-public class WishListProductController {
+public class WishListBoardController {
 
-    private final WishListProductService wishListProductService;
+    private final WishListBoardService wishListBoardService;
 
     @PostMapping
     public ResponseEntity<Void> wish(
@@ -29,7 +29,7 @@ public class WishListProductController {
         WishProductRequestDto wishRequest
     ) {
         Long memberId = SecurityUtils.getMemberId();
-        wishListProductService.wish(memberId, boardId, wishRequest);
+        wishListBoardService.wish(memberId, boardId, wishRequest);
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
@@ -41,7 +41,7 @@ public class WishListProductController {
         Long boardId
     ) {
         Long memberId = SecurityUtils.getMemberId();
-        wishListProductService.cancel(memberId, boardId);
+        wishListBoardService.cancel(memberId, boardId);
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
