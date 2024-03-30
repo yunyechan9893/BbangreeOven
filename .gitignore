@@ -215,3 +215,6 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,macos,visualstudiocode,windows,gradle,dotenv
+/backend/src/main/generated/
+
+redis/data/dump.rdb

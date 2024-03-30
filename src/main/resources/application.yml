@@ -1,4 +1,15 @@
+server:
+  port: 8000
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      maxRequestSize: 100MB
+  data:
+    redis:
+      host: localhost
+      port: ${REDIS_BINDING_PORT}
+      password:
   jpa:
     hibernate:
       ddl-auto: none
@@ -8,37 +19,42 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MariaDBDialect
-    open-in-view: false
   datasource:
     url: ${MARIADB_LOCAL_URL}
     username: ${MARIADB_LOCAL_USER}
     password: ${MARIADB_LOCAL_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id:
-            client-secret:
-            scope:
-              - email
-              - profile
-          kakao:
-            client-id:
-            redirect-uri:
-            client-authentication-method: POST
-            authorization-grant-type: authorization_code
-            scope:
-              - profile_nickname
-              - profile_image
-            client_name: Kakao
-        provider:
-          kakao:
-            authorization-uri: ${AUTHORIZATION_URI}
-            token-uri: ${TOKEN_URI}
-            user-info-uri: ${USER_INFO_URI}
-            user-name-attribute: id
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+oauth2:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${REDIRECT_URI}
+    scope: email,profile
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    redirect-uri: ${KAKAO_REDIRECT_URI}
+    client-authentication-method: client_secret_post
+    authorization-grant-type: authorization_code
+    scope: profile_nickname, profile_image
+    client_name: Kakao
 jwt:
   issuer: bbanglebbangle
   secret_key: bbangleOven
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET_NAME}
+      end-point: ${S3_END_POINT}
+    credentials:
+      access-key: ${S3_CREDENTIALS}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: ${S3_REGION}
+      auto: false
+    stack:
+      auto: false

@@ -1,7 +1,9 @@
 package com.bbangle.bbangle.exception;
 
+import lombok.Builder;
 
-public record ErrorResponse (
+@Builder
+public record ErrorResponse(
     String message
 ) {
 

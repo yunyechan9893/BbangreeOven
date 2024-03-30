@@ -8,12 +8,14 @@ grant all privileges on bakery.* to 'bbangle'@'%';
 CREATE TABLE member
 (
     id          BIGINT AUTO_INCREMENT,
-    email       VARCHAR(255) NOT NULL,
-    phone       VARCHAR(11)  NULL,
-    name        VARCHAR(15)  NOT NULL,
-    nickname    VARCHAR(20)  NOT NULL,
-    birth       VARCHAR(10)  NULL,
+    email       VARCHAR(255),
+    phone       VARCHAR(11),
+    name        VARCHAR(15),
+    nickname    VARCHAR(20),
+    birth       VARCHAR(10),
     profile     VARCHAR(255),
+    provider    varchar(20),
+    provider_id varchar(50),
     created_at  DATETIME(6),
     modified_at DATETIME(6),
     is_deleted  TINYINT,
@@ -76,6 +78,7 @@ CREATE TABLE product_board
     created_at   DATETIME(6),
     modified_at  DATETIME(6),
     is_deleted   TINYINT,
+    wish_cnt     INT,
     CONSTRAINT product_board_pk PRIMARY KEY (id),
     CONSTRAINT fk_store_product_board FOREIGN KEY (store_id) REFERENCES store (id)
 );
@@ -99,6 +102,7 @@ CREATE TABLE wishlist_product
     product_board_id   BIGINT NOT NULL,
     created_at         DATETIME(6),
     modified_at        DATETIME(6),
+    member_id          BIGINT,
     is_deleted         TINYINT,
     CONSTRAINT wishlist_product_pk PRIMARY KEY (id),
     CONSTRAINT fk_wishlist_folder_wishlist_product FOREIGN KEY (wishlist_folder_id) REFERENCES wishlist_folder (id),

@@ -21,6 +21,12 @@ services:
       - "data_volume:/var/lib/mysql-test"
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_LOCAL_PASSWORD}
-
+  redis:
+    image: redis:6.2.6-alpine
+    ports:
+      - ${REDIS_BINDING_PORT}:${REDIS_PORT}
+    volumes:
+      - ./redis/data:/data
+      - ./redis/conf/redis.conf:/usr/local/conf/redis.conf
 volumes:
   data_volume:
