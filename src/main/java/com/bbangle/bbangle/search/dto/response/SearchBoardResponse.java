@@ -1,11 +1,11 @@
-package com.bbangle.bbangle.search.dto;
+package com.bbangle.bbangle.search.dto.response;
 
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record SearchBoardDto(
+public record SearchBoardResponse(
     List<BoardResponseDto> content,
     int itemAllCount,
     int limitItemCount,
@@ -14,9 +14,9 @@ public record SearchBoardDto(
     boolean existNextPage
 ) {
 
-    public static SearchBoardDto getEmpty(int pageNumber, int limitItemCount){
-        return SearchBoardDto.builder().content(List.of())
-                .itemAllCount(0)
+    public static SearchBoardResponse getEmpty(int pageNumber, int limitItemCount, int itemAllCount){
+        return SearchBoardResponse.builder().content(List.of())
+                .itemAllCount(itemAllCount)
                 .pageNumber(pageNumber)
                 .limitItemCount(limitItemCount)
                 .currentItemCount(0)

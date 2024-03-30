@@ -8,9 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.board.service.BoardService;
 import org.junit.jupiter.api.BeforeEach;
