@@ -116,7 +116,7 @@ public class BoardRepositoryImplTest {
         wishListProductRepository.save(wishlistProduct);
         wishListStoreRepository.save(wishlistStore);
 
-        var result = boardRepository.getBoardDetailResponseDtoWithLike(memberId, boardId);
+        var result = boardRepository.getBoardDetailResponse(memberId, boardId);
 
         Assertions.assertEquals(1L,result.store().storeId());
         Assertions.assertEquals("RAWSOME",result.store().storeName());
@@ -165,7 +165,7 @@ public class BoardRepositoryImplTest {
         }
 
         Long testMemberId = 2L;
-        var result = boardRepository.getBoardDetailResponseDtoWithLike(testMemberId, boardId);
+        var result = boardRepository.getBoardDetailResponse(testMemberId, boardId);
     
         Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 true 입니다");
         Assertions.assertEquals(false, result.board().isWished(), "보드 Like가 true 입니다");
@@ -181,37 +181,10 @@ public class BoardRepositoryImplTest {
         createLikeData(memberId, storeId, boardId);
 
         Long testMemberId = 2L;
-        var result = boardRepository.getBoardDetailResponseDtoWithLike(testMemberId, boardId);
+        var result = boardRepository.getBoardDetailResponse(testMemberId, boardId);
 
         Assertions.assertEquals(true, result.store().isWished(), "스토어 Like가 true 입니다");
         Assertions.assertEquals(true, result.board().isWished(), "보드 Like가 true 입니다");
-    }
-
-
-    @Test
-    public void updateBoardDetailTest(){
-        String defaultURL = "https://bbangree-oven.cdn.ntruss.com";
-        String storeId = "1";
-        String boardId = "1";
-        String fileName = "detail.html";
-        String filePath = String.format("%s/%s/%s/%s", defaultURL, storeId, boardId, fileName);
-
-        var result = boardRepository.updateDetailWhereStoreIdEqualsBoardId(
-            Long.parseLong(boardId),
-            filePath
-        );
-
-        Assertions.assertEquals(1, result);
-
-        Optional<Board> resultBoard = boardRepository.findById(Long.parseLong(boardId));
-
-        resultBoard.stream()
-            .forEach(
-                board -> {
-                    Assertions.assertEquals(Long.parseLong(boardId), board.getId());
-                    Assertions.assertEquals(filePath, board.getDetail());
-                }
-            );
     }
 
     private void createData(int count) {
@@ -231,7 +204,6 @@ public class BoardRepositoryImplTest {
                 .status(true)
                 .profile(
                     "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                .detail("test.txt")
                 .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
                 .view(100)
                 .sunday(false)
