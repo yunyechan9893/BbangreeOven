@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.config.jwt;
+package com.bbangle.bbangle.token.jwt;
 
 import com.bbangle.bbangle.member.domain.Member;
 import io.jsonwebtoken.Claims;
