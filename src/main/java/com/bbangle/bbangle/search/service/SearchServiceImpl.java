@@ -204,8 +204,6 @@ public class SearchServiceImpl implements SearchService {
                 .keyword(keyword)
                 .createdAt(LocalDateTime.now())
                 .build();
-        System.out.println(memberId);
-        System.out.println(result.getKeyword());
         searchRepository.save(
                 result);
     }
