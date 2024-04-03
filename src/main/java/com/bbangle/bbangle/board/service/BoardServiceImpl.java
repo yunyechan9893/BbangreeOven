@@ -7,7 +7,6 @@ import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.page.CursorInfo;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
@@ -16,9 +15,9 @@ import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
-import java.util.Comparator;
 import java.util.List;
 
+import java.util.Objects;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -71,11 +70,11 @@ public class BoardServiceImpl implements BoardService {
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
         String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday,
-        Long cursorId, CursorInfo cursorInfo
+        Long cursorId
     ) {
 
-        List<Long> matchedIdx = getListAdaptingSort(sort, cursorInfo.rank(), cursorInfo.endSize());
-        List<BoardResponseDto> boardResponseDto = boardRepository.getBoardResponseDto(
+        List<Long> matchedIdx = getListAdaptingSort(sort);
+        CustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
             sort,
             glutenFreeTag,
             highProteinTag,
@@ -86,65 +85,17 @@ public class BoardServiceImpl implements BoardService {
             minPrice,
             maxPrice,
             orderAvailableToday,
-            matchedIdx
+            matchedIdx,
+            cursorId
         );
 
         if (SecurityUtils.isLogin()) {
-            boardResponseDto = boardRepository.updateLikeStatus(matchedIdx, boardResponseDto);
+            List<BoardResponseDto> likeUpdatedDto = boardRepository.updateLikeStatus(matchedIdx,
+                boardResponseDto.getContent());
+            boardResponseDto.updateBoardLikeStatus(likeUpdatedDto);
         }
 
-        return getCustomPage(cursorInfo.rank(), cursorId, boardResponseDto, cursorInfo.hasNext());
-    }
-
-    private CustomPage<List<BoardResponseDto>> getCustomPage(
-        Long rank,
-        Long cursorId,
-        List<BoardResponseDto> sortedResponse,
-        boolean hasNext
-    ) {
-        if(rank.equals(0L)){
-            long boardCnt = boardRepository.count();
-            long storeCnt = storeRepository.count();
-            return CustomPage.from(sortedResponse, cursorId, hasNext, boardCnt, storeCnt);
-        }
-
-        return CustomPage.from(sortedResponse, cursorId, hasNext);
-    }
-
-    private List<Long> getListAdaptingSort(
-        String sort,
-        Long cursorId,
-        Long endSize
-    ) {
-        if (sort != null && sort.equals(SortType.POPULAR.getValue())) {
-            return getPopularIdList(cursorId, endSize);
-
-        }
-        return getRecommentIdList(cursorId, endSize);
-    }
-
-    private List<Long> getRecommentIdList(
-        Long startIdx,
-        Long endSize
-    ) {
-        Set<Object> objects = redisTemplate.opsForZSet()
-            .reverseRange(RedisKeyUtil.RECOMMEND_KEY, startIdx, endSize);
-
-        return objects.stream()
-            .map(idx -> Long.valueOf(String.valueOf(idx)))
-            .toList();
-    }
-
-    private List<Long> getPopularIdList(
-        Long startIdx,
-        Long endSize
-    ) {
-        return redisTemplate.opsForZSet()
-            .reverseRange(RedisKeyUtil.POPULAR_KEY, startIdx, -endSize)
-            .stream()
-            .map(idx -> Long.valueOf(String.valueOf(idx)))
-            .toList();
-
+        return boardResponseDto;
     }
 
     @Override
@@ -188,6 +139,32 @@ public class BoardServiceImpl implements BoardService {
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 폴더입니다."));
 
         return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
+    }
+
+    private List<Long> getListAdaptingSort(
+        String sort
+    ) {
+        if (sort != null && sort.equals(SortType.POPULAR.getValue())) {
+            return getPopularIdList();
+        }
+
+        return getRecommentIdList();
+    }
+
+    private List<Long> getRecommentIdList() {
+        return Objects.requireNonNull(redisTemplate.opsForZSet()
+                .reverseRange(RedisKeyUtil.POPULAR_KEY, 0, -1))
+            .stream()
+            .map(value -> Long.valueOf(String.valueOf(value)))
+            .toList();
+    }
+
+    private List<Long> getPopularIdList() {
+        return Objects.requireNonNull(redisTemplate.opsForZSet()
+                .reverseRange(RedisKeyUtil.RECOMMEND_KEY, 0, -1))
+            .stream()
+            .map(value -> Long.valueOf(String.valueOf(value)))
+            .toList();
     }
 
 }
