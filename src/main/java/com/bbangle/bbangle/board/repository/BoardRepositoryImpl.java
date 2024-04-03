@@ -491,16 +491,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private OrderSpecifier<?> orderByFieldList(QBoard board, List<Long> boardId) {
-        // boardId 리스트를 콤마로 구분된 문자열로 변환합니다.
         String boardIdStr = boardId.stream()
             .map(Object::toString)
             .collect(Collectors.joining(", "));
 
-        // 동적으로 FIELD 함수를 구성합니다.
-        // 여기서 {0}는 board.id를, {1}는 boardId 리스트를 나타냅니다.
         String template = String.format("FIELD(%s, %s)", board.id, boardIdStr);
 
-        // Expressions.stringTemplate을 사용하여 OrderSpecifier 객체를 생성합니다.
         return new OrderSpecifier<>(Order.ASC, Expressions.stringTemplate(template));
     }
 
