@@ -5,18 +5,23 @@ use bakery;
 CREATE USER IF NOT EXISTS 'bbangle'@'%' IDENTIFIED BY '9893';
 GRANT ALL PRIVILEGES ON bakery.* TO 'bbangle'@'%';
 
-create table member (
-    id          bigint auto_increment primary key,
-    email       varchar(255) null,
-    phone       varchar(11)  null,
-    name        varchar(15)  null,
-    nickname    varchar(20)  null,
-    birth       varchar(10)  null,
-    profile     varchar(255) null,
-    created_at  datetime(6)  null,
-    modified_at datetime(6)  null,
-    is_deleted  tinyint      null
+CREATE TABLE member
+(
+    id          BIGINT AUTO_INCREMENT,
+    email       VARCHAR(255),
+    phone       VARCHAR(11),
+    name        VARCHAR(15),
+    nickname    VARCHAR(20),
+    birth       VARCHAR(10),
+    profile     VARCHAR(255),
+    provider    varchar(20),
+    provider_id varchar(50),
+    created_at  DATETIME(6),
+    modified_at DATETIME(6),
+    is_deleted  TINYINT,
+    PRIMARY KEY (id)
 );
+
 
 create table signature_agreement (
     id                bigint auto_increment primary key,
@@ -47,7 +52,7 @@ create table store (
     is_deleted  tinyint      null
 );
 
-create table board (
+create table product_board (
     id           bigint auto_increment primary key,
     store_id     bigint            not null,
     title        varchar(50)       not null,
@@ -75,7 +80,7 @@ create table product_detail (
     board_id bigint       null,
     img_index        int          not null,
     url              varchar(255) not null,
-    constraint fk_board_product_detail foreign key (board_id) references board (id)
+    constraint fk_board_product_detail foreign key (board_id) references product_board (id)
 );
 
 create table product (
@@ -89,14 +94,14 @@ create table product (
      sugar_free_tag   tinyint default 0 not null,
      vegan_tag        tinyint default 0 null,
      ketogenic_tag    tinyint default 0 not null,
-     constraint fk_board_product foreign key (board_id) references board (id)
+     constraint fk_board_product foreign key (board_id) references product_board (id)
 );
 
 create table product_img (
      id               bigint auto_increment primary key,
      board_id bigint       not null,
      url              varchar(255) not null,
-     constraint fk_board_product_img foreign key (board_id) references board (id)
+     constraint fk_board_product_img foreign key (board_id) references product_board (id)
 );
 
 create table wishlist_folder (
@@ -117,7 +122,7 @@ create table wishlist_product (
     modified_at        datetime(6) null,
     is_deleted         tinyint     null,
     member_id          bigint      null,
-    constraint fk_board_wishlist_product foreign key (board_id) references board (id),
+    constraint fk_board_wishlist_product foreign key (board_id) references product_board (id),
     constraint fk_wishlist_folder_wishlist_product foreign key (wishlist_folder_id) references wishlist_folder (id)
 );
 
