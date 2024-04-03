@@ -77,15 +77,15 @@ create table product_board (
 
 create table product_detail (
     id               bigint auto_increment primary key,
-    board_id bigint       null,
+    product_board_id bigint       null,
     img_index        int          not null,
     url              varchar(255) not null,
-    constraint fk_board_product_detail foreign key (board_id) references product_board (id)
+    constraint fk_board_product_detail foreign key (product_board_id) references product_board (id)
 );
 
 create table product (
      id               bigint auto_increment primary key,
-     board_id bigint            not null,
+     product_board_id bigint            not null,
      title            varchar(50)       not null,
      price            int               null,
      category         varchar(20)       not null,
@@ -94,14 +94,14 @@ create table product (
      sugar_free_tag   tinyint default 0 not null,
      vegan_tag        tinyint default 0 null,
      ketogenic_tag    tinyint default 0 not null,
-     constraint fk_board_product foreign key (board_id) references product_board (id)
+     constraint fk_board_product foreign key (product_board_id) references product_board (id)
 );
 
 create table product_img (
      id               bigint auto_increment primary key,
-     board_id bigint       not null,
+     product_board_id bigint       not null,
      url              varchar(255) not null,
-     constraint fk_board_product_img foreign key (board_id) references product_board (id)
+     constraint fk_board_product_img foreign key (product_board_id) references product_board (id)
 );
 
 create table wishlist_folder (
@@ -117,12 +117,12 @@ create table wishlist_folder (
 create table wishlist_product (
     id                 bigint auto_increment primary key,
     wishlist_folder_id bigint      not null,
-    board_id   bigint      not null,
+    product_board_id   bigint      not null,
     created_at         datetime(6) null,
     modified_at        datetime(6) null,
     is_deleted         tinyint     null,
     member_id          bigint      null,
-    constraint fk_board_wishlist_product foreign key (board_id) references product_board (id),
+    constraint fk_board_wishlist_product foreign key (product_board_id) references product_board (id),
     constraint fk_wishlist_folder_wishlist_product foreign key (wishlist_folder_id) references wishlist_folder (id)
 );
 
