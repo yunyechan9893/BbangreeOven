@@ -5,6 +5,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.dto.ProductDto;
+import com.bbangle.bbangle.board.testutil.TestModelFactory;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 
@@ -27,13 +28,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
 import java.util.List;
-import java.util.Optional;
 
 @SpringBootTest
 @Transactional
 @Rollback
 public class BoardRepositoryImplTest {
-
 
     @Autowired
     private MemberRepository memberRepository;
@@ -62,35 +61,39 @@ public class BoardRepositoryImplTest {
     @Autowired
     private WishListStoreRepository wishListStoreRepository;
 
+    TestModelFactory testFactory = new TestModelFactory();
+
     @BeforeEach
     public void saveData() {
+        afterEach();
         createData(15);
     }
 
     @AfterEach
     void afterEach() {
         this.entityManager
-            .createNativeQuery("ALTER TABLE store ALTER COLUMN `id` RESTART WITH 1")
+            .createNativeQuery("ALTER TABLE store AUTO_INCREMENT = 1")
             .executeUpdate();
 
         this.entityManager
-            .createNativeQuery("ALTER TABLE product_board ALTER COLUMN `id` RESTART WITH 1")
+            .createNativeQuery("ALTER TABLE product_board AUTO_INCREMENT = 1")
             .executeUpdate();
 
         this.entityManager
-                .createNativeQuery("ALTER TABLE member ALTER COLUMN `id` RESTART WITH 2")
+                .createNativeQuery("ALTER TABLE member AUTO_INCREMENT = 2")
+                .executeUpdate();
+
+
+        this.entityManager
+                .createNativeQuery("ALTER TABLE wishlist_folder AUTO_INCREMENT = 1")
                 .executeUpdate();
 
         this.entityManager
-                .createNativeQuery("ALTER TABLE wishlist_folder ALTER COLUMN `id` RESTART WITH 1")
+                .createNativeQuery("ALTER TABLE wishlist_product AUTO_INCREMENT = 1")
                 .executeUpdate();
 
         this.entityManager
-                .createNativeQuery("ALTER TABLE wishlist_product ALTER COLUMN `id` RESTART WITH 1")
-                .executeUpdate();
-
-        this.entityManager
-                .createNativeQuery("ALTER TABLE wishlist_store ALTER COLUMN `id` RESTART WITH 1")
+                .createNativeQuery("ALTER TABLE wishlist_store AUTO_INCREMENT = 1")
                 .executeUpdate();
     }
 
@@ -101,11 +104,17 @@ public class BoardRepositoryImplTest {
         Long storeId = 1L;
         Long boardId = 1L;
 
+        var boards = boardRepository.findAll();
+        for (Board board : boards) {
+            System.out.println(board.getId());
+        }
+
         Member member = Member.builder().id(memberId).email("dd@ex.com").nickname("test").name("testName").birth("99999").phone("01023299893").build();
         Store store = Store.builder().id(storeId).build();
         Board board = Board.builder().id(boardId).build();
         WishlistFolder wishlistFolder = WishlistFolder.builder().folderName("Test").member(member).build();
-        WishlistProduct wishlistProduct = WishlistProduct.builder().board(board)
+        WishlistProduct wishlistProduct = WishlistProduct.builder()
+                .board(board)
                 .memberId(memberId)
                 .wishlistFolder(wishlistFolder)
                 .build();
@@ -189,91 +198,36 @@ public class BoardRepositoryImplTest {
 
     private void createData(int count) {
         for (int i = 0; i < count; i++) {
-            var store = Store.builder()
-                .identifier("7962401222")
-                .name("RAWSOME")
-                .profile(
-                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
-                .introduce("건강을 먹다-로썸")
-                .build();
+            var store = storeRepository.save(
+                    testFactory.createStore("7962401222", "RAWSOME",
+                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e",
+                    "건강을 먹다-로썸"
+                    ));
 
-            var board = Board.builder()
-                .store(store)
-                .title("비건 베이커리 로썸 비건빵")
-                .price(5400)
-                .status(true)
-                .profile(
-                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                .view(100)
-                .sunday(false)
-                .monday(false)
-                .tuesday(false)
-                .wednesday(false)
-                .thursday(true)
-                .sunday(false)
-                .build();
+            var board = boardRepository.save(
+                    testFactory.createBoard(store, "비건 베이커리 로썸 비건빵", 5400, true,
+                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203",
+                    "https://smartstore.naver.com/rawsome/products/5727069436",
+                    100, false, false, false,
+                    false, true, false, true));
 
-            var product1 = Product.builder()
-                .board(board)
-                .title("콩볼")
-                .price(3600)
-                .category(Category.COOKIE)
-                .glutenFreeTag(true)
-                .highProteinTag(false)
-                .sugarFreeTag(true)
-                .veganTag(true)
-                .ketogenicTag(false)
-                .build();
+            productRepository.save(
+                    testFactory.createProduct(board, "콩볼", 3600, Category.COOKIE,
+                    true, false, true,
+                    true, true));
+            productRepository.save(
+                    testFactory.createProduct(board, "카카모카", 5000, Category.BREAD,
+                    true, false, false,
+                    true, false));
+            productRepository.save(
+                    testFactory.createProduct(board, "로미넛쑥", 5000, Category.BREAD,
+                    true, false, true,
+                    true, false));
 
-            var product2 = Product.builder()
-                .board(board)
-                .title("카카모카")
-                .price(5000)
-                .category(Category.BREAD)
-                .glutenFreeTag(true)
-                .highProteinTag(false)
-                .sugarFreeTag(false)
-                .veganTag(true)
-                .ketogenicTag(false)
-                .build();
-
-            var product3 = Product.builder()
-
-                    .board(board)
-                    .title("로미넛쑥")
-                    .price(5000)
-                    .category(Category.BREAD)
-                    .glutenFreeTag(true)
-                    .highProteinTag(false)
-                    .sugarFreeTag(true)
-                    .veganTag(true)
-                    .ketogenicTag(false)
-                    .build();
-
-
-            var boardImg = ProductImg.builder()
-                    .board(board)
-                            .url("www.naver.com")
-                            .build();
-
-            var boardImg2 = ProductImg.builder()
-                    .board(board)
-                    .url("www.naver.com")
-                    .build();
-
-
-
-            storeRepository.save(store);
-            boardRepository.save(board);
-            boardImgRepository.save(boardImg);
-            boardImgRepository.save(boardImg2);
-            productRepository.save(product1);
-            productRepository.save(product2);
-            productRepository.save(product3);
+            boardImgRepository.save(testFactory.createProductImage(board, "www.naver.com"));
+            boardImgRepository.save(testFactory.createProductImage(board, "www.naver.com"));
         }
     }
-
 
     private void createLikeData(Long memberId, Long storeId, Long boardId){
         Member member = Member.builder().id(memberId).email("dd@ex.com").nickname("test").name("testName").birth("99999").phone("01023299893").build();
