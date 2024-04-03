@@ -18,7 +18,6 @@ import com.bbangle.bbangle.util.SecurityUtils;
 import java.util.List;
 
 import java.util.Objects;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -153,7 +152,7 @@ public class BoardServiceImpl implements BoardService {
 
     private List<Long> getRecommentIdList() {
         return Objects.requireNonNull(redisTemplate.opsForZSet()
-                .reverseRange(RedisKeyUtil.POPULAR_KEY, 0, -1))
+                .reverseRange(RedisKeyUtil.RECOMMEND_KEY, 0, -1))
             .stream()
             .map(value -> Long.valueOf(String.valueOf(value)))
             .toList();
@@ -161,7 +160,7 @@ public class BoardServiceImpl implements BoardService {
 
     private List<Long> getPopularIdList() {
         return Objects.requireNonNull(redisTemplate.opsForZSet()
-                .reverseRange(RedisKeyUtil.RECOMMEND_KEY, 0, -1))
+                .reverseRange(RedisKeyUtil.POPULAR_KEY, 0, -1))
             .stream()
             .map(value -> Long.valueOf(String.valueOf(value)))
             .toList();
