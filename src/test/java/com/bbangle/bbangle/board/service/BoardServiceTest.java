@@ -123,7 +123,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, null, null, null);
+            noFilter, noFilter, noSort, null, null, null, null);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
         BoardResponseDto response2 = boardList.getContent()
@@ -191,7 +191,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, null, null, null);
+            noFilter, noFilter, noSort, null, null, null, null);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -247,7 +247,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, null, null, null);
+            noFilter, noFilter, noSort, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -289,7 +289,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, null, null, null);
+            noFilter, noFilter, noSort, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -375,7 +375,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            noFilter, true, noSort, null, null, null, null, null);
+            noFilter, true, noSort, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(2);
@@ -426,7 +426,7 @@ public class BoardServiceTest {
 
         //when
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, null, null, null,
-            null, null, category, null, null, null, null, null);
+            null, null, category, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -470,7 +470,7 @@ public class BoardServiceTest {
 
         //then
         Assertions.assertThatThrownBy(() -> boardService.getBoardList(noSort, null, null, null,
-                null, null, category, null, null, null, null, null))
+                null, null, category, null, null, null, null))
             .isInstanceOf(CategoryTypeException.class);
 
     }
@@ -511,7 +511,7 @@ public class BoardServiceTest {
         String noSort = "";
 
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, null, null, true,
-            null, null, category, null, null, null, null, null);
+            null, null, category, null, null, null, null);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -538,28 +538,28 @@ public class BoardServiceTest {
 
         CustomPage<List<BoardResponseDto>> boardList =
             boardService.getBoardList(null, null, null, null, null, null, null, 5000, null,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList2 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1000, null,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList3 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 10000,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList4 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 1000,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList5 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 900,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList6 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1000, 10000,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList7 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1001, 9999,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList8 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, null,
-                null, null, null);
+                null, null);
         List<Board> all = boardRepository.findAll();
 
         //then
@@ -642,9 +642,9 @@ public class BoardServiceTest {
 
         List<Board> all = boardRepository.findAll();
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, null, null, null,
-            null, null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null);
         CustomPage<List<BoardResponseDto>> boardList2 = boardService.getBoardList(noSort, null, null, null,
-            null, null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(10);
