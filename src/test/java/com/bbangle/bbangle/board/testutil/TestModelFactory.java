@@ -5,8 +5,18 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.store.domain.Store;
+import jakarta.persistence.EntityManager;
+
+import java.util.Map;
 
 public class TestModelFactory {
+
+    private EntityManager entityManager;
+
+    public void setEntitiyManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
     public static Store createStore(
             String identifier, String name,
             String profile, String introduce){
@@ -70,5 +80,15 @@ public class TestModelFactory {
                         .board(board)
                         .url(url)
                         .build();
+    }
+
+    public void resetTableIds(Map<String, Integer> tableToStartingId) {
+        tableToStartingId.forEach(this::resetId);
+    }
+
+    private void resetId(String tableName, Integer startingId) {
+        entityManager
+                .createNativeQuery("ALTER TABLE " + tableName + " AUTO_INCREMENT = " + startingId)
+                .executeUpdate();
     }
 }

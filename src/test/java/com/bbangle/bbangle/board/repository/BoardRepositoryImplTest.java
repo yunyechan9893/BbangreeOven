@@ -27,7 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 @Transactional
@@ -71,30 +73,16 @@ public class BoardRepositoryImplTest {
 
     @AfterEach
     void afterEach() {
-        this.entityManager
-            .createNativeQuery("ALTER TABLE store AUTO_INCREMENT = 1")
-            .executeUpdate();
+        testFactory.setEntitiyManager(entityManager);
+        Map<String, Integer> tableToStartingId = new HashMap<>();
+        tableToStartingId.put("store", 1);
+        tableToStartingId.put("product_board", 1);
+        tableToStartingId.put("member", 2);
+        tableToStartingId.put("wishlist_folder", 1);
+        tableToStartingId.put("wishlist_product", 1);
+        tableToStartingId.put("wishlist_store", 1);
 
-        this.entityManager
-            .createNativeQuery("ALTER TABLE product_board AUTO_INCREMENT = 1")
-            .executeUpdate();
-
-        this.entityManager
-                .createNativeQuery("ALTER TABLE member AUTO_INCREMENT = 2")
-                .executeUpdate();
-
-
-        this.entityManager
-                .createNativeQuery("ALTER TABLE wishlist_folder AUTO_INCREMENT = 1")
-                .executeUpdate();
-
-        this.entityManager
-                .createNativeQuery("ALTER TABLE wishlist_product AUTO_INCREMENT = 1")
-                .executeUpdate();
-
-        this.entityManager
-                .createNativeQuery("ALTER TABLE wishlist_store AUTO_INCREMENT = 1")
-                .executeUpdate();
+        testFactory.resetTableIds(tableToStartingId);
     }
 
     @Test
@@ -130,7 +118,7 @@ public class BoardRepositoryImplTest {
         Assertions.assertEquals(1L,result.store().storeId());
         Assertions.assertEquals("RAWSOME",result.store().storeName());
         Assertions.assertEquals("비건 베이커리 로썸 비건빵",result.board().title());
-        assertThat(List.of("glutenFree", "sugarFree", "vegan"),containsInAnyOrder(result.board().tags().toArray()));
+        assertThat(List.of("glutenFree", "sugarFree", "vegan", "ketogenic"),containsInAnyOrder(result.board().tags().toArray()));
 
         boolean isProduct1 = false;
         boolean isProduct2 = false;
@@ -139,7 +127,7 @@ public class BoardRepositoryImplTest {
             result.board().products()) {
                 switch (productDto.title()){
                     case "콩볼":
-                        assertThat(List.of("glutenFree", "sugarFree", "vegan"),containsInAnyOrder(productDto.tags().toArray()));
+                        assertThat(List.of("glutenFree", "sugarFree", "vegan", "ketogenic"),containsInAnyOrder(productDto.tags().toArray()));
                         isProduct1 = true;
                         break;
                     case "카카모카":
