@@ -3,12 +3,15 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct;
 import com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder;
 import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
 import com.bbangle.bbangle.wishListStore.domain.QWishlistStore;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.dsl.Expressions;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
@@ -27,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -41,17 +45,19 @@ import static com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct.wishlist
 @RequiredArgsConstructor
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
+    private static final int PAGE_SIZE = 10;
+
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<BoardResponseDto> getBoardResponseDto(
+    public CustomPage<List<BoardResponseDto>> getBoardResponseDto(
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
         String category, Integer minPrice, Integer maxPrice,
         Boolean orderAvailableToday,
-        List<Long> matchedIdx
+        List<Long> matchedIdx,
+        Long cursorId
     ) {
-
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
@@ -69,6 +75,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 board,
                 orderAvailableToday);
 
+        BooleanBuilder cursorBuilder = setCursorBuilder(cursorId, matchedIdx, board);
 
         List<Board> boards = queryFactory
             .selectFrom(board)
@@ -76,23 +83,17 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .fetchJoin()
             .leftJoin(board.store, store)
             .fetchJoin()
-            .where(filter.and(board.id.in(matchedIdx)))
+            .where(cursorBuilder.and(filter))
+            .orderBy(orderByFieldList(board, matchedIdx))
+            .limit(PAGE_SIZE + 1)
             .fetch();
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
+        boolean hasNext = isHasNext(boards);
+        List<BoardResponseDto> content = getBoardResponseDtos(
+            boards, productTagsByBoardId);
 
-        List<BoardResponseDto> content = new ArrayList<>();
-
-        // isBundled 포함한 정리
-        for (Board board1 : boards) {
-            List<String> tags = addList(productTagsByBoardId.get(board1.getId()));
-            content.add(BoardResponseDto.from(board1, tags));
-        }
-
-        return content.stream()
-            .sorted(Comparator.comparingInt(
-                dto -> matchedIdx.indexOf(dto.boardId())))
-            .toList();
+        return getBoardCustomPage(cursorId, board, product, filter, store, content, hasNext);
     }
 
     @Override
@@ -143,144 +144,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return new SliceImpl<>(content, pageable, hasNext);
     }
 
-    private static OrderSpecifier<?> sortTypeFolder(
-        String sort,
-        QBoard board,
-        QWishlistProduct products
-    ) {
-        OrderSpecifier<?> orderSpecifier;
-        if (sort == null) {
-            orderSpecifier = products.createdAt.desc();
-            return orderSpecifier;
-        }
-        switch (SortType.fromString(sort)) {
-            case RECENT:
-                orderSpecifier = products.createdAt.desc();
-                break;
-            case LOW_PRICE:
-                orderSpecifier = board.price.asc();
-                break;
-            case POPULAR:
-                orderSpecifier = board.wishCnt.desc();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid SortType");
-        }
-        return orderSpecifier;
-    }
-
-    private static Map<Long, List<ProductTagDto>> getLongListMap(List<Board> boards) {
-        Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
-        for (Board board1 : boards) {
-            for (Product product1 : board1.getProductList()) {
-                productTagsByBoardId.put(board1.getId(),
-                    productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
-                productTagsByBoardId.get(board1.getId())
-                    .add(ProductTagDto.from(product1));
-            }
-        }
-        return productTagsByBoardId;
-    }
-
-    private static BooleanBuilder setFilteringCondition(
-        Boolean glutenFreeTag, Boolean highProteinTag,
-        Boolean sugarFreeTag,
-        Boolean veganTag, Boolean ketogenicTag, String category,
-        Integer minPrice, Integer maxPrice,
-        QProduct product, QBoard board,
-        Boolean orderAvailableToday
-    ) {
-
-        BooleanBuilder filterBuilder = new BooleanBuilder();
-        if (glutenFreeTag != null) {
-            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
-        }
-        if (highProteinTag != null) {
-            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
-        }
-        if (sugarFreeTag != null) {
-            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
-        }
-        if (veganTag != null) {
-            filterBuilder.and(product.veganTag.eq(veganTag));
-        }
-        if (ketogenicTag != null) {
-            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
-        }
-        if (category != null && !category.isBlank()) {
-            if (!Category.checkCategory(category)) {
-                throw new CategoryTypeException();
-            }
-            filterBuilder.and(product.category.eq(Category.valueOf(category)));
-        }
-        if (minPrice != null) {
-            filterBuilder.and(board.price.goe(minPrice));
-        }
-        if (maxPrice != null) {
-            filterBuilder.and(board.price.loe(maxPrice));
-        }
-        if (orderAvailableToday != null && orderAvailableToday) {
-            DayOfWeek dayOfWeek = LocalDate.now()
-                .getDayOfWeek();
-
-            switch (dayOfWeek){
-                case MONDAY -> filterBuilder.and(board.monday.eq(true));
-                case TUESDAY -> filterBuilder.and(board.tuesday.eq(true));
-                case WEDNESDAY -> filterBuilder.and(board.wednesday.eq(true));
-                case THURSDAY -> filterBuilder.and(board.thursday.eq(true));
-                case FRIDAY -> filterBuilder.and(board.friday.eq(true));
-                case SATURDAY -> filterBuilder.and(board.saturday.eq(true));
-                case SUNDAY -> filterBuilder.and(board.sunday.eq(true));
-            }
-        }
-        return filterBuilder;
-    }
-
-    private List<String> addList(List<ProductTagDto> dtos) {
-        List<String> tags = new ArrayList<>();
-        boolean glutenFreeTag = false;
-        boolean highProteinTag = false;
-        boolean sugarFreeTag = false;
-        boolean veganTag = false;
-        boolean ketogenicTag = false;
-        if (dtos == null) {
-            return tags;
-        }
-        for (ProductTagDto dto : dtos) {
-            if (dto.glutenFreeTag()) {
-                glutenFreeTag = true;
-            }
-            if (dto.highProteinTag()) {
-                highProteinTag = true;
-            }
-            if (dto.sugarFreeTag()) {
-                sugarFreeTag = true;
-            }
-            if (dto.veganTag()) {
-                veganTag = true;
-            }
-            if (dto.ketogenicTag()) {
-                ketogenicTag = true;
-            }
-        }
-        if (glutenFreeTag) {
-            tags.add(TagEnum.GLUTEN_FREE.label());
-        }
-        if (highProteinTag) {
-            tags.add(TagEnum.HIGH_PROTEIN.label());
-        }
-        if (sugarFreeTag) {
-            tags.add(TagEnum.SUGAR_FREE.label());
-        }
-        if (veganTag) {
-            tags.add(TagEnum.VEGAN.label());
-        }
-        if (ketogenicTag) {
-            tags.add(TagEnum.KETOGENIC.label());
-        }
-        return tags;
-    }
-
     @Override
     public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
         QBoard board = QBoard.board;
@@ -288,7 +151,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QStore store = QStore.store;
         QProductImg productImg = QProductImg.productImg;
         QBoardDetail boardDetail = QBoardDetail.boardDetail;
-
 
         QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
         QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
@@ -336,23 +198,25 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         if (memberId != null && memberId > 0) {
             jpaQuery.leftJoin(wishlistProduct)
-                    .on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId),
-                            wishlistProduct.isDeleted.eq(false))
-                    .leftJoin(wishlistStore)
-                    .on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId),
-                            wishlistStore.isDeleted.eq(false));
+                .on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId),
+                    wishlistProduct.isDeleted.eq(false))
+                .leftJoin(wishlistStore)
+                .on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId),
+                    wishlistStore.isDeleted.eq(false));
             columns.add(wishlistProduct.id);
         }
 
         var fetch = jpaQuery.fetch();
 
         var boardDetails = queryFactory.select(new QDetailResponseDto(
-                    boardDetail.id,
-                    boardDetail.imgIndex,
-                    boardDetail.url
-                ))
-                .from(boardDetail)
-                .where(board.id.eq(boardId)).stream().toList();
+                boardDetail.id,
+                boardDetail.imgIndex,
+                boardDetail.url
+            ))
+            .from(boardDetail)
+            .where(board.id.eq(boardId))
+            .stream()
+            .toList();
 
         int index = 0;
         int resultSize = fetch.size();
@@ -506,6 +370,237 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             }
         }
         return content;
+    }
+
+    private BooleanBuilder setCursorBuilder(Long cursorId, List<Long> matchedIdx, QBoard board) {
+        BooleanBuilder cursorBuilder = new BooleanBuilder();
+        if (Objects.nonNull(cursorId)) {
+            Long startId = returnStartId(cursorId, matchedIdx);
+            cursorBuilder.and(board.id.loe(startId));
+        }
+
+        return cursorBuilder;
+    }
+
+    private CustomPage<List<BoardResponseDto>> getBoardCustomPage(
+        Long cursorId,
+        QBoard board,
+        QProduct product,
+        BooleanBuilder filter,
+        QStore store,
+        List<BoardResponseDto> content,
+        boolean hasNext
+    ) {
+        if(Objects.isNull(cursorId)){
+            Long boardCnt = queryFactory
+                .select(board.countDistinct())
+                .from(store)
+                .join(board).on(board.store.eq(store))
+                .join(product)
+                .on(product.board.eq(board))
+                .where(filter)
+                .fetchOne();
+
+            if(Objects.isNull(boardCnt)){
+                boardCnt = 0L;
+            }
+
+            Long storeCnt = queryFactory
+                .select(store.countDistinct())
+                .from(store)
+                .join(board).on(board.store.eq(store))
+                .join(product)
+                .on(product.board.eq(board))
+                .where(filter)
+                .fetchOne();
+
+            if(Objects.isNull(storeCnt)){
+                storeCnt = 0L;
+            }
+
+            return CustomPage.from(content, 0L, hasNext, boardCnt, storeCnt);
+        }
+        return CustomPage.from(content, cursorId, hasNext);
+    }
+
+    private Long returnStartId(Long cursorId, List<Long> rankIds) {
+        if (Objects.isNull(cursorId)) {
+            return rankIds.get(0);
+        }
+
+        return cursorId + 1L;
+    }
+
+    private List<BoardResponseDto> getBoardResponseDtos(
+        List<Board> boards,
+        Map<Long, List<ProductTagDto>> productTagsByBoardId
+    ) {
+        List<BoardResponseDto> content = new ArrayList<>();
+        for (int i = 0; i < boards.size(); i++) {
+            if (i == PAGE_SIZE) {
+                continue;
+            }
+            List<String> tags = addList(productTagsByBoardId.get(boards.get(i)
+                .getId()));
+            content.add(BoardResponseDto.from(boards.get(i), tags));
+        }
+        return content;
+    }
+
+    private boolean isHasNext(List<Board> boards) {
+        return boards.size() >= PAGE_SIZE + 1;
+    }
+
+    private static OrderSpecifier<?> sortTypeFolder(
+        String sort,
+        QBoard board,
+        QWishlistProduct products
+    ) {
+        OrderSpecifier<?> orderSpecifier;
+        if (sort == null) {
+            orderSpecifier = products.createdAt.desc();
+            return orderSpecifier;
+        }
+        switch (SortType.fromString(sort)) {
+            case RECENT:
+                orderSpecifier = products.createdAt.desc();
+                break;
+            case LOW_PRICE:
+                orderSpecifier = board.price.asc();
+                break;
+            case POPULAR:
+                orderSpecifier = board.wishCnt.desc();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid SortType");
+        }
+        return orderSpecifier;
+    }
+
+    private static Map<Long, List<ProductTagDto>> getLongListMap(List<Board> boards) {
+        Map<Long, List<ProductTagDto>> productTagsByBoardId = new HashMap<>();
+        for (Board board1 : boards) {
+            for (Product product1 : board1.getProductList()) {
+                productTagsByBoardId.put(board1.getId(),
+                    productTagsByBoardId.getOrDefault(board1.getId(), new ArrayList<>()));
+                productTagsByBoardId.get(board1.getId())
+                    .add(ProductTagDto.from(product1));
+            }
+        }
+        return productTagsByBoardId;
+    }
+
+    private OrderSpecifier<?> orderByFieldList(QBoard board, List<Long> boardId) {
+        // boardId 리스트를 콤마로 구분된 문자열로 변환합니다.
+        String boardIdStr = boardId.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining(", "));
+
+        // 동적으로 FIELD 함수를 구성합니다.
+        // 여기서 {0}는 board.id를, {1}는 boardId 리스트를 나타냅니다.
+        String template = String.format("FIELD(%s, %s)", board.id, boardIdStr);
+
+        // Expressions.stringTemplate을 사용하여 OrderSpecifier 객체를 생성합니다.
+        return new OrderSpecifier<>(Order.ASC, Expressions.stringTemplate(template));
+    }
+
+    private static BooleanBuilder setFilteringCondition(
+        Boolean glutenFreeTag, Boolean highProteinTag,
+        Boolean sugarFreeTag,
+        Boolean veganTag, Boolean ketogenicTag, String category,
+        Integer minPrice, Integer maxPrice,
+        QProduct product, QBoard board,
+        Boolean orderAvailableToday
+    ) {
+
+        BooleanBuilder filterBuilder = new BooleanBuilder();
+        if (glutenFreeTag != null) {
+            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
+        }
+        if (highProteinTag != null) {
+            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
+        }
+        if (sugarFreeTag != null) {
+            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
+        }
+        if (veganTag != null) {
+            filterBuilder.and(product.veganTag.eq(veganTag));
+        }
+        if (ketogenicTag != null) {
+            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
+        }
+        if (category != null && !category.isBlank()) {
+            if (!Category.checkCategory(category)) {
+                throw new CategoryTypeException();
+            }
+            filterBuilder.and(product.category.eq(Category.valueOf(category)));
+        }
+        if (minPrice != null) {
+            filterBuilder.and(board.price.goe(minPrice));
+        }
+        if (maxPrice != null) {
+            filterBuilder.and(board.price.loe(maxPrice));
+        }
+        if (orderAvailableToday != null && orderAvailableToday) {
+            DayOfWeek dayOfWeek = LocalDate.now()
+                .getDayOfWeek();
+
+            switch (dayOfWeek) {
+                case MONDAY -> filterBuilder.and(board.monday.eq(true));
+                case TUESDAY -> filterBuilder.and(board.tuesday.eq(true));
+                case WEDNESDAY -> filterBuilder.and(board.wednesday.eq(true));
+                case THURSDAY -> filterBuilder.and(board.thursday.eq(true));
+                case FRIDAY -> filterBuilder.and(board.friday.eq(true));
+                case SATURDAY -> filterBuilder.and(board.saturday.eq(true));
+                case SUNDAY -> filterBuilder.and(board.sunday.eq(true));
+            }
+        }
+        return filterBuilder;
+    }
+
+    private List<String> addList(List<ProductTagDto> dtos) {
+        List<String> tags = new ArrayList<>();
+        boolean glutenFreeTag = false;
+        boolean highProteinTag = false;
+        boolean sugarFreeTag = false;
+        boolean veganTag = false;
+        boolean ketogenicTag = false;
+        if (dtos == null) {
+            return tags;
+        }
+        for (ProductTagDto dto : dtos) {
+            if (dto.glutenFreeTag()) {
+                glutenFreeTag = true;
+            }
+            if (dto.highProteinTag()) {
+                highProteinTag = true;
+            }
+            if (dto.sugarFreeTag()) {
+                sugarFreeTag = true;
+            }
+            if (dto.veganTag()) {
+                veganTag = true;
+            }
+            if (dto.ketogenicTag()) {
+                ketogenicTag = true;
+            }
+        }
+        if (glutenFreeTag) {
+            tags.add(TagEnum.GLUTEN_FREE.label());
+        }
+        if (highProteinTag) {
+            tags.add(TagEnum.HIGH_PROTEIN.label());
+        }
+        if (sugarFreeTag) {
+            tags.add(TagEnum.SUGAR_FREE.label());
+        }
+        if (veganTag) {
+            tags.add(TagEnum.VEGAN.label());
+        }
+        if (ketogenicTag) {
+            tags.add(TagEnum.KETOGENIC.label());
+        }
+        return tags;
     }
 
 }
