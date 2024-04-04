@@ -10,7 +10,7 @@ public class WishListStoreResponseDto {
     private String introduce;
     private String storeName;
     private Long storeId;
-    private boolean isWished;
+    private Boolean isWished;
     private String profile;
 
     @Builder
