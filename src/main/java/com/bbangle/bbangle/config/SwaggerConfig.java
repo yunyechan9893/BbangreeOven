@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 @Configuration
 @RequiredArgsConstructor
@@ -32,11 +31,6 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(info)
                 .components(securityComponent);
-    }
-
-    @Bean
-    public InternalResourceViewResolver defaultViewResolver() {
-        return new InternalResourceViewResolver();
     }
 
     @Bean
