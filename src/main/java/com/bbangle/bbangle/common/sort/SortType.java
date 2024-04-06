@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.common.sort;
 
+import com.bbangle.bbangle.exception.BbangleException;
 import lombok.Getter;
 
 @Getter
@@ -24,6 +25,6 @@ public enum SortType {
             }
         }
 
-        throw new IllegalArgumentException(ERROR_WORD);
+        throw new BbangleException(ERROR_WORD);
     }
 }

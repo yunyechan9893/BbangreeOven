@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.wishListFolder.service;
 
-import com.bbangle.bbangle.exception.MemberNotFoundException;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
@@ -26,10 +28,10 @@ public class WishListFolderService {
     @Transactional
     public void create(Long memberId, FolderRequestDto requestDto) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(MemberNotFoundException::new);
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
         int folderCount = wishListFolderRepository.getFolderCount(member);
         if (folderCount >= 10) {
-            throw new IllegalArgumentException(OVER_MAX_FOLDER);
+            throw new BbangleException(OVER_MAX_FOLDER);
         }
 
         WishlistFolder folder = WishlistFolder.builder()
@@ -44,7 +46,7 @@ public class WishListFolderService {
     @Transactional(readOnly = true)
     public List<FolderResponseDto> getList(Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(MemberNotFoundException::new);
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
         return wishListFolderRepository.findMemberFolderList(member);
     }
@@ -52,10 +54,10 @@ public class WishListFolderService {
     @Transactional
     public void delete(Long folderId, Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(MemberNotFoundException::new);
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
         WishlistFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member, folderId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 폴더입니다."));
+            .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
 
         wishlistFolder.delete();
     }
@@ -63,10 +65,10 @@ public class WishListFolderService {
     @Transactional
     public void update(Long memberId, Long folderId, FolderUpdateDto updateDto) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(MemberNotFoundException::new);
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
         WishlistFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member, folderId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 폴더입니다."));
+            .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
 
         wishlistFolder.updateTitle(updateDto.title());
     }
