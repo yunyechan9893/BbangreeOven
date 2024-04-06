@@ -7,6 +7,7 @@ import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
@@ -73,7 +74,7 @@ public class BoardServiceImpl implements BoardService {
     ) {
 
         List<Long> matchedIdx = getListAdaptingSort(sort);
-        CustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
             sort,
             glutenFreeTag,
             highProteinTag,

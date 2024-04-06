@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
@@ -50,7 +51,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public CustomPage<List<BoardResponseDto>> getBoardResponseDto(
+    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseDto(
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
         String category, Integer minPrice, Integer maxPrice,
@@ -341,7 +342,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .select(Projections.bean(
                 ProductBoardLikeStatus.class,
                 board.id.as("boardId"),
-                isLikedExpression.as("isLike")
+                isLikedExpression.as("isWished")
             ))
             .from(board)
             .leftJoin(wishlistProduct)
@@ -382,7 +383,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return cursorBuilder;
     }
 
-    private CustomPage<List<BoardResponseDto>> getBoardCustomPage(
+    private BoardCustomPage<List<BoardResponseDto>> getBoardCustomPage(
         Long cursorId,
         QBoard board,
         QProduct product,
@@ -418,9 +419,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 storeCnt = 0L;
             }
 
-            return CustomPage.from(content, 0L, hasNext, boardCnt, storeCnt);
+            return BoardCustomPage.from(content, 0L, hasNext, boardCnt, storeCnt);
         }
-        return CustomPage.from(content, cursorId, hasNext);
+        return BoardCustomPage.from(content, cursorId, hasNext);
     }
 
     private Long returnStartId(Long cursorId, List<Long> rankIds) {
