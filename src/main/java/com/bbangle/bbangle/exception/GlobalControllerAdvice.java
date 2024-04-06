@@ -49,8 +49,7 @@ public class GlobalControllerAdvice {
   public ResponseEntity<CommonResult> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException ex
   ) {
-    CommonResult methodArgumentNotValidExceptionResult = responseService.getMethodArgumentNotValidExceptionResult(
-        ex);
+    CommonResult methodArgumentNotValidExceptionResult = responseService.getMethodArgumentNotValidExceptionResult(ex);
     return new ResponseEntity<>(methodArgumentNotValidExceptionResult, HttpStatus.BAD_REQUEST);
   }
 
