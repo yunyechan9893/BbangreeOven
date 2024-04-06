@@ -15,7 +15,7 @@ public class SingleResult<T> extends CommonResult {
     private T result;
 
     public SingleResult(CommonResult commonResult) {
-        this.setMsg(commonResult.getMsg());
+        this.setMessage(commonResult.getMessage());
         this.setCode(commonResult.getCode());
         this.setSuccess(commonResult.isSuccess());
         this.setFieldErrors(commonResult.getFieldErrors());

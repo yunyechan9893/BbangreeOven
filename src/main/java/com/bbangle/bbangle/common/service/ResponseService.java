@@ -57,7 +57,7 @@ public record ResponseService(MessageSource messageSource) {
     result.setList(list);
     result.setSuccess(success);
     result.setCode(code);
-    result.setMsg(msg);
+    result.setMessage(msg);
     return result;
   }
 
@@ -70,14 +70,14 @@ public record ResponseService(MessageSource messageSource) {
   private void setSuccessResult(CommonResult result) {
     result.setSuccess(true);
     result.setCode(SUCCESS.getCode());
-    result.setMsg(SUCCESS.getMsg());
+    result.setMessage(SUCCESS.getMessage());
   }
 
   public SingleResult getFailSingleResult() {
     SingleResult result = new SingleResult();
     result.setSuccess(false);
     result.setCode(FAIL.getCode());
-    result.setMsg(FAIL.getMsg());
+    result.setMessage(FAIL.getMessage());
     return result;
   }
 
@@ -85,7 +85,7 @@ public record ResponseService(MessageSource messageSource) {
     CommonResult result = new CommonResult();
     result.setSuccess(false);
     result.setCode(FAIL.getCode());
-    result.setMsg(FAIL.getMsg());
+    result.setMessage(FAIL.getMessage());
     return result;
   }
 
@@ -93,7 +93,7 @@ public record ResponseService(MessageSource messageSource) {
     CommonResult result = new CommonResult();
     result.setSuccess(false);
     result.setCode(code);
-    result.setMsg(messageSource.getMessage(msg, null, msg, LocaleContextHolder.getLocale()));
+    result.setMessage(messageSource.getMessage(msg, null, msg, LocaleContextHolder.getLocale()));
     return result;
   }
 
@@ -124,19 +124,19 @@ public record ResponseService(MessageSource messageSource) {
     FAIL(-1, "FAIL");
 
     int code;
-    String msg;
+    String message;
 
-    CommonResponse(int code, String msg) {
+    CommonResponse(int code, String message) {
       this.code = code;
-      this.msg = msg;
+      this.message = message;
     }
 
     public int getCode() {
       return code;
     }
 
-    public String getMsg() {
-      return msg;
+    public String getMessage() {
+      return message;
     }
   }
 

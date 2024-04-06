@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
@@ -24,7 +23,7 @@ public class CommonResult {
     private int code;
 
     @Schema(description = "응답 메시지", example = "Success")
-    private String msg;
+    private String message;
 
     @JsonIgnore
     private HttpStatus httpStatus = HttpStatus.OK;
