@@ -1,19 +1,21 @@
-package com.bbangle.bbangle.wishListStore.repository;
+package com.bbangle.bbangle.wishListStore.service;
 
-import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.exception.NoSuchMemberidOrStoreIdException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishListStore.service.WishListStoreService;
-import java.util.List;
+import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
+import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
+import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,8 +28,8 @@ public class WishListStoreServiceImpl implements WishListStoreService {
 
     @Override
     @Transactional(readOnly = true)
-    public WishListStorePagingDto getWishListStoresRes(Long memberId, Pageable pageable) {
-        return WishListStorePagingDto.of(wishListStoreRepositoryImpl.getWishListStoreRes(memberId, pageable));
+    public WishListStorePagingDto getWishListStoresResponse(Long memberId, Pageable pageable) {
+        return WishListStorePagingDto.of(wishListStoreRepositoryImpl.getWishListStoreResponse(memberId, pageable));
 
     }
 
@@ -47,7 +49,7 @@ public class WishListStoreServiceImpl implements WishListStoreService {
     public void deleteStore(Long memberId, Long storeId) {
         WishlistStore wishListStore = wishListStoreRepositoryImpl.findWishListStore(memberId,
                 storeId)
-            .orElseThrow(() -> new NoSuchMemberidOrStoreIdException());
+            .orElseThrow(NoSuchMemberidOrStoreIdException::new);
         wishListStore.delete();
     }
 

@@ -14,7 +14,7 @@ import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
 import com.bbangle.bbangle.wishListBoard.service.WishListBoardService;
 import com.bbangle.bbangle.wishListFolder.service.WishListFolderService;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreServiceImpl;
+import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -124,16 +124,9 @@ public class MemberService {
     @Transactional
     public void deleteMember(Long memberId) {
         Member member = findById(memberId);
-        //멤버 탈퇴 표시
         member.delete();
-
-        //위시리스트 스토어 삭제 표시
         wishListStoreServiceImpl.deletedByDeletedMember(memberId);
-
-        //위시리스트 상품 삭제 표시
         wishListBoardService.deletedByDeletedMember(memberId);
-
-        //위시리스트 폴더 삭제 표시
         wishListFolderService.deletedByDeletedMember(memberId);
     }
 
