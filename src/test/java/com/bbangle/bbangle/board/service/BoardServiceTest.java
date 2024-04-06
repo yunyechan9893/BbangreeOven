@@ -332,7 +332,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            true, noFilter, noSort, null, null, null, null, null);
+            true, noFilter, noSort, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(0);
@@ -669,7 +669,7 @@ public class BoardServiceTest {
             .price(price)
             .status(true)
             .profile("profile")
-            .detail("detail")
+//            .detail("detail")
             .purchaseUrl("purchaseUrl")
             .view(1)
             .sunday(sunday)
