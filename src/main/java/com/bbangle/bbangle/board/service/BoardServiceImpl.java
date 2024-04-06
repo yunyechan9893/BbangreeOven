@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.service;
 
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.exception.MemberNotFoundException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -66,24 +67,15 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional(readOnly = true)
     public CustomPage<List<BoardResponseDto>> getBoardList(
-        String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-        String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday,
+        FilterRequest filterRequest,
+        String sort,
         Long cursorId
     ) {
 
         List<Long> matchedIdx = getListAdaptingSort(sort);
         CustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
+            filterRequest,
             sort,
-            glutenFreeTag,
-            highProteinTag,
-            sugarFreeTag,
-            veganTag,
-            ketogenicTag,
-            category,
-            minPrice,
-            maxPrice,
-            orderAvailableToday,
             matchedIdx,
             cursorId
         );
