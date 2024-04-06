@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
@@ -51,40 +52,16 @@ public class BoardController {
 
     @GetMapping
     public ResponseEntity<CustomPage<?>> getList(
+        FilterRequest filterRequest,
         @RequestParam(required = false)
         String sort,
-        @RequestParam(required = false)
-        Boolean glutenFreeTag,
-        @RequestParam(required = false)
-        Boolean highProteinTag,
-        @RequestParam(required = false)
-        Boolean sugarFreeTag,
-        @RequestParam(required = false)
-        Boolean veganTag,
-        @RequestParam(required = false)
-        Boolean ketogenicTag,
-        @RequestParam(required = false)
-        String category,
-        @RequestParam(required = false)
-        Integer minPrice,
-        @RequestParam(required = false)
-        Integer maxPrice,
-        @RequestParam(required = false)
-        Boolean orderAvailableToday,
         @RequestParam(required = false)
         Long cursorId
     ) {
 
-        return ResponseEntity.ok(boardService.getBoardList(sort,
-            glutenFreeTag,
-            highProteinTag,
-            sugarFreeTag,
-            veganTag,
-            ketogenicTag,
-            category,
-            minPrice,
-            maxPrice,
-            orderAvailableToday,
+        return ResponseEntity.ok(boardService.getBoardList(
+            filterRequest,
+            sort,
             cursorId));
     }
 
