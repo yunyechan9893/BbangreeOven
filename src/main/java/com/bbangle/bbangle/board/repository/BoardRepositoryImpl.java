@@ -51,10 +51,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public CustomPage<List<BoardResponseDto>> getBoardResponseDto(
-        String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-        String category, Integer minPrice, Integer maxPrice,
-        Boolean orderAvailableToday,
+        FilterRequest filterRequest,
+        String sort,
         List<Long> matchedIdx,
         Long cursorId
     ) {
@@ -63,17 +61,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         QStore store = QStore.store;
 
         BooleanBuilder filter =
-            setFilteringCondition(glutenFreeTag,
-                highProteinTag,
-                sugarFreeTag,
-                veganTag,
-                ketogenicTag,
-                category,
-                minPrice,
-                maxPrice,
+            setFilteringCondition(
+                filterRequest,
                 product,
-                board,
-                orderAvailableToday);
+                board);
 
         BooleanBuilder cursorBuilder = setCursorBuilder(cursorId, matchedIdx, board);
 
@@ -501,43 +492,40 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private static BooleanBuilder setFilteringCondition(
-        Boolean glutenFreeTag, Boolean highProteinTag,
-        Boolean sugarFreeTag,
-        Boolean veganTag, Boolean ketogenicTag, String category,
-        Integer minPrice, Integer maxPrice,
-        QProduct product, QBoard board,
-        Boolean orderAvailableToday
+        FilterRequest filterRequest,
+        QProduct product,
+        QBoard board
     ) {
 
         BooleanBuilder filterBuilder = new BooleanBuilder();
-        if (glutenFreeTag != null) {
-            filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
+        if (filterRequest.glutenFreeTag() != null) {
+            filterBuilder.and(product.glutenFreeTag.eq(filterRequest.glutenFreeTag()));
         }
-        if (highProteinTag != null) {
-            filterBuilder.and(product.highProteinTag.eq(highProteinTag));
+        if (filterRequest.highProteinTag() != null) {
+            filterBuilder.and(product.highProteinTag.eq(filterRequest.highProteinTag()));
         }
-        if (sugarFreeTag != null) {
-            filterBuilder.and(product.sugarFreeTag.eq(sugarFreeTag));
+        if (filterRequest.sugarFreeTag() != null) {
+            filterBuilder.and(product.sugarFreeTag.eq(filterRequest.sugarFreeTag()));
         }
-        if (veganTag != null) {
-            filterBuilder.and(product.veganTag.eq(veganTag));
+        if (filterRequest.veganTag() != null) {
+            filterBuilder.and(product.veganTag.eq(filterRequest.veganTag()));
         }
-        if (ketogenicTag != null) {
-            filterBuilder.and(product.ketogenicTag.eq(ketogenicTag));
+        if (filterRequest.ketogenicTag() != null) {
+            filterBuilder.and(product.ketogenicTag.eq(filterRequest.ketogenicTag()));
         }
-        if (category != null && !category.isBlank()) {
-            if (!Category.checkCategory(category)) {
+        if (filterRequest.category() != null && !filterRequest.category().isBlank()) {
+            if (!Category.checkCategory(filterRequest.category())) {
                 throw new CategoryTypeException();
             }
-            filterBuilder.and(product.category.eq(Category.valueOf(category)));
+            filterBuilder.and(product.category.eq(Category.valueOf(filterRequest.category())));
         }
-        if (minPrice != null) {
-            filterBuilder.and(board.price.goe(minPrice));
+        if (filterRequest.minPrice() != null) {
+            filterBuilder.and(board.price.goe(filterRequest.minPrice()));
         }
-        if (maxPrice != null) {
-            filterBuilder.and(board.price.loe(maxPrice));
+        if (filterRequest.maxPrice() != null) {
+            filterBuilder.and(board.price.loe(filterRequest.maxPrice()));
         }
-        if (orderAvailableToday != null && orderAvailableToday) {
+        if (filterRequest.orderAvailableToday() != null && filterRequest.orderAvailableToday()) {
             DayOfWeek dayOfWeek = LocalDate.now()
                 .getDayOfWeek();
 
