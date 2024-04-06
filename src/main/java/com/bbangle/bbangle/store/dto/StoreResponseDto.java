@@ -23,7 +23,7 @@ public final class StoreResponseDto {
         this.isWished = false;
     }
 
-    public void likeStore() {
+    public void isWishStore() {
         this.isWished = true;
     }
 
