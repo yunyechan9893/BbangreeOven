@@ -5,16 +5,14 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.INTERNAL_SERVER_ERR
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.exception.BbangleException;
-import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Validated
+// 스웨거 & responseService 사용 예시로 일단 만들어봤습니다
+// 1.1 릴리즈전에 삭제예정(지울때 WebOAuthSecurityConfig 여기도 확인)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/health")
@@ -45,12 +43,5 @@ public class HealthCheckController {
   @GetMapping("/exception/normal")
   public CommonResult pingException2() {
     throw new RuntimeException("예상치못한 예외발생 테스트");
-  }
-
-  @GetMapping("/validation")
-  public CommonResult validation(
-      @RequestParam(value = "test") @NotEmpty String test
-  ) {
-    return responseService.getSingleResult(test);
   }
 }
