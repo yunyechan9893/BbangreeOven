@@ -475,13 +475,13 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         if (Objects.isNull(cursorId)) {
             return booleanBuilder;
         }
-        checkingBoardExistence(cursorId);
+        Long startId = checkingBoardExistence(cursorId);
 
-        booleanBuilder.and(store.id.lt(cursorId));
+        booleanBuilder.and(store.id.goe(startId));
         return booleanBuilder;
     }
 
-    private void checkingBoardExistence(Long cursorId) {
+    private Long checkingBoardExistence(Long cursorId) {
         Long checkingId = queryFactory.select(store.id)
             .from(store)
             .where(store.id.eq(cursorId))
@@ -490,6 +490,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         if (Objects.isNull(checkingId)) {
             throw new IllegalArgumentException("존재하지 않는 게시글 아이디입니다.");
         }
+
+        return cursorId + 1;
     }
 
 }
