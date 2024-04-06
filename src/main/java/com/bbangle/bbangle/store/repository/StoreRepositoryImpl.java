@@ -11,7 +11,6 @@ import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.store.dto.StoreLikeStatus;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct;
 import com.bbangle.bbangle.wishListStore.domain.QWishlistStore;
@@ -434,17 +433,15 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             cursorId);
         List<Long> pageIds = getContentsIds(cursorPage);
 
-        List<StoreLikeStatus> storeLikeStatus = queryFactory.select(
-                Projections.constructor(StoreLikeStatus.class,
-                    wishlistStore.store.id,
-                    wishlistStore.isDeleted))
+        List<Long> wishedStore = queryFactory.select(
+                    wishlistStore.store.id)
             .from(wishlistStore)
             .where(wishlistStore.member.eq(member)
                 .and(wishlistStore.isDeleted.eq(false))
                 .and(wishlistStore.store.id.in(pageIds)))
             .fetch();
 
-        updateLikeStatus(storeLikeStatus, cursorPage);
+        updateLikeStatus(wishedStore, cursorPage);
 
         return cursorPage;
     }
@@ -457,13 +454,13 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     }
 
     private static void updateLikeStatus(
-        List<StoreLikeStatus> storeLikeStatus,
+        List<Long> wishedIds,
         StoreCustomPage<List<StoreResponseDto>> cursorPage
     ) {
-        for(StoreLikeStatus status: storeLikeStatus){
+        for(Long id: wishedIds){
             for(StoreResponseDto response : cursorPage.getContent()){
-                if (status.storeId().equals(response.getStoreId())){
-                    response.likeStore();
+                if (id.equals(response.getStoreId())){
+                    response.isWishStore();
                 }
             }
         }
