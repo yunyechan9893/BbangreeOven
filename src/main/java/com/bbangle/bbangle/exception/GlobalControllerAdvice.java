@@ -42,7 +42,7 @@ public class GlobalControllerAdvice {
         hasText(ex.getMessage()) ? ex.getMessage() : "error",
         ex.getBbangleErrorCode().getCode()
     );
-    return new ResponseEntity<>(result, ex.getHttpStatus());
+    return new ResponseEntity<>(result, ex.getBbangleErrorCode().getHttpStatus());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

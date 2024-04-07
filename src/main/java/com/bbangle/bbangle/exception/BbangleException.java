@@ -1,13 +1,11 @@
 package com.bbangle.bbangle.exception;
 
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @Getter
 public class BbangleException extends RuntimeException {
 
   private BbangleErrorCode bbangleErrorCode = BbangleErrorCode.INTERNAL_SERVER_ERROR;
-  private HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 
   public BbangleException() {
     super("error");
@@ -27,12 +25,8 @@ public class BbangleException extends RuntimeException {
     super(cause);
   }
 
-  public BbangleException(BbangleErrorCode bbangleErrorCode, HttpStatus httpStatus) {
-    super(bbangleErrorCode.getMessage());
-    this.bbangleErrorCode = bbangleErrorCode;
-    this.httpStatus = httpStatus;
-  }
-
+  // 문자열 가급적 쓰지말자
+  @Deprecated
   public BbangleException(String message, Throwable cause) {
     super(message, cause);
   }

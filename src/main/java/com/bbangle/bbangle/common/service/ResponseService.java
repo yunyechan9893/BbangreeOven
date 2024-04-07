@@ -123,8 +123,8 @@ public record ResponseService(MessageSource messageSource) {
     SUCCESS(0, "SUCCESS"),
     FAIL(-1, "FAIL");
 
-    int code;
-    String message;
+    final int code;
+    final String message;
 
     CommonResponse(int code, String message) {
       this.code = code;
