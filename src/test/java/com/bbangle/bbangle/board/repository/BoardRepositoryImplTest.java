@@ -1,24 +1,17 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.dto.ProductDto;
-import com.bbangle.bbangle.board.testutil.TestModelFactory;
-import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.testutil.TestFactoryManager;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
-import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishListBoard.domain.WishlistProduct;
+import com.bbangle.bbangle.testutil.model.*;
 import com.bbangle.bbangle.wishListBoard.repository.WishListProductRepository;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
 import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -27,93 +20,54 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SpringBootTest
 @Transactional
 @Rollback
 public class BoardRepositoryImplTest {
+    private final TestFactoryManager testFactoryManager;
+    private final Long memberId = 2L;
 
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private StoreRepository storeRepository;
-
-    @Autowired
-    private BoardRepository boardRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
-    private BoardImgRepository boardImgRepository;
-
-    @Autowired
-    private WishListFolderRepository wishListFolderRepository;
-
-    @Autowired
-    private WishListProductRepository wishListProductRepository;
-
-    @Autowired
-    private WishListStoreRepository wishListStoreRepository;
-
-    TestModelFactory testFactory = new TestModelFactory();
+    public BoardRepositoryImplTest(
+            @Autowired MemberRepository memberRepository,
+            @Autowired StoreRepository storeRepository,
+            @Autowired BoardRepository boardRepository,
+            @Autowired ProductRepository productRepository,
+            @Autowired EntityManager entityManager,
+            @Autowired BoardImgRepository boardImgRepository,
+            @Autowired WishListFolderRepository wishListFolderRepository,
+            @Autowired WishListProductRepository wishListProductRepository,
+            @Autowired WishListStoreRepository wishListStoreRepository
+    ){
+        testFactoryManager = new TestFactoryManager(entityManager)
+                .setTestStoreFactory(storeRepository)
+                .setTestBoardFactory(boardRepository)
+                .setTestProductFactory(productRepository)
+                .setTestBoardImageFactory(boardImgRepository)
+                .setTestMemberFactory(memberRepository)
+                .setTestWishlistFolderFactory(wishListFolderRepository)
+                .setTestWishlistBoardFactory(wishListProductRepository)
+                .setTestWishlistStoreFactory(wishListStoreRepository);
+    }
 
     @BeforeEach
     public void saveData() {
-        afterEach();
-        createData(15);
+        createProductRelatedContent(10);
+        createLikeData();
     }
 
     @AfterEach
     void afterEach() {
-        testFactory.setEntitiyManager(entityManager);
-        Map<String, Integer> tableToStartingId = new HashMap<>();
-        tableToStartingId.put("store", 1);
-        tableToStartingId.put("product_board", 1);
-        tableToStartingId.put("member", 2);
-        tableToStartingId.put("wishlist_folder", 1);
-        tableToStartingId.put("wishlist_product", 1);
-        tableToStartingId.put("wishlist_store", 1);
-
-        testFactory.resetTableIds(tableToStartingId);
+        testFactoryManager.resetAutoIncreasementAndRowData();
     }
 
     @Test
     public void getBoardResponseDtoTest(){
+        var boardRepository = testFactoryManager.getTestBoardFactory().getRepository();
+        var board = testFactoryManager.getTestBoardFactory().getTestEntity("board0");
 
-        Long memberId = 2L;
-        Long storeId = 1L;
-        Long boardId = 1L;
-
-        var boards = boardRepository.findAll();
-        for (Board board : boards) {
-            System.out.println(board.getId());
-        }
-
-        Member member = Member.builder().id(memberId).email("dd@ex.com").nickname("test").name("testName").birth("99999").phone("01023299893").build();
-        Store store = Store.builder().id(storeId).build();
-        Board board = Board.builder().id(boardId).build();
-        WishlistFolder wishlistFolder = WishlistFolder.builder().folderName("Test").member(member).build();
-        WishlistProduct wishlistProduct = WishlistProduct.builder()
-                .board(board)
-                .memberId(memberId)
-                .wishlistFolder(wishlistFolder)
-                .build();
-        WishlistStore wishlistStore = WishlistStore.builder().store(store).member(member).build();
-
-        memberRepository.save(member);
-        wishListFolderRepository.save(wishlistFolder);
-        wishListProductRepository.save(wishlistProduct);
-        wishListStoreRepository.save(wishlistStore);
-
-        var result = boardRepository.getBoardDetailResponse(memberId, boardId);
+        var result = boardRepository.getBoardDetailResponse(memberId, board.getId());
 
         Assertions.assertEquals(1L,result.store().storeId());
         Assertions.assertEquals("RAWSOME",result.store().storeName());
@@ -149,89 +103,127 @@ public class BoardRepositoryImplTest {
     @Test
     @DisplayName("Wished Product 테이블에 값들이 존재해도, 내 데이터가 아니면 isWished는 false가 된다")
     public void getBoardResponseDtoLikeTest(){
-        Long memberId = 3L;
-        Long storeId = 1L;
-        Long boardId = 1L;
-
-        createLikeData(2L, storeId + 1L, boardId + 1L);
-        for (int i = 0; i < 10; i++) {
-            memberId ++;
-            storeId ++;
-            boardId ++;
-            createLikeData(memberId, storeId, boardId);
-        }
-
-        Long testMemberId = 2L;
-        var result = boardRepository.getBoardDetailResponse(testMemberId, boardId);
-    
-        Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 true 입니다");
-        Assertions.assertEquals(false, result.board().isWished(), "보드 Like가 true 입니다");
+        var boardRepository = testFactoryManager.getTestBoardFactory().getRepository();
+        var board = testFactoryManager.getTestBoardFactory().getTestEntity("board1");
+        var result = boardRepository.getBoardDetailResponse(memberId, board.getId());
+       System.out.println(result.store().storeId());
+        Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 false 입니다");
+        Assertions.assertEquals(true, result.board().isWished(), "보드 Like가 false 입니다");
     }
 
     @Test
     @DisplayName("Wished Productm isWished는 true가 된다")
     public void getBoardLikeTrueTest(){
-        Long memberId = 2L;
-        Long storeId = 1L;
-        Long boardId = 1L;
+        var boardRepository = testFactoryManager.getTestBoardFactory().getRepository();
+        var board = testFactoryManager.getTestBoardFactory().getTestEntity("board1");
+        var result = boardRepository.getBoardDetailResponse(memberId, board.getId());
 
-        createLikeData(memberId, storeId, boardId);
-
-        Long testMemberId = 2L;
-        var result = boardRepository.getBoardDetailResponse(testMemberId, boardId);
-
-        Assertions.assertEquals(true, result.store().isWished(), "스토어 Like가 true 입니다");
+        Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 true 입니다");
         Assertions.assertEquals(true, result.board().isWished(), "보드 Like가 true 입니다");
     }
 
-    private void createData(int count) {
+
+    private void createProductRelatedContent(int count) {
         for (int i = 0; i < count; i++) {
-            var store = storeRepository.save(
-                    testFactory.createStore("7962401222", "RAWSOME",
-                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e",
-                    "건강을 먹다-로썸"
-                    ));
+            var store = testFactoryManager.getTestStoreFactory().pushTestEntity(
+                    "store" + i,
+                    new TestStore().setIdentifier("7962401222")
+                        .setName("RAWSOME")
+                        .setProfile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
+                        .getModel()
+            );
 
-            var board = boardRepository.save(
-                    testFactory.createBoard(store, "비건 베이커리 로썸 비건빵", 5400, true,
-                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203",
-                    "https://smartstore.naver.com/rawsome/products/5727069436",
-                    100, false, false, false,
-                    false, true, false, true));
+            var board = testFactoryManager.getTestBoardFactory().pushTestEntity(
+                    "board" + i,
+                    new TestBoard(store)
+                            .setBoardName("비건 베이커리 로썸 비건빵")
+                            .setPrice(5400)
+                            .setStatus(true)
+                            .setProfile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
+                            .setPurchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
+                            .setView(100)
+                            .setThursday(true)
+                            .setSaturday(true)
+                            .getModel()
+            );
 
-            productRepository.save(
-                    testFactory.createProduct(board, "콩볼", 3600, Category.COOKIE,
-                    true, false, true,
-                    true, true));
-            productRepository.save(
-                    testFactory.createProduct(board, "카카모카", 5000, Category.BREAD,
-                    true, false, false,
-                    true, false));
-            productRepository.save(
-                    testFactory.createProduct(board, "로미넛쑥", 5000, Category.BREAD,
-                    true, false, true,
-                    true, false));
+            testFactoryManager.getTestProductFactory().pushTestEntity(
+                    "product" + (i * 3 - 2),
+                    new TestProduct(board)
+                            .setProductName("콩볼")
+                            .setPrice(3600)
+                            .setCategory(Category.COOKIE)
+                            .setGlutenFreeTag(true)
+                            .setSugarFreeTag(true)
+                            .setVeganTag(true)
+                            .setKetogenicTag(true)
+                            .getModel()
+            );
 
-            boardImgRepository.save(testFactory.createProductImage(board, "www.naver.com"));
-            boardImgRepository.save(testFactory.createProductImage(board, "www.naver.com"));
+            testFactoryManager.getTestProductFactory().pushTestEntity(
+                    "product" + (i * 3 - 1),
+                    new TestProduct(board)
+                            .setProductName("카카모카")
+                            .setPrice(5000)
+                            .setCategory(Category.BREAD)
+                            .setGlutenFreeTag(true)
+                            .setVeganTag(true)
+                            .getModel()
+            );
+
+            testFactoryManager.getTestProductFactory().pushTestEntity(
+                    "product" + (i * 3),
+                    new TestProduct(board)
+                            .setProductName("로미넛쑥")
+                            .setPrice(5000)
+                            .setCategory(Category.BREAD)
+                            .setGlutenFreeTag(true)
+                            .setSugarFreeTag(true)
+                            .setVeganTag(true)
+                            .getModel()
+            );
+
+            testFactoryManager.getTestBoardImageFactory().pushTestEntity(
+                    "boardImg" + (i * 2 - 1),
+                    new TestBoardImg(board)
+                            .setImageUrl("www.naver.com")
+                            .getModel());
+
+            testFactoryManager.getTestBoardImageFactory().pushTestEntity(
+                    "boardImg" + (i * 2),
+                    new TestBoardImg(board)
+                            .setImageUrl("www.naver.com")
+                            .getModel());
         }
     }
 
-    private void createLikeData(Long memberId, Long storeId, Long boardId){
-        Member member = Member.builder().id(memberId).email("dd@ex.com").nickname("test").name("testName").birth("99999").phone("01023299893").build();
-        Store store = Store.builder().id(storeId).build();
-        Board board = Board.builder().id(boardId).build();
-        WishlistFolder wishlistFolder = WishlistFolder.builder().folderName("Test").member(member).build();
-        WishlistProduct wishlistProduct = WishlistProduct.builder().board(board)
-                .memberId(memberId)
-                .wishlistFolder(wishlistFolder)
-                .build();
-        WishlistStore wishlistStore = WishlistStore.builder().store(store).member(member).build();
+    private void createLikeData(){
+        var member = testFactoryManager.getTestMemberFactory().pushTestEntity(
+                "member1",
+                new TestMember()
+                        .setId(memberId)
+                        .getModel()
+        );
 
-        memberRepository.save(member);
-        wishListFolderRepository.save(wishlistFolder);
-        wishListProductRepository.save(wishlistProduct);
-        wishListStoreRepository.save(wishlistStore);
+        var wishlistFolder = testFactoryManager.getTestWishlistFolderFactory().pushTestEntity(
+                "wishlistFolder1",
+                new TestWishlistFolder(member).getModel()
+        );
+
+        var board = testFactoryManager.getTestBoardFactory().getTestEntity("board1");
+        testFactoryManager.getTestWishlistBoardFactory().pushTestEntity(
+                "wishlistBoard1",
+                new TestWishlistBoard(wishlistFolder)
+                        .setMemberId(memberId)
+                        .setBoard(board)
+                        .getModel()
+        );
+
+        var store = testFactoryManager.getTestStoreFactory().getTestEntity("store1");
+        testFactoryManager.getTestWishlistStoreFactory().pushTestEntity(
+                "wishlistStore1",
+                new TestWishlistStore(store, member).getModel()
+        );
     }
 
 }
