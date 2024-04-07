@@ -17,6 +17,10 @@ public abstract class TestModelFactory<T, U> {
         this.entityMap = new HashMap<>();
     }
 
+    public void resetEntityMap(){
+        this.entityMap = new HashMap<>();
+    }
+
     public T getTestEntity(String label) {
         return entityMap.get(label);
     }

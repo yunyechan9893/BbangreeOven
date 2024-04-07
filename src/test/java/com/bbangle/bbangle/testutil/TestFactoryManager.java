@@ -110,41 +110,49 @@ public class TestFactoryManager {
         if (testWishlistStoreFactory != null){
             testWishlistStoreFactory.getRepository().deleteAll();
             startAutoIncreasement("ALTER TABLE wishlist_store AUTO_INCREMENT = 1");
+            testWishlistStoreFactory.resetEntityMap();
         }
 
         if (testWishlistBoardFactory != null){
             testWishlistBoardFactory.getRepository().deleteAll();
             startAutoIncreasement("ALTER TABLE wishlist_product AUTO_INCREMENT = 1");
+            testWishlistBoardFactory.resetEntityMap();
         }
 
         if (testWishlistFolderFactory != null){
             testWishlistFolderFactory.getRepository().deleteAll();
             startAutoIncreasement("ALTER TABLE wishlist_folder AUTO_INCREMENT = 1");
+            testWishlistBoardFactory.resetEntityMap();
         }
 
         if (testMemberFactory != null){
             testMemberFactory.getRepository().deleteAll();
             startAutoIncreasement("ALTER TABLE member AUTO_INCREMENT = 2");
+            testMemberFactory.resetEntityMap();
         }
 
         if (testBoardImageFactory != null){
             testBoardImageFactory.getRepository().deleteAll();
             startAutoIncreasement("ALTER TABLE product_img AUTO_INCREMENT = 1");
+            testBoardImageFactory.resetEntityMap();
         }
 
         if (testProductFactory != null){
             testProductFactory.getRepository().deleteAll();
             startAutoIncreasement("ALTER TABLE product AUTO_INCREMENT = 1");
+            testProductFactory.resetEntityMap();
         }
 
         if (testBoardFactory != null){
             testBoardFactory.getRepository().deleteAll();
             startAutoIncreasement("ALTER TABLE product_board AUTO_INCREMENT = 1");
+            testBoardFactory.resetEntityMap();
         }
 
         if (testStoreFactory != null){
             testStoreFactory.getRepository().deleteAll();
             startAutoIncreasement("ALTER TABLE store AUTO_INCREMENT = 1");
+            testStoreFactory.resetEntityMap();
         }
     }
 
