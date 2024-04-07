@@ -1,13 +1,15 @@
 package com.bbangle.bbangle.wishListStore.repository;
 
-import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
-import com.bbangle.bbangle.exception.MemberNotFoundException;
-import com.bbangle.bbangle.exception.NoSuchMemberidOrStoreIdException;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_WISH_INFO;
+
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
+import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
 import com.bbangle.bbangle.wishListStore.service.WishListStoreService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +36,9 @@ public class WishListStoreServiceImpl implements WishListStoreService {
     @Transactional
     public void save(Long memberId, Long storeId) {
         Store store = storeRepository.findById(storeId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 스토어 입니다"));
+            .orElseThrow(() -> new BbangleException("존재하지 않는 스토어 입니다"));
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(MemberNotFoundException::new);
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
         wishListStoreRepository.save(WishlistStore.builder()
             .member(member)
             .store(store)
@@ -47,7 +49,7 @@ public class WishListStoreServiceImpl implements WishListStoreService {
     public void deleteStore(Long memberId, Long storeId) {
         WishlistStore wishListStore = wishListStoreRepositoryImpl.findWishListStore(memberId,
                 storeId)
-            .orElseThrow(() -> new NoSuchMemberidOrStoreIdException());
+            .orElseThrow(() -> new BbangleException(NOTFOUND_WISH_INFO));
         wishListStore.delete();
     }
 

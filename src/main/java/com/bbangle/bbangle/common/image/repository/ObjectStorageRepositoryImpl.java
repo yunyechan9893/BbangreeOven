@@ -3,7 +3,7 @@ package com.bbangle.bbangle.common.image.repository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
+import com.bbangle.bbangle.exception.BbangleException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class ObjectStorageRepositoryImpl implements ObjectStorageRepository {
         try {
             s3.putObject(bucketName, objectName, file.getInputStream(), objectMetadata); // S3 저장
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new BbangleException(e);
         }
         return true;
     }
