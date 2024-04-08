@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.board.dto;
 
-import org.springframework.web.bind.annotation.RequestParam;
+import lombok.Builder;
 
+@Builder
 public record FilterRequest(
     Boolean glutenFreeTag,
     Boolean highProteinTag,
