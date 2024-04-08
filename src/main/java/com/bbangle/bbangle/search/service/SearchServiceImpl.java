@@ -78,8 +78,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
 
-    private void createAutoCompleateNode(List<String> tokens) {
-        for (String token : tokens) {
+    private void createAutoCompleateNode(String title) {
+        autoCompleteEngine.insert(title);
+
+        List<String> allTokens = getAllTokenizer(title);
+
+        for (String token : allTokens) {
             autoCompleteEngine.insert(token);
         }
     }
@@ -95,9 +99,9 @@ public class SearchServiceImpl implements SearchService {
             Long id = entry.getKey();
             String title = entry.getValue();
 
-            List<String> tokens = tokenizeTitle(title, targetType);
-            createAutoCompleateNode(tokens);  // Store complete title and its tokens
+            createAutoCompleateNode(title);
 
+            List<String> tokens = tokenizeTitle(title, targetType);
             for (String token : tokens) {
                 addTokenToMapping(titleTokenToIdMapping, token, id);
             }
