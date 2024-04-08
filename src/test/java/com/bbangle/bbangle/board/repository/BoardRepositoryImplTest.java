@@ -106,7 +106,7 @@ public class BoardRepositoryImplTest {
         var boardRepository = testFactoryManager.getTestBoardFactory().getRepository();
         var board = testFactoryManager.getTestBoardFactory().getTestEntity("board1");
         var result = boardRepository.getBoardDetailResponse(memberId, board.getId());
-       System.out.println(result.store().storeId());
+
         Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 false 입니다");
         Assertions.assertEquals(true, result.board().isWished(), "보드 Like가 false 입니다");
     }
@@ -121,7 +121,6 @@ public class BoardRepositoryImplTest {
         Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 true 입니다");
         Assertions.assertEquals(true, result.board().isWished(), "보드 Like가 true 입니다");
     }
-
 
     private void createProductRelatedContent(int count) {
         for (int i = 0; i < count; i++) {
@@ -225,5 +224,4 @@ public class BoardRepositoryImplTest {
                 new TestWishlistStore(store, member).getModel()
         );
     }
-
 }
