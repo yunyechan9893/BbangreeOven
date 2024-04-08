@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
 
+
 @Repository
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
