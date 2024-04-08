@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.dto;
 
+import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.validator.BoardValidator;
 import lombok.Builder;
 
 @Builder
@@ -9,10 +11,15 @@ public record FilterRequest(
     Boolean sugarFreeTag,
     Boolean veganTag,
     Boolean ketogenicTag,
-    String category,
+    Category category,
     Integer minPrice,
     Integer maxPrice,
     Boolean orderAvailableToday
 ) {
+
+    public FilterRequest {
+        BoardValidator.validateMinPrice(minPrice);
+        BoardValidator.validateMaxPrice(maxPrice);
+    }
 
 }
