@@ -218,3 +218,7 @@ gradle-app.setting
 /backend/src/main/generated/
 
 redis/data/dump.rdb
+
+.idea/
+
+src/main/generated/

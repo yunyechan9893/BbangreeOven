@@ -1,27 +1,21 @@
 package com.bbangle.bbangle.search.controller;
 
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.bbangle.bbangle.configuration.AbstractRestDocsTests;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.search.domain.Search;
-import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.configuration.AbstractRestDocsTests;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.repository.SearchRepository;
-import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.search.service.SearchService;
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +24,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.annotation.Rollback;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -155,7 +156,6 @@ public class SearchControllerTest extends AbstractRestDocsTests {
                 .status(true)
                 .profile(
                     "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-//                .detail("test.txt")
                 .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
                 .view(100)
                 .sunday(false)
