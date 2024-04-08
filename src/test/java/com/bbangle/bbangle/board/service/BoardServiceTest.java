@@ -1,22 +1,16 @@
 package com.bbangle.bbangle.board.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.page.CustomPage;
-import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,8 +21,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
 import org.springframework.mock.web.MockMultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 public class BoardServiceTest {
@@ -123,7 +123,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, null, null, null);
+            noFilter, noFilter, noSort, null, null, null, null);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
         BoardResponseDto response2 = boardList.getContent()
@@ -191,7 +191,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, null, null, null);
+            noFilter, noFilter, noSort, null, null, null, null);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -247,7 +247,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, null, null, null);
+            noFilter, noFilter, noSort, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -289,7 +289,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, true, noFilter,
             noFilter,
-            noFilter, noFilter, noSort, null, null, null, null, null);
+            noFilter, noFilter, noSort, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -332,7 +332,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            true, noFilter, noSort, null, null, null, null, null);
+            true, noFilter, noSort, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(0);
@@ -375,7 +375,7 @@ public class BoardServiceTest {
         String noSort = "";
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, noFilter, noFilter,
             noFilter,
-            noFilter, true, noSort, null, null, null, null, null);
+            noFilter, true, noSort, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(2);
@@ -426,7 +426,7 @@ public class BoardServiceTest {
 
         //when
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, null, null, null,
-            null, null, category, null, null, null, null, null);
+            null, null, category, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -470,8 +470,8 @@ public class BoardServiceTest {
 
         //then
         Assertions.assertThatThrownBy(() -> boardService.getBoardList(noSort, null, null, null,
-                null, null, category, null, null, null, null, null))
-            .isInstanceOf(CategoryTypeException.class);
+                null, null, category, null, null, null, null))
+            .isInstanceOf(BbangleException.class);
 
     }
 
@@ -511,7 +511,7 @@ public class BoardServiceTest {
         String noSort = "";
 
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, null, null, true,
-            null, null, category, null, null, null, null, null);
+            null, null, category, null, null, null, null);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -538,28 +538,28 @@ public class BoardServiceTest {
 
         CustomPage<List<BoardResponseDto>> boardList =
             boardService.getBoardList(null, null, null, null, null, null, null, 5000, null,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList2 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1000, null,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList3 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 10000,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList4 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 1000,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList5 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, 900,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList6 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1000, 10000,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList7 =
             boardService.getBoardList(null, null, null, null, null, null, null, 1001, 9999,
-                null, null, null);
+                null, null);
         CustomPage<List<BoardResponseDto>> boardList8 =
             boardService.getBoardList(null, null, null, null, null, null, null, null, null,
-                null, null, null);
+                null, null);
         List<Board> all = boardRepository.findAll();
 
         //then
@@ -642,9 +642,9 @@ public class BoardServiceTest {
 
         List<Board> all = boardRepository.findAll();
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(noSort, null, null, null,
-            null, null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null);
         CustomPage<List<BoardResponseDto>> boardList2 = boardService.getBoardList(noSort, null, null, null,
-            null, null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null);
 
         //then
         assertThat(boardList.getContent()).hasSize(10);
@@ -721,7 +721,7 @@ public class BoardServiceTest {
         try {
             content = Files.readAllBytes(Paths.get("src/test/resources/html/detail.html"));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new BbangleException(e);
         }
 
         // MockMultipartFile 인스턴스 생성

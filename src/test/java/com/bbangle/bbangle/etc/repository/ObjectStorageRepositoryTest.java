@@ -3,6 +3,7 @@ package com.bbangle.bbangle.etc.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
+import com.bbangle.bbangle.exception.BbangleException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -46,7 +47,7 @@ public class ObjectStorageRepositoryTest {
         try {
             content = Files.readAllBytes(Paths.get("src/test/resources/html/detail.html"));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new BbangleException(e);
         }
 
         // MockMultipartFile 인스턴스 생성

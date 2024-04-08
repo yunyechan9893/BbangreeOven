@@ -12,13 +12,19 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public final class CustomPage<T> {
 
-    private final T content;
+    private T content;
     private final Long requestCursor;
     private final Boolean hasNext;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long boardCnt;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long storeCnt;
+
+    public CustomPage (T boardList, Long requestCursor, boolean hasNext) {
+        this.requestCursor = requestCursor;
+        this.content = boardList;
+        this.hasNext = hasNext;
+    }
 
     public static CustomPage<List<BoardResponseDto>> from(
         List<BoardResponseDto> boardList,
@@ -36,6 +42,10 @@ public final class CustomPage<T> {
         long storeCnt
     ) {
         return new CustomPage<>(boardList, requestCursor, hasNext, boardCnt, storeCnt);
+    }
+
+    public void updateBoardLikeStatus(T content) {
+        this.content = content;
     }
 
 }

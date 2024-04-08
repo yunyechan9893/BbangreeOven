@@ -75,8 +75,6 @@ public class BoardController {
         Long cursorId
     ) {
 
-        CursorInfo cursorInfo = getCursorInfo(cursorId);
-
         return ResponseEntity.ok(boardService.getBoardList(sort,
             glutenFreeTag,
             highProteinTag,
@@ -87,8 +85,7 @@ public class BoardController {
             minPrice,
             maxPrice,
             orderAvailableToday,
-            cursorId,
-            cursorInfo));
+            cursorId));
     }
 
     @GetMapping("/folders/{folderId}")
@@ -189,36 +186,6 @@ public class BoardController {
             .body(MessageResDto.builder()
                 .message(failMessage)
                 .build());
-    }
-
-    private CursorInfo getCursorInfo(Long cursorId) {
-        boolean hasNext = true;
-        Long rank = getRank(cursorId);
-        Long endSize = rank + PAGE_SIZE;
-        Long size = redisTemplate.opsForZSet()
-            .size(RedisKeyUtil.RECOMMEND_KEY);
-        if(rank.equals(size)){
-            throw new IllegalArgumentException("마지막 순위의 게시글입니다.");
-        }
-        if (rank + PAGE_SIZE > size) {
-            hasNext = false;
-            endSize = size;
-        }
-
-        return new CursorInfo(hasNext, rank, endSize);
-    }
-
-    private Long getRank(Long cursorId) {
-        if (Objects.isNull(cursorId)) {
-            return 0L;
-        }
-        Long rank = redisTemplate.opsForZSet()
-            .reverseRank(RedisKeyUtil.RECOMMEND_KEY, String.valueOf(cursorId));
-        if(Objects.isNull(rank)){
-            throw new IllegalArgumentException("정상적이지 않은 등수입니다.");
-        }
-
-        return rank + 1;
     }
 
 }
