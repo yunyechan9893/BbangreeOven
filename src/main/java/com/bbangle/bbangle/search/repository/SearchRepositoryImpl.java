@@ -36,6 +36,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
+    private static final QBoard board = QBoard.board;
+    private static final QProduct product = QProduct.product;
+    private static final QStore store = QStore.store;
+    private static final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
+    private static final QSearch search = QSearch.search;
     private final int ONEDAY = 24;
     private final int DEFAULT_ITEM_SIZE = 10;
 
@@ -43,10 +48,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     @Override
     public SearchBoardResponse getSearchedBoard(Long memberId, List<Long> boardIds, SearchBoardRequest boardRequest, Pageable pageable) {
-        QBoard board = QBoard.board;
-        QProduct product = QProduct.product;
-        QStore store = QStore.store;
-
         QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
 
         BooleanBuilder filter =
@@ -58,9 +59,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         boardRequest.orderAvailableToday(),
                         boardRequest.category(),
                         boardRequest.minPrice(),
-                        boardRequest.maxPrice(),
-                        product,
-                        board);
+                        boardRequest.maxPrice());
 
 
 
@@ -212,8 +211,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     @Override
     public List<StoreResponseDto> getSearchedStore(Long memberId, List<Long> storeIndexList, Pageable pageable){
-        QStore store = QStore.store;
-        QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
+
 
 
         List<Expression<?>> columns = new ArrayList<>();
@@ -270,7 +268,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     @Override
     public List<KeywordDto> getRecencyKeyword(Member member) {
-        QSearch search = QSearch.search;
+
 
         return queryFactory.select(search.keyword, search.createdAt.max())
                 .from(search)
@@ -284,7 +282,6 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
     @Override
     public String[] getBestKeyword() {
-        QSearch search = QSearch.search;
 
         // 현재시간과 하루전 시간을 가져옴
         LocalDateTime currentTime = LocalDateTime.now();
@@ -316,8 +313,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     private static BooleanBuilder setFilteringCondition(Boolean glutenFreeTag, Boolean highProteinTag,
                                                         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
                                                         Boolean orderAvailableToday, String category,
-                                                        Integer minPrice, Integer maxPrice,
-                                                        QProduct product, QBoard board) {
+                                                        Integer minPrice, Integer maxPrice) {
         BooleanBuilder filterBuilder = new BooleanBuilder();
         if (glutenFreeTag != null && glutenFreeTag == true) {
             filterBuilder.and(product.glutenFreeTag.eq(glutenFreeTag));
