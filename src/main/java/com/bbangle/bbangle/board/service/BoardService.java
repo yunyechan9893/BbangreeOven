@@ -22,8 +22,7 @@ public interface BoardService {
         Integer minPrice,
         Integer maxPrice,
         Boolean orderAvailableToday,
-        Long cursorId,
-        CursorInfo cursorInfo
+        Long cursorId
     );
 
     @Transactional(readOnly = true)

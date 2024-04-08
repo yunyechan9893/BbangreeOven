@@ -37,9 +37,11 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     public Page<WishListStoreResponseDto> getWishListStoreRes(Long memberId, Pageable pageable) {
         List<WishListStoreResponseDto> wishListStores = queryFactory
                 .select(new QWishListStoreResponseDto(
+                        wishlistStore.id,
                         store.introduce,
                         store.name.as("storeName"),
-                        wishlistStore.store.id.as("storeId")
+                        store.id.as("storeId"),
+                        store.profile
                 ))
                 .from(wishlistStore)
                 .leftJoin(wishlistStore.store, store)
@@ -49,18 +51,14 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        JPAQuery<WishListStoreResponseDto> countQuery = queryFactory
-                .select(new QWishListStoreResponseDto(
-                        store.introduce,
-                        store.name.as("storeName"),
-                        wishlistStore.store.id.as("storeId")
-                ))
+        JPAQuery<Long> countQuery = queryFactory
+                .select(wishlistStore.id.count())
                 .from(wishlistStore)
                 .leftJoin(wishlistStore.store, store)
                 .where(wishlistStore.member.id.eq(memberId).and(wishlistStore.isDeleted.ne(true)))
                 .orderBy(wishlistStore.createdAt.desc());
 
-        return PageableExecutionUtils.getPage(wishListStores, pageable, countQuery::fetchCount);
+        return PageableExecutionUtils.getPage(wishListStores, pageable, countQuery::fetchOne);
     }
 
     @Override

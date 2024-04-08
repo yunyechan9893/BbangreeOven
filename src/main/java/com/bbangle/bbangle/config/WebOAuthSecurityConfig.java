@@ -63,7 +63,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
             UsernamePasswordAuthenticationFilter.class);
 
         http.authorizeHttpRequests(authorize -> authorize
-            .requestMatchers("/api/token")
+            .requestMatchers("/api/v1/token")
             .permitAll()
             .requestMatchers("/api/v1/oauth/**")
             .permitAll()
@@ -74,6 +74,8 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
             .requestMatchers("/api/v1/store/**")
             .permitAll()
             .requestMatchers("/api/v1/stores/**")
+            .permitAll()
+            .requestMatchers("/api/v1/health/**")
             .permitAll()
             .requestMatchers(HttpMethod.GET, "api/v1/boards/**")
             .permitAll()
