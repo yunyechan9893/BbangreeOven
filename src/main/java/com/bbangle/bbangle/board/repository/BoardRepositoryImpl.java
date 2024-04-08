@@ -514,11 +514,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         if (filterRequest.ketogenicTag() != null) {
             filterBuilder.and(product.ketogenicTag.eq(filterRequest.ketogenicTag()));
         }
-        if (filterRequest.category() != null && !filterRequest.category().isBlank()) {
-            if (!Category.checkCategory(filterRequest.category())) {
-                throw new BbangleException(UNKNOWN_CATEGORY);
-            }
-            filterBuilder.and(product.category.eq(Category.valueOf(filterRequest.category())));
+        if (filterRequest.category() != null) {
+//            if (!Category.checkCategory(filterRequest.category())) {
+//                throw new BbangleException(UNKNOWN_CATEGORY);
+//            }
+            filterBuilder.and(product.category.eq(filterRequest.category()));
         }
         if (filterRequest.minPrice() != null) {
             filterBuilder.and(board.price.goe(filterRequest.minPrice()));
