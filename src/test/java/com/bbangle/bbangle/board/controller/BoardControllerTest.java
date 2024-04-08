@@ -22,10 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @SpringBootTest
+@Transactional
 @AutoConfigureMockMvc
 class BoardControllerTest {
 
@@ -49,10 +51,6 @@ class BoardControllerTest {
 
     @BeforeEach
     void setup() {
-        productRepository.deleteAll();
-        boardRepository.deleteAll();
-        storeRepository.deleteAll();
-
         Store store = storeGenerator();
         storeRepository.save(store);
 
