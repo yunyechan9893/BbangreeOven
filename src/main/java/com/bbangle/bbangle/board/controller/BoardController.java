@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class BoardController {
 
-    private static final Long PAGE_SIZE = 10L - 1L;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
 
     private final BoardServiceImpl boardService;
@@ -51,14 +51,13 @@ public class BoardController {
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @GetMapping
-    public ResponseEntity<CustomPage<?>> getList(
+    public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
         FilterRequest filterRequest,
         @RequestParam(required = false)
         String sort,
         @RequestParam(required = false)
         Long cursorId
     ) {
-
         return ResponseEntity.ok(boardService.getBoardList(
             filterRequest,
             sort,
