@@ -6,7 +6,7 @@ import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.exception.CategoryTypeException;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.search.domain.QSearch;
 import com.bbangle.bbangle.search.dto.KeywordDto;
@@ -20,7 +20,8 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.*;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
 
 
 @Repository
@@ -364,7 +367,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         }
         if (category != null && !category.isBlank()) {
             if (!Category.checkCategory(category)) {
-                throw new CategoryTypeException();
+                throw new BbangleException(UNKNOWN_CATEGORY);
             }
             filterBuilder.and(product.category.eq(Category.valueOf(category)));
         }
