@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.store.service;
 
-import com.bbangle.bbangle.exception.MemberNotFoundException;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 
@@ -12,7 +12,6 @@ import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.util.SecurityUtils;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.SliceImpl;
@@ -50,7 +49,7 @@ public class StoreServiceImpl implements StoreService {
 
         Long memberId = SecurityUtils.getMemberId();
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(MemberNotFoundException::new);
+            .orElseThrow(BbangleException::new);
         return storeRepository.findNextCursorPageWithLogin(cursorId, member);
     }
 
