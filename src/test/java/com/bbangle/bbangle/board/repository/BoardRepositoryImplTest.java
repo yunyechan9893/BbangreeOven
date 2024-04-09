@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.testutil.TestFactoryManager;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 
@@ -16,11 +15,10 @@ import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
+import static org.hamcrest.Matchers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
-
-import java.util.List;
 
 @SpringBootTest
 @Transactional
@@ -63,41 +61,36 @@ public class BoardRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("상품 게시물 상세보기 조회가 잘되고 있다")
     public void getBoardResponseDtoTest(){
         var boardRepository = testFactoryManager.getTestBoardFactory().getRepository();
         var board = testFactoryManager.getTestBoardFactory().getTestEntity("board0");
 
-        var result = boardRepository.getBoardDetailResponse(memberId, board.getId());
+        var boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, board.getId());
+        assertThat(boardDetailResponse.store().storeId(), is(1L));
 
-        Assertions.assertEquals(1L,result.store().storeId());
-        Assertions.assertEquals("RAWSOME",result.store().storeName());
-        Assertions.assertEquals("비건 베이커리 로썸 비건빵",result.board().title());
-        assertThat(List.of("glutenFree", "sugarFree", "vegan", "ketogenic"),containsInAnyOrder(result.board().tags().toArray()));
+        var firstBoard = boardDetailResponse.board();
+        assertThat(firstBoard.boardId(), is(1L));
+        assertThat(firstBoard.title(), is("비건 베이커리 로썸 비건빵"));
+        assertThat(firstBoard.isBundled(), is(true));
+        assertThat(firstBoard.tags(), containsInAnyOrder("glutenFree", "sugarFree", "vegan", "ketogenic"));
 
-        boolean isProduct1 = false;
-        boolean isProduct2 = false;
-        boolean isProduct3 = false;
-        for (ProductDto productDto:
-            result.board().products()) {
-                switch (productDto.title()){
-                    case "콩볼":
-                        assertThat(List.of("glutenFree", "sugarFree", "vegan", "ketogenic"),containsInAnyOrder(productDto.tags().toArray()));
-                        isProduct1 = true;
-                        break;
-                    case "카카모카":
-                        assertThat(List.of("glutenFree", "vegan"),containsInAnyOrder(productDto.tags().toArray()));
-                        isProduct2 = true;
-                        break;
-                    case "로미넛쑥":
-                        assertThat(List.of("glutenFree", "sugarFree", "vegan"),containsInAnyOrder(productDto.tags().toArray()));
-                        isProduct3 = true;
-                        break;
-                }
-        }
+        var images  = firstBoard.images();
+        assertThat(images.toArray(), arrayWithSize(2));
 
-        Assertions.assertEquals(true, isProduct1);
-        Assertions.assertEquals(true, isProduct2);
-        Assertions.assertEquals(true, isProduct3);
+        var firstImage = images.get(0);
+        assertThat(firstImage.id(), is(1L));
+        assertThat(firstImage.url(), is("www.naver.com1"));
+
+        var products = boardDetailResponse.board().products();
+        assertThat(products.toArray(), arrayWithSize(3));
+
+        var firstProduct = boardDetailResponse.board().products().get(0);
+        assertThat(firstProduct.id(), is(1L));
+        assertThat(firstProduct.title(), is("콩볼"));
+
+        var firstProductTag = firstProduct.tags().stream().toArray();
+        assertThat(firstProductTag, arrayContaining("glutenFree", "sugarFree", "vegan", "ketogenic"));
     }
 
     @Test
@@ -105,10 +98,10 @@ public class BoardRepositoryImplTest {
     public void getBoardResponseDtoLikeTest(){
         var boardRepository = testFactoryManager.getTestBoardFactory().getRepository();
         var board = testFactoryManager.getTestBoardFactory().getTestEntity("board1");
-        var result = boardRepository.getBoardDetailResponse(memberId, board.getId());
+        var boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, board.getId());
 
-        Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 false 입니다");
-        Assertions.assertEquals(true, result.board().isWished(), "보드 Like가 false 입니다");
+        assertThat(boardDetailResponse.store().isWished(), is(false));
+        assertThat(boardDetailResponse.board().isWished(), is(true));
     }
 
     @Test
@@ -116,10 +109,10 @@ public class BoardRepositoryImplTest {
     public void getBoardLikeTrueTest(){
         var boardRepository = testFactoryManager.getTestBoardFactory().getRepository();
         var board = testFactoryManager.getTestBoardFactory().getTestEntity("board1");
-        var result = boardRepository.getBoardDetailResponse(memberId, board.getId());
+        var boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, board.getId());
 
-        Assertions.assertEquals(false, result.store().isWished(), "스토어 Like가 true 입니다");
-        Assertions.assertEquals(true, result.board().isWished(), "보드 Like가 true 입니다");
+        assertThat(boardDetailResponse.store().isWished(), is(false));
+        assertThat(boardDetailResponse.board().isWished(), is(true));
     }
 
     private void createProductRelatedContent(int count) {
@@ -185,13 +178,13 @@ public class BoardRepositoryImplTest {
             testFactoryManager.getTestBoardImageFactory().pushTestEntity(
                     "boardImg" + (i * 2 - 1),
                     new TestBoardImg(board)
-                            .setImageUrl("www.naver.com")
+                            .setImageUrl("www.naver.com1")
                             .getModel());
 
             testFactoryManager.getTestBoardImageFactory().pushTestEntity(
                     "boardImg" + (i * 2),
                     new TestBoardImg(board)
-                            .setImageUrl("www.naver.com")
+                            .setImageUrl("www.naver.com2")
                             .getModel());
         }
     }
