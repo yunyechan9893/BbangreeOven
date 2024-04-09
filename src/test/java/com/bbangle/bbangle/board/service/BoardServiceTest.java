@@ -1,22 +1,16 @@
 package com.bbangle.bbangle.board.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.page.CustomPage;
-import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,8 +21,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
 import org.springframework.mock.web.MockMultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 public class BoardServiceTest {
@@ -471,7 +471,7 @@ public class BoardServiceTest {
         //then
         Assertions.assertThatThrownBy(() -> boardService.getBoardList(noSort, null, null, null,
                 null, null, category, null, null, null, null))
-            .isInstanceOf(CategoryTypeException.class);
+            .isInstanceOf(BbangleException.class);
 
     }
 
@@ -669,7 +669,6 @@ public class BoardServiceTest {
             .price(price)
             .status(true)
             .profile("profile")
-//            .detail("detail")
             .purchaseUrl("purchaseUrl")
             .view(1)
             .sunday(sunday)
@@ -722,7 +721,7 @@ public class BoardServiceTest {
         try {
             content = Files.readAllBytes(Paths.get("src/test/resources/html/detail.html"));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new BbangleException(e);
         }
 
         // MockMultipartFile 인스턴스 생성

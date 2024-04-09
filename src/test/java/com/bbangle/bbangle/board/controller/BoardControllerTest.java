@@ -183,7 +183,6 @@ class BoardControllerTest {
             .price(1000)
             .status(true)
             .profile("profile")
-//            .detail("detail")
             .purchaseUrl("purchaseUrl")
             .view(1)
             .sunday(sunday)
