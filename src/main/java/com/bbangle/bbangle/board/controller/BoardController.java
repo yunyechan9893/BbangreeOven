@@ -4,9 +4,7 @@ import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.common.message.MessageResDto;
 import com.bbangle.bbangle.board.service.BoardServiceImpl;
-import com.bbangle.bbangle.page.CursorInfo;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
@@ -14,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +28,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -162,31 +158,5 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.OK)
             .build();
     }
-
-    @PatchMapping(value = "/{boardId}/detail", consumes = {"multipart/form-data"})
-    public ResponseEntity<Object> putBoardDetailUrl(
-        @PathVariable("boardId")
-        Long boardId,
-        @RequestParam("htmlFile")
-        MultipartFile htmlFile
-    ) {
-        String successMessage = "파일 저장에 성공하셨습니다";
-        String failMessage = "파일 저장에 실패하셨습니다";
-
-        if (boardService.saveBoardDetailHtml(boardId, htmlFile)) {
-            return ResponseEntity.ok()
-                .body(MessageResDto.builder()
-                    .message(successMessage)
-                    .build()
-                );
-        }
-
-        // 예상치 못한 에러 발생
-        return ResponseEntity.ok()
-            .body(MessageResDto.builder()
-                .message(failMessage)
-                .build());
-    }
-
 }
 
