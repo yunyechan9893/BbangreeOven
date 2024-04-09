@@ -8,6 +8,7 @@ import com.bbangle.bbangle.board.service.BoardServiceImpl;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -97,18 +98,6 @@ public class BoardController {
         return ResponseEntity.ok(boardService.getPostInFolder(memberId, sort, folderId, pageable));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BoardDetailResponseDto> getBoardDetailResponse(
-        @PathVariable("id")
-        Long boardId
-    ) {
-        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-
-        return ResponseEntity.ok().body(
-            boardService.getBoardDetailResponse(memberId, boardId)
-        );
-    }
-
     @PatchMapping("/{boardId}")
     public ResponseEntity<Void> countView(
         @PathVariable
@@ -132,6 +121,19 @@ public class BoardController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "상품 상세보기 조회 (1/3)")
+    public ResponseEntity<BoardDetailResponseDto> getBoardDetailResponse(
+            @PathVariable("id")
+            Long boardId
+    ) {
+        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
+
+        return ResponseEntity.ok().body(
+                boardService.getBoardDetailResponse(memberId, boardId)
+        );
     }
 
     @PatchMapping("/{boardId}/purchase")
