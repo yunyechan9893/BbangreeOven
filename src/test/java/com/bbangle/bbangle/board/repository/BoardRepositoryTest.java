@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.testutil.TestFactoryManager;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 
@@ -20,14 +21,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SpringBootTest
 @Transactional
 @Rollback
-public class BoardRepositoryImplTest {
+public class BoardRepositoryTest {
     private final TestFactoryManager testFactoryManager;
     private final Long memberId = 2L;
 
-    public BoardRepositoryImplTest(
+    public BoardRepositoryTest(
             @Autowired MemberRepository memberRepository,
             @Autowired StoreRepository storeRepository,
             @Autowired BoardRepository boardRepository,
@@ -58,6 +62,33 @@ public class BoardRepositoryImplTest {
     @AfterEach
     void afterEach() {
         testFactoryManager.resetAutoIncreasementAndRowData();
+    }
+
+    @Test
+    @DisplayName("상품 게시물 상세보기 조회가 잘되고 있다")
+    public void getProductDtosToDuplicatedTagsTest(){
+        List<String> productOneTag = new ArrayList<>();
+        productOneTag.add("glutenFree");
+        productOneTag.add("sugarFree");
+
+        List<String> productTwoTag = new ArrayList<>();
+        productOneTag.add("highProtein");
+        productOneTag.add("sugarFree");
+
+        List<String> productThreeTag = new ArrayList<>();
+        productOneTag.add("glutenFree");
+        productOneTag.add("ketogenic");
+
+        List<ProductDto> productDtos = new ArrayList<>();
+        productDtos.add(ProductDto.builder().tags(productOneTag).build());
+        productDtos.add(ProductDto.builder().tags(productTwoTag).build());
+        productDtos.add(ProductDto.builder().tags(productThreeTag).build());
+
+        var boardRepository = testFactoryManager.getTestBoardFactory().getRepository();
+        List<String> actualDuplicatedTags = boardRepository.getProductDtosToDuplicatedTags(productDtos);
+
+        assertThat(actualDuplicatedTags, containsInAnyOrder("glutenFree", "sugarFree", "highProtein", "ketogenic"));
+        assertThat(actualDuplicatedTags, not(hasItem("vegan")));
     }
 
     @Test
