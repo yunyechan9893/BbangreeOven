@@ -13,6 +13,7 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -130,7 +131,7 @@ public class BoardServiceTest {
         FilterRequest filterRequest = FilterRequest.builder()
             .build();
 
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             NULL_SORT_TYPE, NULL_CURSOR);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
@@ -200,7 +201,7 @@ public class BoardServiceTest {
         FilterRequest filterRequest = FilterRequest.builder()
             .orderAvailableToday(true)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             NULL_SORT_TYPE, NULL_CURSOR);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
@@ -258,7 +259,7 @@ public class BoardServiceTest {
             noFilter,
             noFilter,
             noFilter, noFilter, null, null, null, null);
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             null, null);
 
         //then
@@ -302,7 +303,7 @@ public class BoardServiceTest {
             noFilter,
             noFilter,
             noFilter, noFilter, null, null, null, null);
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             null, null);
 
         //then
@@ -345,7 +346,7 @@ public class BoardServiceTest {
         productRepository.save(product3);
         FilterRequest filterRequest = FilterRequest.builder()
             .build();
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
@@ -388,7 +389,7 @@ public class BoardServiceTest {
         productRepository.save(product3);
         FilterRequest filterRequest = FilterRequest.builder()
             .build();
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
@@ -441,7 +442,7 @@ public class BoardServiceTest {
         FilterRequest filterRequest = FilterRequest.builder()
             .category(realCategory)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
@@ -527,7 +528,7 @@ public class BoardServiceTest {
             .sugarFreeTag(true)
             .category(Category.valueOf(category))
             .build();
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             NULL_SORT_TYPE, NULL_CURSOR);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
@@ -555,42 +556,42 @@ public class BoardServiceTest {
         FilterRequest filterRequest = FilterRequest.builder()
             .minPrice(5000)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList =
+        BoardCustomPage<List<BoardResponseDto>> boardList =
             boardService.getBoardList(filterRequest, NULL_SORT_TYPE, NULL_CURSOR);
         FilterRequest filterRequest2 =  FilterRequest.builder()
             .minPrice(1000)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList2 =
+        BoardCustomPage<List<BoardResponseDto>> boardList2 =
             boardService.getBoardList(filterRequest2, NULL_SORT_TYPE, NULL_CURSOR);
         FilterRequest filterRequest3 = FilterRequest.builder()
             .maxPrice(10000)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList3 =
+        BoardCustomPage<List<BoardResponseDto>> boardList3 =
             boardService.getBoardList(filterRequest3, NULL_SORT_TYPE, NULL_CURSOR);
         FilterRequest filterRequest4 = FilterRequest.builder()
             .maxPrice(1000)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList4 =
+        BoardCustomPage<List<BoardResponseDto>> boardList4 =
             boardService.getBoardList(filterRequest4, NULL_SORT_TYPE, NULL_CURSOR);
         FilterRequest filterRequest5 = FilterRequest.builder()
             .maxPrice(900)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList5 =
+        BoardCustomPage<List<BoardResponseDto>> boardList5 =
             boardService.getBoardList(filterRequest5, NULL_SORT_TYPE, NULL_CURSOR);
         FilterRequest filterRequest6 = FilterRequest.builder()
             .minPrice(1000)
             .maxPrice(10000)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList6 =
+        BoardCustomPage<List<BoardResponseDto>> boardList6 =
             boardService.getBoardList(filterRequest6, NULL_SORT_TYPE, NULL_CURSOR);
         FilterRequest filterRequest7 = FilterRequest.builder()
             .minPrice(1001)
             .maxPrice(9999)
             .build();
-        CustomPage<List<BoardResponseDto>> boardList7 =
+        BoardCustomPage<List<BoardResponseDto>> boardList7 =
             boardService.getBoardList(filterRequest7, NULL_SORT_TYPE, NULL_CURSOR);
         FilterRequest filterRequest8 = FilterRequest.builder().build();
-        CustomPage<List<BoardResponseDto>> boardList8 =
+        BoardCustomPage<List<BoardResponseDto>> boardList8 =
             boardService.getBoardList(filterRequest8, NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
@@ -671,7 +672,7 @@ public class BoardServiceTest {
 
         List<Board> all = boardRepository.findAll();
         FilterRequest filterRequest = FilterRequest.builder().build();
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+        BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
             NULL_SORT_TYPE, NULL_CURSOR);
 
         //then

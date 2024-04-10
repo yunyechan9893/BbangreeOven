@@ -12,7 +12,6 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
@@ -69,14 +68,14 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public CustomPage<List<BoardResponseDto>> getBoardList(
+    public BoardCustomPage<List<BoardResponseDto>> getBoardList(
         FilterRequest filterRequest,
         SortType sort,
         Long cursorId
     ) {
 
         List<Long> matchedIdx = getListAdaptingSort(sort);
-        CustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
             filterRequest,
             matchedIdx,
             cursorId
