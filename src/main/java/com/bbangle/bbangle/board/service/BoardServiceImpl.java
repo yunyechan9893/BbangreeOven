@@ -69,14 +69,13 @@ public class BoardServiceImpl implements BoardService {
     @Transactional(readOnly = true)
     public CustomPage<List<BoardResponseDto>> getBoardList(
         FilterRequest filterRequest,
-        String sort,
+        SortType sort,
         Long cursorId
     ) {
 
         List<Long> matchedIdx = getListAdaptingSort(sort);
         CustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
             filterRequest,
-            sort,
             matchedIdx,
             cursorId
         );
@@ -134,9 +133,9 @@ public class BoardServiceImpl implements BoardService {
   }
 
   private List<Long> getListAdaptingSort(
-      String sort
+      SortType sort
   ) {
-    if (sort != null && sort.equals(SortType.POPULAR.getValue())) {
+    if (sort != null && sort.equals(SortType.POPULAR)) {
       return getPopularIdList();
     }
 

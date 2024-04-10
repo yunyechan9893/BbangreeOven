@@ -53,7 +53,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     @Override
     public CustomPage<List<BoardResponseDto>> getBoardResponseDto(
         FilterRequest filterRequest,
-        String sort,
         List<Long> matchedIdx,
         Long cursorId
     ) {
