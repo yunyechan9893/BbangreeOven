@@ -6,7 +6,6 @@ import lombok.Getter;
 
 @Getter
 public class WishListStoreResponseDto {
-    private Long id;
     private String introduce;
     private String storeName;
     private Long storeId;
@@ -15,12 +14,10 @@ public class WishListStoreResponseDto {
 
     @Builder
     @QueryProjection
-    public WishListStoreResponseDto(Long id,
-                                    String introduce,
+    public WishListStoreResponseDto(String introduce,
                                     String storeName,
                                     Long storeId,
                                     String profile) {
-        this.id = id;
         this.introduce = introduce;
         this.storeName = storeName;
         this.storeId = storeId;
