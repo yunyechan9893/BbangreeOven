@@ -8,7 +8,6 @@ import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.common.message.MessageResDto;
 import com.bbangle.bbangle.board.service.BoardServiceImpl;
-import com.bbangle.bbangle.page.CursorInfo;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
@@ -153,10 +152,9 @@ public class BoardController {
     ) {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
-        return ResponseEntity.ok()
-            .body(
-                boardService.getBoardDetailResponse(memberId, boardId)
-            );
+        return ResponseEntity.ok().body(
+            boardService.getBoardDetailResponse(memberId, boardId)
+        );
     }
 
     @PatchMapping("/{boardId}")

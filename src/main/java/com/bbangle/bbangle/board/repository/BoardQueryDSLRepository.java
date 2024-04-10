@@ -2,9 +2,8 @@ package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +12,7 @@ import org.springframework.data.domain.Slice;
 
 public interface BoardQueryDSLRepository {
 
-    CustomPage<List<BoardResponseDto>> getBoardResponseDto(
+    BoardCustomPage<List<BoardResponseDto>> getBoardResponseDto(
         FilterRequest filterRequest,
         List<Long> matchedIdx,
         Long cursorId
