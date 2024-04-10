@@ -3,6 +3,8 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
@@ -16,7 +18,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
 
-import com.bbangle.bbangle.exception.CategoryTypeException;
 import com.bbangle.bbangle.util.SecurityUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
@@ -38,6 +39,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
 import static com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct.wishlistProduct;
 
 @Repository
@@ -50,7 +52,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public CustomPage<List<BoardResponseDto>> getBoardResponseDto(
+    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseDto(
         String sort, Boolean glutenFreeTag, Boolean highProteinTag,
         Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
         String category, Integer minPrice, Integer maxPrice,
@@ -341,7 +343,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .select(Projections.bean(
                 ProductBoardLikeStatus.class,
                 board.id.as("boardId"),
-                isLikedExpression.as("isLike")
+                isLikedExpression.as("isWished")
             ))
             .from(board)
             .leftJoin(wishlistProduct)
@@ -382,7 +384,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return cursorBuilder;
     }
 
-    private CustomPage<List<BoardResponseDto>> getBoardCustomPage(
+    private BoardCustomPage<List<BoardResponseDto>> getBoardCustomPage(
         Long cursorId,
         QBoard board,
         QProduct product,
@@ -418,9 +420,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 storeCnt = 0L;
             }
 
-            return CustomPage.from(content, 0L, hasNext, boardCnt, storeCnt);
+            return BoardCustomPage.from(content, 0L, hasNext, boardCnt, storeCnt);
         }
-        return CustomPage.from(content, cursorId, hasNext);
+        return BoardCustomPage.from(content, cursorId, hasNext);
     }
 
     private Long returnStartId(Long cursorId, List<Long> rankIds) {
@@ -472,7 +474,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 orderSpecifier = board.wishCnt.desc();
                 break;
             default:
-                throw new IllegalArgumentException("Invalid SortType");
+                throw new BbangleException("Invalid SortType");
         }
         return orderSpecifier;
     }
@@ -527,7 +529,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         }
         if (category != null && !category.isBlank()) {
             if (!Category.checkCategory(category)) {
-                throw new CategoryTypeException();
+                throw new BbangleException(UNKNOWN_CATEGORY);
             }
             filterBuilder.and(product.category.eq(Category.valueOf(category)));
         }

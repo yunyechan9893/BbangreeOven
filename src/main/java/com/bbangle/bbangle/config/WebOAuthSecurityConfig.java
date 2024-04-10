@@ -75,6 +75,8 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
             .permitAll()
             .requestMatchers("/api/v1/stores/**")
             .permitAll()
+            .requestMatchers("/api/v1/health/**")
+            .permitAll()
             .requestMatchers(HttpMethod.GET, "api/v1/boards/**")
             .permitAll()
             .requestMatchers(HttpMethod.GET, "api/v1/notice/**")

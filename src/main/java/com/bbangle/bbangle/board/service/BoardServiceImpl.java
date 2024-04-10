@@ -1,22 +1,24 @@
 package com.bbangle.bbangle.board.service;
 
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.exception.MemberNotFoundException;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.page.CustomPage;
-import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
-import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
+import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
+import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
+import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
 import java.util.List;
-
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,7 +53,8 @@ public class BoardServiceImpl implements BoardService {
         WishListFolderRepository folderRepository,
         @Autowired
         @Qualifier("defaultRedisTemplate")
-        RedisTemplate<String, Object> redisTemplate, ObjectStorageRepository objectStorageRepository,
+        RedisTemplate<String, Object> redisTemplate,
+        ObjectStorageRepository objectStorageRepository,
         @Autowired
         StoreRepository storeRepository
     ) {
@@ -73,7 +76,7 @@ public class BoardServiceImpl implements BoardService {
     ) {
 
         List<Long> matchedIdx = getListAdaptingSort(sort);
-        CustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
             sort,
             glutenFreeTag,
             highProteinTag,
@@ -132,10 +135,10 @@ public class BoardServiceImpl implements BoardService {
         Pageable pageable
     ) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(MemberNotFoundException::new);
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
         WishlistFolder folder = folderRepository.findByMemberAndId(member, folderId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 폴더입니다."));
+            .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
 
         return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
     }

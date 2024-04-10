@@ -1,25 +1,26 @@
 package com.bbangle.bbangle.member.service;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+
 import com.bbangle.bbangle.common.image.service.S3Service;
 import com.bbangle.bbangle.common.image.validation.ImageValidator;
-import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
-import com.bbangle.bbangle.exception.MemberNotFoundException;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
 import com.bbangle.bbangle.member.domain.Withdrawal;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
 import com.bbangle.bbangle.wishListBoard.service.WishListBoardService;
 import com.bbangle.bbangle.wishListFolder.service.WishListFolderService;
-import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -63,10 +64,10 @@ public class MemberService {
             );
     }
 
-    public Member findById(Long id) {
-        return memberRepository.findById(id)
-            .orElseThrow(MemberNotFoundException::new);
-    }
+  public Member findById(Long id) {
+    return memberRepository.findById(id)
+        .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+  }
 
     @Transactional
     public void updateMemberInfo(
@@ -130,16 +131,16 @@ public class MemberService {
         wishListFolderService.deletedByDeletedMember(memberId);
     }
 
-    @Transactional
-    public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
-        String[] reasons = withdrawalRequestDto.getReasons().split(",");
-        for (String reason : reasons) {
-            withdrawalRepository.save(Withdrawal.builder()
-                    .reason(reason)
-                    .member(member)
-                    .build());
-        }
+  @Transactional
+  public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+    String[] reasons = withdrawalRequestDto.getReasons().split(",");
+    for (String reason : reasons) {
+      withdrawalRepository.save(Withdrawal.builder()
+          .reason(reason)
+          .member(member)
+          .build());
     }
+  }
 }
