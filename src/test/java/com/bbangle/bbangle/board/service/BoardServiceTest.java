@@ -11,6 +11,7 @@ import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.domain.Store;
@@ -31,11 +32,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@Transactional
 public class BoardServiceTest {
+
+    private static final Long NULL_CURSOR = null;
+    private static final SortType NULL_SORT_TYPE = null;
 
     @Autowired
     StoreRepository storeRepository;
@@ -58,9 +64,6 @@ public class BoardServiceTest {
     @BeforeEach
     void setup() {
         defaultPage = PageRequest.of(0, 10);
-        productRepository.deleteAll();
-        boardRepository.deleteAll();
-        storeRepository.deleteAll();
 
         store = storeGenerator();
         storeRepository.save(store);
@@ -124,11 +127,11 @@ public class BoardServiceTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        FilterRequest filterRequest = new FilterRequest(noFilter, noFilter,
-            noFilter,
-            noFilter, noFilter, null, null, null, null);
+        FilterRequest filterRequest = FilterRequest.builder()
+            .build();
+
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            null, null);
+            NULL_SORT_TYPE, NULL_CURSOR);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
         BoardResponseDto response2 = boardList.getContent()
@@ -193,12 +196,12 @@ public class BoardServiceTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        String noSort = "";
-        FilterRequest filterRequest = new FilterRequest(noFilter,
-            noFilter,
-            noFilter, noFilter, noFilter, null, null, null, true);
+
+        FilterRequest filterRequest = FilterRequest.builder()
+            .orderAvailableToday(true)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            noSort, null);
+            NULL_SORT_TYPE, NULL_CURSOR);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -340,13 +343,10 @@ public class BoardServiceTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        String noSort = "";
-        FilterRequest filterRequest = new FilterRequest(noFilter,
-            noFilter,
-            noFilter,
-            true, noFilter, null, null, null, null);
+        FilterRequest filterRequest = FilterRequest.builder()
+            .build();
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            noSort, null);
+            NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
         assertThat(boardList.getContent()).hasSize(0);
@@ -386,13 +386,10 @@ public class BoardServiceTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        String noSort = "";
-        FilterRequest filterRequest = new FilterRequest(noFilter,
-            noFilter,
-            noFilter,
-            noFilter, true, null, null, null, null);
+        FilterRequest filterRequest = FilterRequest.builder()
+            .build();
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            noSort, null);
+            NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
         assertThat(boardList.getContent()).hasSize(2);
@@ -432,7 +429,6 @@ public class BoardServiceTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        String noSort = "";
 
         Category realCategory;
         if (category != null & !category.isBlank()) {
@@ -442,11 +438,11 @@ public class BoardServiceTest {
         }
 
         //when
-        FilterRequest filterRequest = new FilterRequest(null, null,
-            null,
-            null, null, realCategory, null, null, null);
+        FilterRequest filterRequest = FilterRequest.builder()
+            .category(realCategory)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            noSort, null);
+            NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -486,14 +482,12 @@ public class BoardServiceTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        String noSort = "";
 
         //then
-        FilterRequest filterRequest = new FilterRequest(null, null, null,
-            null, null, Category.valueOf(category), null, null, null);
-        Assertions.assertThatThrownBy(() -> boardService.getBoardList(filterRequest, noSort,  null))
+        Assertions.assertThatThrownBy(() -> FilterRequest.builder()
+                .category(Category.valueOf(category))
+                .build())
             .isInstanceOf(BbangleException.class);
-
     }
 
     @ParameterizedTest
@@ -529,11 +523,12 @@ public class BoardServiceTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        String noSort = "";
-        FilterRequest filterRequest = new FilterRequest(null, null,
-            true,
-            null, null, Category.valueOf(category), null, null, null);
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest, noSort, null);
+        FilterRequest filterRequest = FilterRequest.builder()
+            .sugarFreeTag(true)
+            .category(Category.valueOf(category))
+            .build();
+        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+            NULL_SORT_TYPE, NULL_CURSOR);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -557,39 +552,46 @@ public class BoardServiceTest {
     @DisplayName("가격 필터를 적용 시 그에 맞춰 작동한다.")
     public void showListFilterPrice() {
         //given, when
-        FilterRequest filterRequest = new FilterRequest(null, null, null, null, null, null, 5000, null,
-            null);
+        FilterRequest filterRequest = FilterRequest.builder()
+            .minPrice(5000)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList =
-            boardService.getBoardList(filterRequest, null, null);
-        FilterRequest filterRequest2 = new FilterRequest(null, null, null, null, null, null, 1000, null,
-            null);
+            boardService.getBoardList(filterRequest, NULL_SORT_TYPE, NULL_CURSOR);
+        FilterRequest filterRequest2 =  FilterRequest.builder()
+            .minPrice(1000)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList2 =
-            boardService.getBoardList(filterRequest2, null, null);
-        FilterRequest filterRequest3 = new FilterRequest(null, null, null, null, null, null, null, 10000,
-            null);
+            boardService.getBoardList(filterRequest2, NULL_SORT_TYPE, NULL_CURSOR);
+        FilterRequest filterRequest3 = FilterRequest.builder()
+            .maxPrice(10000)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList3 =
-            boardService.getBoardList(filterRequest3, null,null);
-        FilterRequest filterRequest4= new FilterRequest(null, null, null, null, null, null, null, 1000,
-            null);
+            boardService.getBoardList(filterRequest3, NULL_SORT_TYPE, NULL_CURSOR);
+        FilterRequest filterRequest4 = FilterRequest.builder()
+            .maxPrice(1000)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList4 =
-            boardService.getBoardList(filterRequest4, null, null);
-        FilterRequest filterRequest5 = new FilterRequest(null, null, null, null, null, null, null, 900,
-            null);
+            boardService.getBoardList(filterRequest4, NULL_SORT_TYPE, NULL_CURSOR);
+        FilterRequest filterRequest5 = FilterRequest.builder()
+            .maxPrice(900)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList5 =
-            boardService.getBoardList(filterRequest5, null, null);
-        FilterRequest filterRequest6 = new FilterRequest(null, null, null, null, null, null, 1000, 10000,
-            null);
+            boardService.getBoardList(filterRequest5, NULL_SORT_TYPE, NULL_CURSOR);
+        FilterRequest filterRequest6 = FilterRequest.builder()
+            .minPrice(1000)
+            .maxPrice(10000)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList6 =
-            boardService.getBoardList(filterRequest6, null, null);
-        FilterRequest filterRequest7 = new FilterRequest(null, null, null, null, null, null, 1001, 9999,
-            null);
+            boardService.getBoardList(filterRequest6, NULL_SORT_TYPE, NULL_CURSOR);
+        FilterRequest filterRequest7 = FilterRequest.builder()
+            .minPrice(1001)
+            .maxPrice(9999)
+            .build();
         CustomPage<List<BoardResponseDto>> boardList7 =
-            boardService.getBoardList(filterRequest7, null, null);
-        FilterRequest filterRequest8 = new FilterRequest(null, null, null, null, null, null, null, null,
-            null);
+            boardService.getBoardList(filterRequest7, NULL_SORT_TYPE, NULL_CURSOR);
+        FilterRequest filterRequest8 = FilterRequest.builder().build();
         CustomPage<List<BoardResponseDto>> boardList8 =
-            boardService.getBoardList(filterRequest8, null, null);
-        List<Board> all = boardRepository.findAll();
+            boardService.getBoardList(filterRequest8, NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -667,13 +669,10 @@ public class BoardServiceTest {
         productRepository.save(product2);
         productRepository.save(product3);
 
-        String noSort = "";
-
         List<Board> all = boardRepository.findAll();
-        FilterRequest filterRequest = new FilterRequest(null, null,
-            null,
-            null, null, null, null, null, null);
-        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest, noSort,  null);
+        FilterRequest filterRequest = FilterRequest.builder().build();
+        CustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
+            NULL_SORT_TYPE, NULL_CURSOR);
 
         //then
         assertThat(boardList.getContent()).hasSize(10);
