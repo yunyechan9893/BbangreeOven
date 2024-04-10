@@ -11,6 +11,15 @@ import com.bbangle.bbangle.page.CursorInfo;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -39,6 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v1/boards")
 @RequiredArgsConstructor
+@Tag(name = "Boards", description = "게시판 API")
 public class BoardController {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
@@ -50,8 +60,66 @@ public class BoardController {
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
+    @Operation(summary = "게시글 전체 조회")
+    @ApiResponse(
+        responseCode = "200",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = CustomPage.class)
+        )
+    )
+    @Parameters(
+        {
+            @Parameter(
+                name = "glutenFreeTag",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "boolean")
+            ),
+            @Parameter(
+                name = "highProteinTag",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "boolean")
+            ),
+            @Parameter(
+                name = "sugarFreeTag",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "boolean")
+            ),
+            @Parameter(
+                name = "veganTag",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "boolean")
+            ),
+            @Parameter(
+                name = "ketogenicTag",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "boolean")
+            ),
+            @Parameter(
+                name = "orderAvailableToday",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "boolean")
+            ),
+            @Parameter(
+                name = "category",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "string")
+            ),
+            @Parameter(
+                name = "minPrice",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "integer")
+            ),
+            @Parameter(
+                name = "maxPrice",
+                in = ParameterIn.QUERY,
+                schema = @Schema(type = "integer")
+            )
+        }
+    )
     @GetMapping
     public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
+        @Parameter(hidden = true)
         FilterRequest filterRequest,
         @RequestParam(required = false)
         String sort,
@@ -84,9 +152,10 @@ public class BoardController {
     ) {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
-        return ResponseEntity.ok().body(
-            boardService.getBoardDetailResponse(memberId, boardId)
-        );
+        return ResponseEntity.ok()
+            .body(
+                boardService.getBoardDetailResponse(memberId, boardId)
+            );
     }
 
     @PatchMapping("/{boardId}")
