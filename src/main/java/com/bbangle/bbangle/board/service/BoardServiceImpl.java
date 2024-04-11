@@ -9,10 +9,10 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
@@ -68,25 +68,15 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public CustomPage<List<BoardResponseDto>> getBoardList(
-        String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-        Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag,
-        String category, Integer minPrice, Integer maxPrice, Boolean orderAvailableToday,
+    public BoardCustomPage<List<BoardResponseDto>> getBoardList(
+        FilterRequest filterRequest,
+        SortType sort,
         Long cursorId
     ) {
 
         List<Long> matchedIdx = getListAdaptingSort(sort);
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
-            sort,
-            glutenFreeTag,
-            highProteinTag,
-            sugarFreeTag,
-            veganTag,
-            ketogenicTag,
-            category,
-            minPrice,
-            maxPrice,
-            orderAvailableToday,
+            filterRequest,
             matchedIdx,
             cursorId
         );
@@ -144,9 +134,9 @@ public class BoardServiceImpl implements BoardService {
     }
 
     private List<Long> getListAdaptingSort(
-        String sort
+        SortType sort
     ) {
-        if (sort != null && sort.equals(SortType.POPULAR.getValue())) {
+        if (sort != null && sort.equals(SortType.POPULAR)) {
             return getPopularIdList();
         }
 
