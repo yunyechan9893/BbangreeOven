@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -68,62 +69,13 @@ public class BoardController {
             schema = @Schema(implementation = CustomPage.class)
         )
     )
-    @Parameters(
-        {
-            @Parameter(
-                name = "glutenFreeTag",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "boolean")
-            ),
-            @Parameter(
-                name = "highProteinTag",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "boolean")
-            ),
-            @Parameter(
-                name = "sugarFreeTag",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "boolean")
-            ),
-            @Parameter(
-                name = "veganTag",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "boolean")
-            ),
-            @Parameter(
-                name = "ketogenicTag",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "boolean")
-            ),
-            @Parameter(
-                name = "orderAvailableToday",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "boolean")
-            ),
-            @Parameter(
-                name = "category",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "string")
-            ),
-            @Parameter(
-                name = "minPrice",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "integer")
-            ),
-            @Parameter(
-                name = "maxPrice",
-                in = ParameterIn.QUERY,
-                schema = @Schema(type = "integer")
-            )
-        }
-    )
     @GetMapping
     public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
-        @Parameter(hidden = true)
+        @ParameterObject
         FilterRequest filterRequest,
-        @RequestParam(required = false)
+        @RequestParam(required = false, name = "정렬 기준")
         SortType sort,
-        @RequestParam(required = false)
+        @RequestParam(required = false, name = "페이지네이션 cursorId")
         Long cursorId
     ) {
         return ResponseEntity.ok(boardService.getBoardList(
