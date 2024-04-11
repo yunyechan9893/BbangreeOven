@@ -166,6 +166,7 @@ public class SearchServiceTest {
             assertThat(store.storeName(), is("RAWSOME"));
             assertThat(store.isWished(), is(false));
 
+
         }
     }
 
