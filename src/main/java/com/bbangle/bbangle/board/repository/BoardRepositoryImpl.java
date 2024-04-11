@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -481,6 +482,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return productTagsByBoardId;
     }
 
+    @ExecutionTimeLog
     private OrderSpecifier<?> orderByFieldList(QBoard board, List<Long> boardId) {
         String boardIdStr = boardId.stream()
             .map(Object::toString)

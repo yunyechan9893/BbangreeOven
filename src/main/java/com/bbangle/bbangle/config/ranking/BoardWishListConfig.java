@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.config.ranking;
 
+import com.bbangle.bbangle.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import jakarta.annotation.PostConstruct;
@@ -17,6 +18,7 @@ public class BoardWishListConfig {
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
 
+    @ExecutionTimeLog
     @PostConstruct
     public void init() {
         boardRepository.findAll()

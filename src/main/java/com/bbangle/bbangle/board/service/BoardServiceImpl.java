@@ -3,6 +3,7 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
+import com.bbangle.bbangle.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -133,6 +134,7 @@ public class BoardServiceImpl implements BoardService {
         return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
     }
 
+    @ExecutionTimeLog
     private List<Long> getListAdaptingSort(
         SortType sort
     ) {
