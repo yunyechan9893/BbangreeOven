@@ -27,7 +27,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @SpringBootTest
-@Transactional
 @AutoConfigureMockMvc
 class BoardControllerTest {
 
@@ -51,6 +50,10 @@ class BoardControllerTest {
 
     @BeforeEach
     void setup() {
+        productRepository.deleteAll();
+        boardRepository.deleteAll();
+        storeRepository.deleteAll();
+        
         Store store = storeGenerator();
         storeRepository.save(store);
 
