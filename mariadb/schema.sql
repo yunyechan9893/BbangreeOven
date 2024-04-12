@@ -149,9 +149,28 @@ CREATE TABLE product_img
 
 CREATE TABLE refresh_token
 (
-    id               BIGINT AUTO_INCREMENT,
-    member_id        BIGINT       NOT NULL,
-    refresh_token    VARCHAR(255) NOT NULL,
+    id            BIGINT AUTO_INCREMENT,
+    member_id     BIGINT       NOT NULL,
+    refresh_token VARCHAR(255) NOT NULL,
     CONSTRAINT refresh_token_pk PRIMARY KEY (id),
     CONSTRAINT fk_refresh_token_user FOREIGN KEY (member_id) REFERENCES member (id)
+);
+
+CREATE TABLE ranking
+(
+    id               BIGINT AUTO_INCREMENT,
+    product_board_id BIGINT NOT NULL,
+    recommend_score  BIGINT NOT NULL,
+    popular_score    BIGINT NOT NULL,
+    CONSTRAINT product_img_pk PRIMARY KEY (id),
+    CONSTRAINT fk_ranking_product_board FOREIGN KEY (product_board_id) REFERENCES product_board (id)
+);
+
+CREATE TABLE notice
+(
+    id               BIGINT AUTO_INCREMENT,
+    title varchar(255) NOT NULL,
+    content varchar(255) NOT NULL,
+    CONSTRAINT product_img_pk PRIMARY KEY (id),
+    created_at  DATETIME(6)
 );
