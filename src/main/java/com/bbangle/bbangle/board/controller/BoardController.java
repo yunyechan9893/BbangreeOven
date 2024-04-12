@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -69,6 +70,7 @@ public class BoardController {
             schema = @Schema(implementation = CustomPage.class)
         )
     )
+    @ExecutionTimeLog
     @GetMapping
     public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
         @ParameterObject

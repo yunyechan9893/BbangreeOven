@@ -38,8 +38,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StopWatch;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
 import static com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct.wishlistProduct;
 
 @Repository
@@ -52,6 +52,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
+    @ExecutionTimeLog
     public BoardCustomPage<List<BoardResponseDto>> getBoardResponseDto(
         FilterRequest filterRequest,
         List<Long> matchedIdx,
@@ -68,7 +69,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 board);
 
         BooleanBuilder cursorBuilder = setCursorBuilder(cursorId, matchedIdx, board);
-
+        OrderSpecifier<?> filedOrder = orderByFieldList(board, matchedIdx);
         List<Board> boards = queryFactory
             .selectFrom(board)
             .leftJoin(board.productList, product)
@@ -76,7 +77,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(board.store, store)
             .fetchJoin()
             .where(cursorBuilder.and(filter))
-            .orderBy(orderByFieldList(board, matchedIdx))
+            .orderBy(filedOrder)
             .limit(PAGE_SIZE + 1)
             .fetch();
 
@@ -483,13 +484,16 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @ExecutionTimeLog
-    private OrderSpecifier<?> orderByFieldList(QBoard board, List<Long> boardId) {
+    public OrderSpecifier<?> orderByFieldList(QBoard board, List<Long> boardId) {
+        StopWatch stopWatch = new StopWatch("field transition start");
+        stopWatch.start();
         String boardIdStr = boardId.stream()
             .map(Object::toString)
             .collect(Collectors.joining(", "));
 
         String template = String.format("FIELD(%s, %s)", board.id, boardIdStr);
-
+        stopWatch.stop();
+        log.info("Execution Time : {}", stopWatch.prettyPrint());
         return new OrderSpecifier<>(Order.ASC, Expressions.stringTemplate(template));
     }
 

@@ -29,6 +29,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -69,12 +70,12 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
+    @ExecutionTimeLog
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
         FilterRequest filterRequest,
         SortType sort,
         Long cursorId
     ) {
-
         List<Long> matchedIdx = getListAdaptingSort(sort);
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
             filterRequest,
@@ -135,7 +136,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @ExecutionTimeLog
-    private List<Long> getListAdaptingSort(
+    public List<Long> getListAdaptingSort(
         SortType sort
     ) {
         if (sort != null && sort.equals(SortType.POPULAR)) {
