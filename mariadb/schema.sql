@@ -38,6 +38,7 @@ CREATE TABLE search
     id         BIGINT AUTO_INCREMENT,
     member_id  BIGINT,
     user_type  VARCHAR(20),
+    is_deleted tinyint,
     keyword    VARCHAR(255) NOT NULL,
     created_at DATETIME(6),
     CONSTRAINT search_pk PRIMARY KEY (id),
@@ -168,9 +169,30 @@ CREATE TABLE ranking
 
 CREATE TABLE notice
 (
-    id               BIGINT AUTO_INCREMENT,
-    title varchar(255) NOT NULL,
-    content varchar(255) NOT NULL,
+    id         BIGINT AUTO_INCREMENT,
+    title      varchar(255) NOT NULL,
+    content    varchar(255) NOT NULL,
     CONSTRAINT product_img_pk PRIMARY KEY (id),
-    created_at  DATETIME(6)
+    created_at DATETIME(6)
+);
+create table product_detail
+(
+    id               bigint auto_increment,
+    product_board_id bigint       null,
+    img_index        int          not null,
+    url              varchar(255) not null,
+    CONSTRAINT product_detail_pk PRIMARY KEY (id),
+    constraint fk_product_board_product_detail
+        foreign key (product_board_id) references product_board (id)
+);
+create table withdrawal
+(
+    id          bigint auto_increment,
+    member_id   bigint       not null,
+    reason      varchar(255) null,
+    created_at  datetime(6)  null,
+    modified_at datetime(6)  null,
+    CONSTRAINT withdrawal_pk PRIMARY KEY (id),
+    constraint fk_member_withdrawal
+        foreign key (member_id) references member (id)
 );
