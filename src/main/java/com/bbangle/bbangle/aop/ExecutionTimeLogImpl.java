@@ -16,11 +16,11 @@ public class ExecutionTimeLogImpl {
 
     @Around("@annotation(ExecutionTimeLog)")
     public void assumeExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable{
-        StopWatch stopWatch = new StopWatch();
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        StopWatch stopWatch = new StopWatch(signature.getMethod().getName());
         stopWatch.start();
         joinPoint.proceed();
         stopWatch.stop();
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String methodName = signature.getMethod().getName();
         log.info("Method Name : {}", methodName);
         log.info("Execution Time : {}", stopWatch.prettyPrint());
