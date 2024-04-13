@@ -80,6 +80,8 @@ create table product_detail (
     product_board_id bigint       null,
     img_index        int          not null,
     url              varchar(255) not null,
+    created_at       datetime(6) null,
+    modified_at      datetime(6) null,
     constraint fk_board_product_detail foreign key (product_board_id) references product_board (id)
 );
 
