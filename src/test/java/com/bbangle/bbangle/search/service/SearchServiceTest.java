@@ -72,6 +72,9 @@ public class SearchServiceTest {
     @Test
     @DisplayName("게시물이 잘 저장돼있다")
     public void checkAllBoardCountTest(){
+        redisRepository.delete("MIGRATION","board");
+        redisRepository.delete("MIGRATION","store");
+        searchService.initSetting();
         var boardCount = testFactoryManager.getTestBoardFactory().getRepository().findAll().size();
         assertThat(boardCount, is(15));
     }
@@ -137,7 +140,7 @@ public class SearchServiceTest {
         for(int i = 0; BoardDtos.size() > i; i++){
             var boardDto = BoardDtos.get(i);
             assertThat(boardDto.boardId(), is(i+1L));
-            assertThat(boardDto.storeId(), is(i+1L));
+            assertThat(boardDto.getStoreId(), is(i+1L));
             assertThat(boardDto.tags(), hasItem("glutenFree"));
             assertThat(boardDto.price(), lessThanOrEqualTo(6000));
         }
@@ -162,9 +165,9 @@ public class SearchServiceTest {
 
         for (int i = 0; stores.size() > i; i++){
             var store = stores.get(i);
-            assertThat(store.storeId(), is(i+1L));
-            assertThat(store.storeName(), is("RAWSOME"));
-            assertThat(store.isWished(), is(false));
+            assertThat(store.getStoreId(), is(i+1L));
+            assertThat(store.getStoreName(), is("RAWSOME"));
+            assertThat(store.getIsWished(), is(false));
 
 
         }
@@ -189,9 +192,9 @@ public class SearchServiceTest {
 
         for (int i = 0; stores.size() > i; i++){
             var store = stores.get(i);
-            assertThat(store.storeId(), is(i+11L));
-            assertThat(store.storeName(), is("RAWSOME"));
-            assertThat(store.isWished(), is(false));
+            assertThat(store.getStoreId(), is(i+11L));
+            assertThat(store.getStoreName(), is("RAWSOME"));
+            assertThat(store.getIsWished(), is(false));
         }
     }
 

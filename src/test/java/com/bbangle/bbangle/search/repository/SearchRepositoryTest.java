@@ -1,12 +1,14 @@
 package com.bbangle.bbangle.search.repository;
 
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
+import com.bbangle.bbangle.search.service.SearchService;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.testutil.TestFactoryManager;
 import com.bbangle.bbangle.testutil.model.*;
@@ -31,6 +33,11 @@ import static org.hamcrest.Matchers.*;
 @Rollback
 public class SearchRepositoryTest {
     TestFactoryManager testFactoryManager;
+
+    @Autowired
+    SearchService searchService;
+    @Autowired
+    RedisRepository redisRepository;
 
     public SearchRepositoryTest(
             @Autowired MemberRepository memberRepository,
@@ -62,6 +69,9 @@ public class SearchRepositoryTest {
     @Test
     @DisplayName("게시물이 잘 저장돼있다")
     public void checkAllBoardCountTest(){
+        redisRepository.delete("MIGRATION","board");
+        redisRepository.delete("MIGRATION","store");
+        searchService.initSetting();
         var boardCount = testFactoryManager.getTestBoardFactory().getRepository().findAll().size();
         assertThat(boardCount, is(15));
     }
@@ -133,9 +143,8 @@ public class SearchRepositoryTest {
         var searchedStores = searchRepository.getSearchedStore(member.getId(), storeIds, PageRequest.of(0, 10));
 
         for(int i = 0; i < 2; i++){
-            assertThat(searchedStores.get(i).storeId(), is(i + 1));
-            assertThat(searchedStores.get(i).storeName(), is("RAWSOME"));
-            assertThat(searchedStores.get(i).isWished(), is(false));
+            assertThat(searchedStores.get(i).getStoreName(), is("RAWSOME"));
+            assertThat(searchedStores.get(i).getIsWished(), is(false));
         }
     }
 

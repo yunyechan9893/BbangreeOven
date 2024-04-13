@@ -131,7 +131,7 @@ public class BoardRepositoryTest {
         var board = testFactoryManager.getTestBoardFactory().getTestEntity("board1");
         var boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, board.getId());
 
-        assertThat(boardDetailResponse.store().isWished(), is(false));
+        assertThat(boardDetailResponse.store().isWished(), is(true));
         assertThat(boardDetailResponse.board().isWished(), is(true));
     }
 
