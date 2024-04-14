@@ -5,6 +5,7 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.AWS_ENVIRONMENT;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.amazonaws.SdkClientException;
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -31,6 +33,12 @@ public class GlobalControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public CommonResult defaultExceptionHandler(HttpServletRequest request, Exception ex) {
         slackAdaptor.sendAlert(request, ex);
+        return responseService.getFailResult(ex.getLocalizedMessage(), -1);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public CommonResult notFoundExceptionHandler(NoResourceFoundException ex) {
         return responseService.getFailResult(ex.getLocalizedMessage(), -1);
     }
 
