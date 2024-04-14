@@ -58,3 +58,36 @@ cloud:
       auto: false
     stack:
       auto: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: production
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+  jpa:
+    show-sql: false
+  datasource:
+    url: jdbc:mariadb://115.85.181.105:3300/bakery?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: root
+    password: 9893
+    driver-class-name: org.mariadb.jdbc.Driver
+oauth2:
+  google:
+    client-id: 191791280887-ij6l3b2eav7n2eibubo3pq0msahvha04.apps.googleusercontent.com
+    client-secret: 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
+    redirect-uri: http://www.bbangle.store/login/oauth2/code/google
+cloud:
+  aws:
+    s3:
+      bucket: bbangle-bucket
+      end-point: https://kr.object.ncloudstorage.com
+    credentials:
+      access-key: i0gjlRUfOrekFsXqNmbf
+      secret-key: uc3cX2zcRi0lc56PfLLpMilETl5nvP25ipKcHVUb
+    region:
+      static: kr-standard
