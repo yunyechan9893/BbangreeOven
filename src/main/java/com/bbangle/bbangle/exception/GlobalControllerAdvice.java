@@ -39,6 +39,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public CommonResult notFoundExceptionHandler(NoResourceFoundException ex) {
+        // 404 는 쓸데없는 알람이 너무 많이와서 얼럿에서 제외
         return responseService.getFailResult(ex.getLocalizedMessage(), -1);
     }
 
