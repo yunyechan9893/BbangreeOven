@@ -5,7 +5,6 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.AWS_ENVIRONMENT;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.amazonaws.SdkClientException;
-import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.bbangle.bbangle.common.adaptor.slack.SlackAdaptor;
 import com.bbangle.bbangle.common.dto.CommonResult;
@@ -60,7 +59,8 @@ public class GlobalControllerAdvice {
     public ResponseEntity<CommonResult> handleMethodArgumentNotValidException(
         MethodArgumentNotValidException ex
     ) {
-        CommonResult methodArgumentNotValidExceptionResult = responseService.getMethodArgumentNotValidExceptionResult(ex);
+        CommonResult methodArgumentNotValidExceptionResult = responseService.getMethodArgumentNotValidExceptionResult(
+            ex);
         return new ResponseEntity<>(methodArgumentNotValidExceptionResult, HttpStatus.BAD_REQUEST);
     }
 
