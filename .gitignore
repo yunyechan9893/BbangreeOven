@@ -222,3 +222,5 @@ redis/data/dump.rdb
 .idea/
 
 src/main/generated/
+
+logging
