@@ -33,6 +33,14 @@ public class Ranking {
     private Long popularScore;
 
     @Column(name = "recommend_score")
-    private Long RecommendScore;
+    private Long recommendScore;
+
+    public void updatePopularScore(int score) {
+        this.popularScore += score;
+    }
+
+    public void updateRecommendScore(int score) {
+        this.recommendScore += score;
+    }
 
 }
