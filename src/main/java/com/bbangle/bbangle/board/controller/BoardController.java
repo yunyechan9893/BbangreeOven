@@ -53,8 +53,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Boards", description = "게시판 API")
 public class BoardController {
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
-
     private final BoardServiceImpl boardService;
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
@@ -123,14 +121,7 @@ public class BoardController {
                 .build();
         }
 
-        redisTemplate.opsForZSet()
-            .incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 0.1);
-        boardLikeInfoRedisTemplate.opsForList()
-            .rightPush(LocalDateTime.now()
-                    .format(formatter),
-                new BoardLikeInfo(boardId, 0.1, LocalDateTime.now(), ScoreType.VIEW));
-        redisTemplate.opsForValue()
-            .set(viewCountKey, "true", Duration.ofMinutes(3));
+        boardService.updateCountView(boardId, viewCountKey);;
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
@@ -148,14 +139,7 @@ public class BoardController {
                 .build();
         }
 
-        redisTemplate.opsForZSet()
-            .incrementScore(RedisKeyUtil.POPULAR_KEY, String.valueOf(boardId), 1);
-        boardLikeInfoRedisTemplate.opsForList()
-            .rightPush(LocalDateTime.now()
-                    .format(formatter),
-                new BoardLikeInfo(boardId, 1, LocalDateTime.now(), ScoreType.PURCHASE));
-        redisTemplate.opsForValue()
-            .set(purchaseCountKey, "true", Duration.ofMinutes(3));
+        boardService.adaptPurchaseReaction(boardId, purchaseCountKey);
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
