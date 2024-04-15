@@ -9,16 +9,24 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
+import com.bbangle.bbangle.config.ranking.ScoreType;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
 import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
 import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +37,19 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StopWatch;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class BoardServiceImpl implements BoardService {
 
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
+
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
+    private final RankingRepository rankingRepository;
     private final ObjectStorageRepository objectStorageRepository;
     private final StoreRepository storeRepository;
 
@@ -56,6 +67,10 @@ public class BoardServiceImpl implements BoardService {
         @Autowired
         @Qualifier("defaultRedisTemplate")
         RedisTemplate<String, Object> redisTemplate,
+        @Autowired
+        @Qualifier("boardLikeInfoRedisTemplate")
+        RedisTemplate<String, Object> boardLikeInfoRedisTemplate,
+        RankingRepository rankingRepository,
         ObjectStorageRepository objectStorageRepository,
         @Autowired
         StoreRepository storeRepository
@@ -64,6 +79,8 @@ public class BoardServiceImpl implements BoardService {
         this.memberRepository = memberRepository;
         this.folderRepository = folderRepository;
         this.redisTemplate = redisTemplate;
+        this.boardLikeInfoRedisTemplate = boardLikeInfoRedisTemplate;
+        this.rankingRepository = rankingRepository;
         this.objectStorageRepository = objectStorageRepository;
         this.storeRepository = storeRepository;
     }
@@ -76,20 +93,22 @@ public class BoardServiceImpl implements BoardService {
         SortType sort,
         Long cursorId
     ) {
-        List<Long> matchedIdx = getListAdaptingSort(sort);
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardRepository.getBoardResponseDto(
-            filterRequest,
-            matchedIdx,
-            cursorId
-        );
-
-        if (SecurityUtils.isLogin()) {
-            List<BoardResponseDto> likeUpdatedDto = boardRepository.updateLikeStatus(matchedIdx,
-                boardResponseDto.getContent());
-            boardResponseDto.updateBoardLikeStatus(likeUpdatedDto);
+        validateCursorId(cursorId);
+        if(SecurityUtils.isLogin()){
+            return boardRepository.getBoardResponseWithLogin(filterRequest, sort, cursorId);
         }
 
-        return boardResponseDto;
+        return boardRepository.getBoardResponseDtoWithoutLogin(
+            filterRequest,
+            sort,
+            cursorId
+        );
+    }
+
+    private void validateCursorId(Long cursorId) {
+        if(Objects.nonNull(cursorId) && !boardRepository.existsById(cursorId)){
+            throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
+        }
     }
 
     @Override
@@ -160,6 +179,36 @@ public class BoardServiceImpl implements BoardService {
             .stream()
             .map(value -> Long.valueOf(String.valueOf(value)))
             .toList();
+    }
+
+    @Transactional
+    public void updateCountView(Long boardId, String viewCountKey) {
+        Ranking ranking = rankingRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
+        ranking.updatePopularScore(1);
+
+        boardLikeInfoRedisTemplate.opsForList()
+            .rightPush(
+                LocalDateTime.now().format(formatter),
+                new BoardLikeInfo(boardId, 0.1, LocalDateTime.now(), ScoreType.VIEW));
+
+        redisTemplate.opsForValue()
+            .set(viewCountKey, "true", Duration.ofMinutes(3));
+    }
+
+    @Transactional
+    public void adaptPurchaseReaction(Long boardId, String purchaseCountKey) {
+        Ranking ranking = rankingRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
+        ranking.updatePopularScore(1);
+
+        boardLikeInfoRedisTemplate.opsForList()
+            .rightPush(LocalDateTime.now()
+                    .format(formatter),
+                new BoardLikeInfo(boardId, 1, LocalDateTime.now(), ScoreType.PURCHASE));
+
+        redisTemplate.opsForValue()
+            .set(purchaseCountKey, "true", Duration.ofMinutes(3));
     }
 
 }
