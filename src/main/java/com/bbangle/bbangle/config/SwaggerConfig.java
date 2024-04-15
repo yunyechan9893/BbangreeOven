@@ -14,6 +14,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @RequiredArgsConstructor
 public class SwaggerConfig {
+    private static final String AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize";
+    private static final String TOKEN_URL = "https://kauth.kakao.com/oauth/token";
 
     @Bean
     public OpenAPI openAPI() {
@@ -24,14 +26,14 @@ public class SwaggerConfig {
 
         OAuthFlows oAuthFlows = new OAuthFlows()
                 .authorizationCode(new OAuthFlow()
-                        .authorizationUrl("/oauth/authorize")
-                        .tokenUrl("/oauth/token")
+                        .authorizationUrl(AUTHORIZATION_URL)
+                        .tokenUrl(TOKEN_URL)
                         .refreshUrl("/oauth/refresh")
                         .scopes(new Scopes().addString("read", "읽기권한 부여")));
 
         SecurityScheme jwtSchemes = new SecurityScheme()
                         .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
+                        .scheme("Bearer")
                         .bearerFormat("JWT");
         SecurityScheme oauthSchemes = new SecurityScheme()
                 .type(SecurityScheme.Type.OAUTH2)
