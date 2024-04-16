@@ -6,6 +6,7 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 import com.bbangle.bbangle.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -40,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class BoardServiceImpl implements BoardService {
+public class BoardService {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
 
@@ -57,7 +58,7 @@ public class BoardServiceImpl implements BoardService {
     private String BUCKET_NAME;
     private final String DETAIL_HTML_FILE_NAME = "detail.html";
 
-    public BoardServiceImpl(
+    public BoardService(
         @Autowired
         BoardRepository boardRepository,
         @Autowired
@@ -85,39 +86,29 @@ public class BoardServiceImpl implements BoardService {
         this.storeRepository = storeRepository;
     }
 
-    @Override
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
         FilterRequest filterRequest,
         SortType sort,
-        Long cursorId
+        CursorInfo cursorInfo
     ) {
-        validateCursorId(cursorId);
         if(SecurityUtils.isLogin()){
-            return boardRepository.getBoardResponseWithLogin(filterRequest, sort, cursorId);
+            return boardRepository.getBoardResponseWithLogin(filterRequest, sort, cursorInfo);
         }
 
         return boardRepository.getBoardResponseDtoWithoutLogin(
             filterRequest,
             sort,
-            cursorId
+            cursorInfo
         );
     }
 
-    private void validateCursorId(Long cursorId) {
-        if(Objects.nonNull(cursorId) && !boardRepository.existsById(cursorId)){
-            throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
-        }
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
 
         return boardRepository.getBoardDetailResponse(memberId, boardId);
     }
 
-    @Override
     @Transactional
     public Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile) {
 //        Long storeId = boardRepository.findById(boardId)
