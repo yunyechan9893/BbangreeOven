@@ -1,5 +1,10 @@
 package com.bbangle.bbangle.config.ranking;
 
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.util.RedisKeyUtil;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,19 +17,20 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
 public class RankingUpdate {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
+    RankingRepository rankingRepository;
     @Autowired
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
-    @Qualifier("defaultRedisTemplate")
-    private final RedisTemplate<String, Object> redisTemplate;
 
     @Async
+    @Transactional
     @Scheduled(cron = "0 0 * * * *") // 매시 정각마다 실행
     public void cleanupLikes() {
         LocalDateTime updateDate = LocalDateTime.now()
@@ -33,36 +39,29 @@ public class RankingUpdate {
         Set<String> keys = boardLikeInfoRedisTemplate.keys("*");
         if (keys != null) {
             for (String key : keys) {
-                // 키의 시간 부분 파싱
                 LocalDateTime keyTime;
                 try {
                     keyTime = LocalDateTime.parse(key, formatter);
                 } catch (Exception e) {
-                    // 키 형식이 일치하지 않으면 다음 키로 넘어감
                     continue;
                 }
-                // 현재 시간으로부터 24시간 이전인 경우 해당 키 삭제
                 if (keyTime.isBefore(updateDate) || keyTime.isEqual(updateDate)) {
                     List<Object> range = boardLikeInfoRedisTemplate.opsForList()
                         .range(keyTime.format(formatter), 0, -1);
                     if (range == null) {
                         continue;
                     }
-
                     for (Object ele : range) {
                         BoardLikeInfo info = (BoardLikeInfo) ele;
+                        Ranking ranking = rankingRepository.findByBoardId(info.boardId())
+                            .orElseThrow(() -> new BbangleException(
+                                BbangleErrorCode.RANKING_NOT_FOUND));
                         if (info.scoreType() == ScoreType.WISH) {
-                            redisTemplate.opsForZSet()
-                                .incrementScore(RedisKeyUtil.POPULAR_KEY,
-                                    String.valueOf(info.boardId()), -info.score());
-                            redisTemplate.opsForZSet()
-                                .incrementScore(RedisKeyUtil.RECOMMEND_KEY,
-                                    String.valueOf(info.boardId()), -info.score());
+                            ranking.updatePopularScore(-info.score());
+                            ranking.updateRecommendScore(-info.score());
                             continue;
                         }
-                        redisTemplate.opsForZSet()
-                            .incrementScore(RedisKeyUtil.POPULAR_KEY,
-                                String.valueOf(info.boardId()), -info.score());
+                        ranking.updatePopularScore(-info.score());
                     }
                     boardLikeInfoRedisTemplate.delete(key);
                 }
