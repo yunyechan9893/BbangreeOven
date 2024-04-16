@@ -42,21 +42,17 @@ public class RedisRepositoryImpl implements RedisRepository {
 
     @Override
     public String getString(String namespace, String key) {
-        // 네임스페이스와 키를 결합
         String multiKey = String.format("%s:%s", namespace, key);
-        // multiKey를 이용해 레디스 조회 후 값 반환
         var value = redisTemplate.opsForValue();
-        // 가져온 값이 null이 아닌 경우에만 문자열로 변환하여 반환
+
         try {
             log.info(multiKey);
             log.info((String) value.get(multiKey));
             return value.get(multiKey)
                 .toString();
         } catch (RedisSystemException e) {
-            System.out.println("[에러] 레디스 RedisSystemException 에러");
             return null;
         } catch (NullPointerException e) {
-            System.out.println("[에러] 레디스 NullPointerException 에러");
             return null;
         }
     }
