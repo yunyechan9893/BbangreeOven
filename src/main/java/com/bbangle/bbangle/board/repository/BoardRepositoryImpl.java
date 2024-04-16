@@ -227,22 +227,23 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private Boolean setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId){
         return jpaQuery.leftJoin(wishlistProduct)
-                .on(wishlistProduct.board.eq(board),
+                .on(wishlistProduct.board.id.eq(board.id),
                         wishlistProduct.memberId.eq(memberId),
                         wishlistProduct.isDeleted.eq(false))
                 .leftJoin(wishlistStore)
-                .on(wishlistStore.store.eq(store),
+                .on(wishlistStore.store.id.eq(store.id),
                         wishlistStore.member.id.eq(memberId),
                         wishlistStore.isDeleted.eq(false)) != null; // if문 안에 함수를 넣기 위해 사용
     }
 
     public List<Tuple> fetchStoreAndBoardAndImageTuple(Long memberId, Long boardId){
-        JPAQuery<Tuple> jpaQuery = getBoardDetailSelect(memberId).from(productImg)
+        JPAQuery<Tuple> jpaQuery = getBoardDetailSelect(memberId).from(board)
                 .where(board.id.eq(boardId))
-                .join(board, board)
-                .join(board.store, store);
+                .join(board.store, store)
+                .leftJoin(productImg).on(board.id.eq(productImg.board.id));
 
         if (memberId != null && memberId > 0 && setWishlistJoin(jpaQuery, memberId));
+
         return jpaQuery.fetch();
     }
     

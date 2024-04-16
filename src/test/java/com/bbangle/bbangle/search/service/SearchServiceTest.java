@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.search.service;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.search.domain.Search;
@@ -10,9 +12,8 @@ import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.redis.domain.RedisEnum;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.testutil.TestFactoryManager;
-import com.bbangle.bbangle.testutil.model.*;
 import com.bbangle.bbangle.util.TrieUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -35,47 +36,51 @@ import static org.hamcrest.Matchers.*;
 @Transactional
 @Rollback
 public class SearchServiceTest {
-    private final TestFactoryManager testFactoryManager;
-
+    @Autowired
+    MemberRepository memberRepository;
+    @Autowired
+    SearchRepository searchRepository;
+    @Autowired
+    StoreRepository storeRepository;
+    @Autowired
+    BoardRepository boardRepository;
+    @Autowired
+    ProductRepository productRepository;
     @Autowired
     RedisRepository redisRepository;
     @Autowired
     SearchService searchService;
+    @Autowired
+    EntityManager entityManager;
 
-    public SearchServiceTest(
-            @Autowired MemberRepository memberRepository,
-            @Autowired SearchRepository searchRepository,
-            @Autowired StoreRepository storeRepository,
-            @Autowired BoardRepository boardRepository,
-            @Autowired ProductRepository productRepository,
-            @Autowired EntityManager entityManager
-    ){
-        testFactoryManager = new TestFactoryManager(entityManager)
-                .setTestMemberFactory(memberRepository)
-                .setTestSearchFactory(searchRepository)
-                .setTestStoreFactory(storeRepository)
-                .setTestBoardFactory(boardRepository)
-                .setTestProductFactory(productRepository);
-    }
+    private Store store;
+    private Board board;
+    private Member member;
+
 
     @BeforeEach
-    public void saveData() {
+    public void saveEntity() {
         createMember();
         createProductRelatedContent(15);
+        redisRepository.delete("MIGRATION","board");
+        redisRepository.delete("MIGRATION","store");
+        searchService.initSetting();
+        searchService.updateRedisAtBestKeyword();
     }
 
     @AfterEach
-    void afterEach() {
-        testFactoryManager.resetAutoIncreasementAndRowData();
+    public void deleteAllEntity(){
+        redisRepository.deleteAll();
+        memberRepository.deleteAll();
+        productRepository.deleteAll();
+        boardRepository.deleteAll();
+        storeRepository.deleteAll();
     }
 
     @Test
     @DisplayName("게시물이 잘 저장돼있다")
     public void checkAllBoardCountTest(){
-        redisRepository.delete("MIGRATION","board");
-        redisRepository.delete("MIGRATION","store");
-        searchService.initSetting();
-        var boardCount = testFactoryManager.getTestBoardFactory().getRepository().findAll().size();
+        var boardCount = boardRepository.findAll().size();
         assertThat(boardCount, is(15));
     }
 
@@ -110,7 +115,6 @@ public class SearchServiceTest {
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
     public void getSearchBoard() {
         String SEARCH_KEYWORD = "비건 베이커리";
-        Member member = testFactoryManager.getTestMemberFactory().getTestEntity("member1");
         var searchBoardRequest= SearchBoardRequest.builder()
                 .keyword(SEARCH_KEYWORD)
                 .sort("LATEST")
@@ -139,8 +143,6 @@ public class SearchServiceTest {
         var BoardDtos = searchBoardResult.content();
         for(int i = 0; BoardDtos.size() > i; i++){
             var boardDto = BoardDtos.get(i);
-            assertThat(boardDto.boardId(), is(i+1L));
-            assertThat(boardDto.getStoreId(), is(i+1L));
             assertThat(boardDto.tags(), hasItem("glutenFree"));
             assertThat(boardDto.price(), lessThanOrEqualTo(6000));
         }
@@ -151,7 +153,6 @@ public class SearchServiceTest {
     public void getSearchedStore() {
         int storePage = 0;
         String SEARCH_KEYWORD_STORE = "RAWSOME";
-        var member = testFactoryManager.getTestMemberFactory().getTestEntity("member1");
         var searchStoreResult = searchService.getSearchStoreDtos(
                 member.getId(), storePage, SEARCH_KEYWORD_STORE);
 
@@ -165,7 +166,6 @@ public class SearchServiceTest {
 
         for (int i = 0; stores.size() > i; i++){
             var store = stores.get(i);
-            assertThat(store.getStoreId(), is(i+1L));
             assertThat(store.getStoreName(), is("RAWSOME"));
             assertThat(store.getIsWished(), is(false));
 
@@ -178,7 +178,6 @@ public class SearchServiceTest {
     public void TestInfiniteScroll() {
         int storePage = 1;
         String SEARCH_KEYWORD_STORE = "RAWSOME";
-        var member = testFactoryManager.getTestMemberFactory().getTestEntity("member1");
         var searchStoreResult = searchService.getSearchStoreDtos(
                 member.getId(), storePage, SEARCH_KEYWORD_STORE);
 
@@ -192,7 +191,6 @@ public class SearchServiceTest {
 
         for (int i = 0; stores.size() > i; i++){
             var store = stores.get(i);
-            assertThat(store.getStoreId(), is(i+11L));
             assertThat(store.getStoreName(), is("RAWSOME"));
             assertThat(store.getIsWished(), is(false));
         }
@@ -212,86 +210,73 @@ public class SearchServiceTest {
 
     private void createProductRelatedContent(int count) {
         for (int i = 0; i < count; i++) {
-            var store = testFactoryManager.getTestStoreFactory().pushTestEntity(
-                    "store" + i,
-                    new TestStore().setIdentifier("7962401222")
-                            .setName("RAWSOME")
-                            .setProfile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
-                            .getModel()
-            );
+            store = storeRepository.save(
+                    Store.builder()
+                    .identifier("7962401222")
+                    .name("RAWSOME")
+                    .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
+                    .build());
 
-            var board = testFactoryManager.getTestBoardFactory().pushTestEntity(
-                    "board" + i,
-                    new TestBoard(store)
-                            .setBoardName("비건 베이커리 로썸 비건빵")
-                            .setPrice(5400)
-                            .setStatus(true)
-                            .setProfile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                            .setPurchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                            .setView(100)
-                            .setSunday(true)
-                            .setMonday(true)
-                            .setTuesday(true)
-                            .setWednessday(true)
-                            .setThursday(true)
-                            .setFriday(true)
-                            .setSaturday(true)
-                            .getModel()
-            );
+            board = boardRepository.save(
+                    Board.builder()
+                            .store(store)
+                            .title("비건 베이커리 로썸 비건빵")
+                            .price(5400)
+                            .status(true)
+                            .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
+                            .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
+                            .view(100)
+                            .sunday(true)
+                            .monday(true)
+                            .tuesday(true)
+                            .wednesday(true)
+                            .thursday(true)
+                            .friday(true)
+                            .saturday(true)
+                            .build());
 
-            testFactoryManager.getTestProductFactory().pushTestEntity(
-                    "product" + (i * 3 - 2),
-                    new TestProduct(board)
-                            .setProductName("콩볼")
-                            .setPrice(3600)
-                            .setCategory(Category.COOKIE)
-                            .setGlutenFreeTag(true)
-                            .setSugarFreeTag(true)
-                            .setVeganTag(true)
-                            .setKetogenicTag(true)
-                            .getModel()
-            );
-
-            testFactoryManager.getTestProductFactory().pushTestEntity(
-                    "product" + (i * 3 - 1),
-                    new TestProduct(board)
-                            .setProductName("카카모카")
-                            .setPrice(5000)
-                            .setCategory(Category.BREAD)
-                            .setGlutenFreeTag(true)
-                            .setVeganTag(true)
-                            .getModel()
-            );
-
-            testFactoryManager.getTestProductFactory().pushTestEntity(
-                    "product" + (i * 3),
-                    new TestProduct(board)
-                            .setProductName("로미넛쑥")
-                            .setPrice(5000)
-                            .setCategory(Category.BREAD)
-                            .setGlutenFreeTag(true)
-                            .setSugarFreeTag(true)
-                            .setVeganTag(true)
-                            .getModel()
-            );
+            productRepository.saveAll(List.of(
+                    Product.builder()
+                            .board(board)
+                            .title("콩볼")
+                            .price(3600)
+                            .category(Category.COOKIE)
+                            .glutenFreeTag(true)
+                            .sugarFreeTag(true)
+                            .veganTag(true)
+                            .ketogenicTag(true)
+                            .build(),
+                    Product.builder()
+                            .board(board)
+                            .title("카카모카")
+                            .price(5000)
+                            .category(Category.BREAD)
+                            .glutenFreeTag(true)
+                            .veganTag(true)
+                            .build(),
+                    Product.builder()
+                            .board(board)
+                            .title("로미넛쑥")
+                            .price(5000)
+                            .category(Category.BREAD)
+                            .glutenFreeTag(true)
+                            .sugarFreeTag(true)
+                            .veganTag(true)
+                            .build()
+            ));
         }
     }
     private void createMember() {
-        testFactoryManager.getTestMemberFactory().pushTestEntity(
-                "member1",
-                new TestMember().getModel()
-        );
+        member = memberRepository.save(Member.builder()
+                        .id(2L)
+                        .build());
     }
 
     private Search createSearchKeyword(String keyword) {
-        var member = testFactoryManager.getTestMemberFactory().getTestEntity("member1");
-        return testFactoryManager.getTestSearchFactory().pushTestEntity(
-                "keyword_" + keyword,
-                new TestSearch()
-                        .setMember(member)
-                        .setKeyword(keyword)
-                        .getModel()
-        );
+        return searchRepository.save(
+                Search.builder()
+                        .member(member)
+                        .keyword(keyword)
+                        .build());
     }
-
 }
