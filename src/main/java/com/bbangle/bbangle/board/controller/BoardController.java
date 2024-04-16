@@ -26,6 +26,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,12 +61,15 @@ public class BoardController {
         @RequestParam(required = false)
         SortType sort,
         @ParameterObject
-        CursorInfo cursorInfo
+        CursorInfo cursorInfo,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
         return ResponseEntity.ok(boardService.getBoardList(
             filterRequest,
             sort,
-            cursorInfo));
+            cursorInfo,
+            memberId));
     }
 
     @GetMapping("/folders/{folderId}")

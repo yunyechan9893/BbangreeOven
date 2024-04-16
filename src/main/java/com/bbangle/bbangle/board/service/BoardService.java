@@ -90,10 +90,11 @@ public class BoardService {
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
         FilterRequest filterRequest,
         SortType sort,
-        CursorInfo cursorInfo
+        CursorInfo cursorInfo,
+        Long memberId
     ) {
-        if(SecurityUtils.isLogin()){
-            return boardRepository.getBoardResponseWithLogin(filterRequest, sort, cursorInfo);
+        if(Objects.nonNull(memberId)){
+            return boardRepository.getBoardResponseWithLogin(filterRequest, sort, cursorInfo, memberId);
         }
 
         return boardRepository.getBoardResponseDtoWithoutLogin(

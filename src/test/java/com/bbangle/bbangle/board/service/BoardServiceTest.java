@@ -3,18 +3,17 @@ package com.bbangle.bbangle.board.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import org.assertj.core.api.Assertions;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,8 +41,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 public class BoardServiceTest {
 
-    private static final Long NULL_CURSOR = null;
+    private static final CursorInfo NULL_CURSOR = null;
     private static final SortType NULL_SORT_TYPE = null;
+    private static final Long NULL_MEMBER = null;
 
     @Autowired
     StoreRepository storeRepository;
@@ -132,7 +133,7 @@ public class BoardServiceTest {
             .build();
 
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
         BoardResponseDto response2 = boardList.getContent()
@@ -165,6 +166,7 @@ public class BoardServiceTest {
     }
 
     @ParameterizedTest
+    @WithAnonymousUser
     @NullSource
     @DisplayName("glutenFree 제품이 포함된 게시물만 조회한다.")
     public void showListFilterByGlutenFree(Boolean noFilter) {
@@ -202,7 +204,7 @@ public class BoardServiceTest {
             .orderAvailableToday(true)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -223,6 +225,7 @@ public class BoardServiceTest {
     }
 
     @ParameterizedTest
+    @WithAnonymousUser
     @NullSource
     @DisplayName("highProtein 제품이 포함된 게시물만 조회한다.")
     public void showListFilterByHighProtein(Boolean noFilter) {
@@ -260,7 +263,7 @@ public class BoardServiceTest {
             noFilter,
             noFilter, noFilter, null, null, null, null);
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            null, null);
+            null, null, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -271,7 +274,6 @@ public class BoardServiceTest {
     @DisplayName("sugarFree 제품이 포함된 게시물만 조회한다.")
     public void showListFilterBySugarFree(Boolean noFilter) {
         //given, when
-
         Product product1 = productGenerator(board,
             false,
             false,
@@ -304,7 +306,7 @@ public class BoardServiceTest {
             noFilter,
             noFilter, noFilter, null, null, null, null);
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            null, null);
+            null, null, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -347,7 +349,7 @@ public class BoardServiceTest {
         FilterRequest filterRequest = FilterRequest.builder()
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(0);
@@ -390,7 +392,7 @@ public class BoardServiceTest {
         FilterRequest filterRequest = FilterRequest.builder()
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(2);
@@ -443,7 +445,7 @@ public class BoardServiceTest {
             .category(realCategory)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -529,7 +531,7 @@ public class BoardServiceTest {
             .category(Category.valueOf(category))
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
 
@@ -557,42 +559,42 @@ public class BoardServiceTest {
             .minPrice(5000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList =
-            boardService.getBoardList(filterRequest, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest2 =  FilterRequest.builder()
             .minPrice(1000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList2 =
-            boardService.getBoardList(filterRequest2, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest2, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest3 = FilterRequest.builder()
             .maxPrice(10000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList3 =
-            boardService.getBoardList(filterRequest3, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest3, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest4 = FilterRequest.builder()
             .maxPrice(1000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList4 =
-            boardService.getBoardList(filterRequest4, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest4, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest5 = FilterRequest.builder()
             .maxPrice(900)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList5 =
-            boardService.getBoardList(filterRequest5, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest5, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest6 = FilterRequest.builder()
             .minPrice(1000)
             .maxPrice(10000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList6 =
-            boardService.getBoardList(filterRequest6, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest6, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest7 = FilterRequest.builder()
             .minPrice(1001)
             .maxPrice(9999)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList7 =
-            boardService.getBoardList(filterRequest7, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest7, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest8 = FilterRequest.builder().build();
         BoardCustomPage<List<BoardResponseDto>> boardList8 =
-            boardService.getBoardList(filterRequest8, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest8, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -673,7 +675,7 @@ public class BoardServiceTest {
         List<Board> all = boardRepository.findAll();
         FilterRequest filterRequest = FilterRequest.builder().build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(10);

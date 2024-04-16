@@ -15,6 +15,13 @@ import org.springframework.data.domain.Slice;
 
 public interface BoardQueryDSLRepository {
 
+    BoardCustomPage<List<BoardResponseDto>> getBoardResponseWithLogin(
+        FilterRequest filterRequest,
+        SortType sort,
+        CursorInfo cursorId,
+        Long memberId
+    );
+
     BoardCustomPage<List<BoardResponseDto>> getBoardResponseDtoWithoutLogin(
         FilterRequest filterRequest,
         SortType sort,
@@ -31,9 +38,8 @@ public interface BoardQueryDSLRepository {
     BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId);
 
     HashMap<Long, String> getAllBoardTitle();
-    List<Board> checkingNullRanking();
 
-    BoardCustomPage<List<BoardResponseDto>> getBoardResponseWithLogin(FilterRequest filterRequest, SortType sort, CursorInfo cursorId);
+    List<Board> checkingNullRanking();
 
 }
 
