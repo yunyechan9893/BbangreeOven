@@ -1,36 +1,24 @@
 package com.bbangle.bbangle.board.controller;
 
-import com.bbangle.bbangle.aop.ExecutionTimeLog;
+import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
-import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.common.message.MessageResDto;
-import com.bbangle.bbangle.board.service.BoardServiceImpl;
 import com.bbangle.bbangle.page.CustomPage;
-import com.bbangle.bbangle.util.RedisKeyUtil;
 import com.bbangle.bbangle.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -53,12 +41,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Boards", description = "게시판 API")
 public class BoardController {
 
-    private final BoardServiceImpl boardService;
+    private final BoardService boardService;
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    @Qualifier("boardLikeInfoRedisTemplate")
-    private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(
@@ -68,20 +53,19 @@ public class BoardController {
             schema = @Schema(implementation = CustomPage.class)
         )
     )
-    @ExecutionTimeLog
     @GetMapping
     public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
         @ParameterObject
         FilterRequest filterRequest,
-        @RequestParam(required = false, name = "정렬 기준")
+        @RequestParam(required = false)
         SortType sort,
-        @RequestParam(required = false, name = "페이지네이션 cursorId")
-        Long cursorId
+        @ParameterObject
+        CursorInfo cursorInfo
     ) {
         return ResponseEntity.ok(boardService.getBoardList(
             filterRequest,
             sort,
-            cursorId));
+            cursorInfo));
     }
 
     @GetMapping("/folders/{folderId}")
