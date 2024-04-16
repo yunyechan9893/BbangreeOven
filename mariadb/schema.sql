@@ -161,8 +161,8 @@ CREATE TABLE ranking
 (
     id               BIGINT AUTO_INCREMENT,
     product_board_id BIGINT NOT NULL,
-    recommend_score  BIGINT NOT NULL  default 0,
-    popular_score    BIGINT NOT NULL  default 0,
+    recommend_score  DOUBLE NOT NULL  default 0,
+    popular_score    DOUBLE NOT NULL  default 0,
     CONSTRAINT product_img_pk PRIMARY KEY (id),
     CONSTRAINT fk_ranking_product_board FOREIGN KEY (product_board_id) REFERENCES product_board (id)
 );
