@@ -36,7 +36,6 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     public Page<WishListStoreResponseDto> getWishListStoreResponse(Long memberId, Pageable pageable) {
         List<WishListStoreResponseDto> wishListStores = queryFactory
                 .select(new QWishListStoreResponseDto(
-                        wishlistStore.id,
                         store.introduce,
                         store.name.as("storeName"),
                         store.id.as("storeId"),
@@ -66,6 +65,6 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                 .selectFrom(wishlistStore)
                 .where(wishlistStore.member.id.eq(memberId)
                         .and(wishlistStore.store.id.eq(storeId)))
-                .fetchOne());
+                .fetchFirst());
     }
 }
