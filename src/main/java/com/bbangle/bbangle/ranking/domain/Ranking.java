@@ -13,11 +13,13 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "ranking")
 @Builder
+@Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Ranking {
@@ -30,16 +32,16 @@ public class Ranking {
     private Board board;
 
     @Column(name = "popular_score")
-    private Long popularScore;
+    private Double popularScore;
 
     @Column(name = "recommend_score")
-    private Long recommendScore;
+    private Double recommendScore;
 
-    public void updatePopularScore(int score) {
+    public void updatePopularScore(Double score) {
         this.popularScore += score;
     }
 
-    public void updateRecommendScore(int score) {
+    public void updateRecommendScore(Double score) {
         this.recommendScore += score;
     }
 

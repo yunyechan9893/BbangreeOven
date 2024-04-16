@@ -22,8 +22,8 @@ public class RankingService {
         unRankedBoards.stream()
             .map(board -> Ranking.builder()
                 .board(board)
-                .popularScore(0L)
-                .recommendScore(0L)
+                .popularScore(0.0)
+                .recommendScore(0.0)
                 .build())
             .forEach(rankings::add);
         rankingRepository.saveAll(rankings);

@@ -62,7 +62,7 @@ public class WishListBoardService {
                     product.getBoard()
                         .updateWishCnt(status);
                     if (status) {
-                        updateRankingScore(boardId, 1);
+                        updateRankingScore(boardId, 1.0);
                     }
                 },
                 makeNewWish(boardId, wishlistFolder, member)
@@ -71,7 +71,7 @@ public class WishListBoardService {
 
     private Runnable makeNewWish(Long boardId, WishlistFolder wishlistFolder, Member member) {
         return () -> {
-            updateRankingScore(boardId, 1);
+            updateRankingScore(boardId, 1.0);
             Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BbangleException("존재하지 않는 게시글입니다."));
             WishlistProduct wishlistProduct = WishlistProduct.builder()
@@ -86,7 +86,7 @@ public class WishListBoardService {
         };
     }
 
-    private void updateRankingScore(Long boardId, int updatingScore) {
+    private void updateRankingScore(Long boardId, Double updatingScore) {
         Ranking ranking = rankingRepository.findByBoardId(boardId)
             .orElseThrow(
                 () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
@@ -123,7 +123,7 @@ public class WishListBoardService {
 
         product.updateWishStatus();
 
-        updateRankingScore(boardId, -1);
+        updateRankingScore(boardId, -1.0);
     }
 
 }
