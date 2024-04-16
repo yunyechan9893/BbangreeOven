@@ -83,8 +83,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .orderBy(orderExpression, board.id.desc())
             .limit(PAGE_SIZE + 1)
             .fetch();
+
         if (boards.isEmpty()) {
-            return BoardCustomPage.from(null, -1L, -1.0, false);
+            return BoardCustomPage.from(Collections.emptyList(), -1L, -1.0, false);
         }
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
@@ -334,9 +335,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     ) {
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto = getBoardResponseDtoWithoutLogin(
             filterRequest, sort, cursorId);
+        if (boardResponseDto.getContent().isEmpty()) {
+            return boardResponseDto;
+        }
+
         List<Long> responseList = extractResponseIds(boardResponseDto);
         List<Long> likedContentIds = getLikedContentsIds(responseList, memberId);
-
         updateLikeStatus(boardResponseDto, likedContentIds);
 
         return boardResponseDto;
