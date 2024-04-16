@@ -66,7 +66,6 @@ CREATE TABLE product_board
     price        INT          NOT NULL,
     status       TINYINT      NOT NULL,
     profile      VARCHAR(255),
-    detail       VARCHAR(255) NOT NULL,
     purchase_url VARCHAR(255) NOT NULL,
     view         INT          NOT NULL DEFAULT 0,
     sunday       TINYINT      NOT NULL DEFAULT 0,
@@ -178,9 +177,9 @@ CREATE TABLE notice
 create table product_detail
 (
     id               bigint auto_increment,
-    product_board_id bigint       null,
-    img_index        int          not null,
-    url              varchar(255) not null,
+    product_board_id bigint,
+    img_index        int,
+    url              varchar(255),
     CONSTRAINT product_detail_pk PRIMARY KEY (id),
     constraint fk_product_board_product_detail
         foreign key (product_board_id) references product_board (id)
@@ -196,3 +195,4 @@ create table withdrawal
     constraint fk_member_withdrawal
         foreign key (member_id) references member (id)
 );
+
