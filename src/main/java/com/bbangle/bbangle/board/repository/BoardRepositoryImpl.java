@@ -83,6 +83,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .orderBy(orderExpression, board.id.desc())
             .limit(PAGE_SIZE + 1)
             .fetch();
+        if (boards.isEmpty()) {
+            return BoardCustomPage.from(null, -1L, -1.0, false);
+        }
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
         boolean hasNext = isHasNext(boards);
@@ -326,9 +329,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public BoardCustomPage<List<BoardResponseDto>> getBoardResponseWithLogin(
         FilterRequest filterRequest,
         SortType sort,
-        CursorInfo cursorId
+        CursorInfo cursorId,
+        Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto = getBoardResponseDtoWithoutLogin(
             filterRequest, sort, cursorId);
         List<Long> responseList = extractResponseIds(boardResponseDto);
@@ -349,7 +352,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private List<Long> getLikedContentsIds(List<Long> responseList, Long memberId) {
         return queryFactory.select(board.id)
             .from(board)
-            .leftJoin(board, wishlistProduct.board)
+            .leftJoin(wishlistProduct)
+            .on(board.eq(wishlistProduct.board))
             .where(board.id.in(responseList)
                 .and(wishlistProduct.memberId.eq(memberId))
                 .and(wishlistProduct.isDeleted.eq(false)))
