@@ -27,6 +27,7 @@ public enum BbangleErrorCode {
     INVALID_CATEGORY(-9, "존재하지 않는 카테고리입니다.", BAD_REQUEST),
     BOARD_NOT_FOUND(-10, "존재하지 않는 게시글입니다.", BAD_REQUEST),
     RANKING_NOT_FOUND(-11, "해당 게시글의 랭킹이 존재하지 않습니다.", BAD_REQUEST),
+    INVALID_CURSOR_ID(-12, "유효하지 않은 cursorId 입니다.", BAD_REQUEST),
     INTERNAL_SERVER_ERROR(-999, "서버 내부 에러입니다", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
