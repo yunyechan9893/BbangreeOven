@@ -43,6 +43,9 @@ import static com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct.wishlist
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private static final int PAGE_SIZE = 10;
+    private static final Long EMPTY_RESULT_NEXT_CURSOR = -1L;
+    private static final Double EMPTY_RESULT_SCORE = -1.0;
+    private static final Boolean EMPTY_RESULT_HAS_NEXT = false;
 
     private final JPAQueryFactory queryFactory;
     private final QBoard board = QBoard.board;
@@ -85,7 +88,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .fetch();
 
         if (boards.isEmpty()) {
-            return BoardCustomPage.from(Collections.emptyList(), -1L, -1.0, false);
+            return BoardCustomPage.from(Collections.emptyList(), EMPTY_RESULT_NEXT_CURSOR, EMPTY_RESULT_SCORE, EMPTY_RESULT_HAS_NEXT);
         }
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
