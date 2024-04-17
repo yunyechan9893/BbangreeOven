@@ -9,9 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryDSLRepository {
 
-    @Query(value = "select b.id from Board b")
-    List<Long> findAllIds();
-
 //    @Modifying(clearAutomatically = true)
 //    @Query("UPDATE Board b SET b.detail = :detailUrl WHERE b.id = :boardId ")
 //    int updateDetailWhereStoreIdEqualsBoardId(
