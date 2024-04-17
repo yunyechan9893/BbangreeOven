@@ -53,9 +53,7 @@ public class RankingUpdate {
                     }
                     for (Object ele : range) {
                         BoardLikeInfo info = (BoardLikeInfo) ele;
-                        Ranking ranking = rankingRepository.findByBoardId(info.boardId())
-                            .orElseThrow(() -> new BbangleException(
-                                BbangleErrorCode.RANKING_NOT_FOUND));
+                        Ranking ranking = rankingRepository.findByBoardId(info.boardId()).orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
                         if (info.scoreType() == ScoreType.WISH) {
                             ranking.updatePopularScore(-info.score());
                             ranking.updateRecommendScore(-info.score());
