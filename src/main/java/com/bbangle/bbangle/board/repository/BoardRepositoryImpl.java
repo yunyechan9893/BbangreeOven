@@ -1,10 +1,13 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.QStore;
@@ -47,6 +50,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final Double EMPTY_RESULT_SCORE = -1.0;
     private static final Boolean EMPTY_RESULT_HAS_NEXT = false;
 
+    private final MemberRepository memberRepository;
     private final JPAQueryFactory queryFactory;
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
@@ -59,7 +63,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final QRanking ranking = QRanking.ranking;
 
     @Override
-    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseDtoWithoutLogin(
+    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseDtoList(
         FilterRequest filterRequest,
         SortType sort,
         CursorInfo cursorInfo
@@ -72,19 +76,28 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         OrderSpecifier<Double> orderExpression = getOrderExpression(sort);
 
         BooleanBuilder cursorBuilder = setCursorBuilder(cursorInfo, sort);
-
-        List<Board> boards = queryFactory
-            .select(board)
+        List<Long> fetch = queryFactory
+            .select(board.id)
             .distinct()
-            .from(board)
-            .leftJoin(product)
-            .on(product.board.eq(board))
-            .leftJoin(board.store, store)
-            .leftJoin(ranking)
-            .on(ranking.board.eq(board))
+            .from(product)
+            .join(product.board, board)
+            .join(ranking)
+            .on(board.id.eq(ranking.board.id))
             .where(cursorBuilder.and(filter))
             .orderBy(orderExpression, board.id.desc())
             .limit(PAGE_SIZE + 1)
+            .fetch();
+
+        List<Board> boards = queryFactory.select(board)
+            .from(board)
+            .join(board.productList, product)
+            .fetchJoin()
+            .join(board.store, store)
+            .fetchJoin()
+            .join(ranking)
+            .on(board.id.eq(ranking.board.id))
+            .where(board.id.in(fetch))
+            .orderBy(orderExpression, board.id.desc())
             .fetch();
 
         if (boards.isEmpty()) {
@@ -330,21 +343,18 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseWithLogin(
+    public BoardCustomPage<List<BoardResponseDto>> getBoardResponse(
         FilterRequest filterRequest,
         SortType sort,
         CursorInfo cursorId,
         Long memberId
     ) {
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = getBoardResponseDtoWithoutLogin(
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = getBoardResponseDtoList(
             filterRequest, sort, cursorId);
-        if (boardResponseDto.getContent().isEmpty()) {
-            return boardResponseDto;
-        }
 
-        List<Long> responseList = extractResponseIds(boardResponseDto);
-        List<Long> likedContentIds = getLikedContentsIds(responseList, memberId);
-        updateLikeStatus(boardResponseDto, likedContentIds);
+        if(Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
+            updateLikeStatus(boardResponseDto, memberId);
+        }
 
         return boardResponseDto;
     }
@@ -367,10 +377,13 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .fetch();
     }
 
-    private static void updateLikeStatus(
+    private void updateLikeStatus(
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto,
-        List<Long> likedContentIds
+        Long memberId
     ) {
+        List<Long> responseList = extractResponseIds(boardResponseDto);
+        List<Long> likedContentIds = getLikedContentsIds(responseList, memberId);
+
         for (BoardResponseDto response : boardResponseDto.getContent()) {
             for (Long likedContentId : likedContentIds) {
                 if (response.getBoardId()
