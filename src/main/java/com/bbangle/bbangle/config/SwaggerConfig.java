@@ -4,6 +4,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.*;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,15 +39,17 @@ public class SwaggerConfig {
         SecurityScheme oauthSchemes = new SecurityScheme()
                 .type(SecurityScheme.Type.OAUTH2)
                 .flows(oAuthFlows);
+        SecurityRequirement tokenLogin = new SecurityRequirement().addList("토큰 로그인");
 
         return new OpenAPI()
                 .info(info)
-                .addSecurityItem(new SecurityRequirement().addList("카카오 토큰 로그인"))
+                .addSecurityItem(tokenLogin)
                 .addSecurityItem(new SecurityRequirement().addList("토큰 받아오기"))
                 .components(new Components()
-                        .addSecuritySchemes("카카오 토큰 로그인", jwtSchemes)
+                        .addSecuritySchemes("토큰 로그인", jwtSchemes)
                         .addSecuritySchemes("토큰 받아오기", oauthSchemes)
-                );
+                )
+            .security(Arrays.asList(tokenLogin));
     }
 
     @Bean
