@@ -8,9 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
-import com.bbangle.bbangle.wishListStore.controller.WishListStoreController;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepositoryImpl;
-import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
+import com.bbangle.bbangle.wishList.controller.WishListStoreController;
+import com.bbangle.bbangle.wishList.repository.impl.WishListStoreRepositoryImpl;
+import com.bbangle.bbangle.wishList.service.WishListStoreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ public class WishListStoreControllerTest {
     MockMvc mockMvc;
 
     @Autowired
-    WishListStoreServiceImpl wishListStoreService;
+    WishListStoreService wishListStoreService;
 
     @Autowired
     WishListStoreRepositoryImpl wishListStoreRepository;

@@ -7,10 +7,10 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
-import com.bbangle.bbangle.wishListStore.domain.QWishlistStore;
+import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishList.domain.QWishlistFolder;
+import com.bbangle.bbangle.wishList.domain.WishlistFolder;
+import com.bbangle.bbangle.wishList.domain.QWishlistStore;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.dsl.Expressions;
 import java.time.DayOfWeek;
@@ -38,8 +38,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
-import static com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct.wishlistProduct;
+import static com.bbangle.bbangle.wishList.domain.QWishlistProduct.wishlistProduct;
 
 @Repository
 @Slf4j

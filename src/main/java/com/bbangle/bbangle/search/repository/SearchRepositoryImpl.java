@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.search.repository;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
+
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
@@ -14,8 +16,8 @@ import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishListStore.domain.QWishlistStore;
+import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishList.domain.QWishlistStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
@@ -23,16 +25,18 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
 
 
 @Repository
