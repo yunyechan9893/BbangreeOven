@@ -15,14 +15,16 @@ import org.springframework.util.StopWatch;
 public class ExecutionTimeLogImpl {
 
     @Around("@annotation(ExecutionTimeLog)")
-    public void assumeExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable{
+    public Object assumeExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         StopWatch stopWatch = new StopWatch(signature.getMethod().getName());
         stopWatch.start();
-        joinPoint.proceed();
-        stopWatch.stop();
         String methodName = signature.getMethod().getName();
+        Object result = joinPoint.proceed();
+        stopWatch.stop();
         log.info("Method Name : {}", methodName);
         log.info("Execution Time : {}", stopWatch.prettyPrint());
+        return result;
     }
+
 }
