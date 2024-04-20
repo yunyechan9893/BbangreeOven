@@ -1,8 +1,10 @@
 package com.bbangle.bbangle.wishListBoard.controller;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.util.SecurityUtils;
 import com.bbangle.bbangle.wishListBoard.dto.WishProductRequestDto;
 import com.bbangle.bbangle.wishListBoard.service.WishListBoardService;
-import com.bbangle.bbangle.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,9 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class WishListBoardController {
 
     private final WishListBoardService wishListBoardService;
+    private final ResponseService responseService;
 
     @PostMapping
-    public ResponseEntity<Void> wish(
+    public CommonResult wish(
         @PathVariable
         Long boardId,
         @RequestBody @Valid
@@ -31,20 +34,18 @@ public class WishListBoardController {
         Long memberId = SecurityUtils.getMemberId();
         wishListBoardService.wish(memberId, boardId, wishRequest);
 
-        return ResponseEntity.status(HttpStatus.OK)
-            .build();
+        return responseService.getSuccessResult();
     }
 
     @PutMapping
-    public ResponseEntity<Void> cancel(
+    public CommonResult cancel(
         @PathVariable
         Long boardId
     ) {
         Long memberId = SecurityUtils.getMemberId();
         wishListBoardService.cancel(memberId, boardId);
 
-        return ResponseEntity.status(HttpStatus.OK)
-            .build();
+        return responseService.getSuccessResult();
     }
 
 }

@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.wishListFolder.controller;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.wishListFolder.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishListFolder.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishListFolder.dto.FolderUpdateDto;
@@ -25,26 +27,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class WishListFolderController {
 
     private final WishListFolderService folderService;
+    private final ResponseService responseService;
 
     @PostMapping
-    public ResponseEntity<Void> make(
+    public CommonResult make(
         @RequestBody
         @Valid FolderRequestDto requestDto
     ) {
         Long memberId = SecurityUtils.getMemberId();
         folderService.create(memberId, requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .build();
+        return responseService.getSuccessResult();
     }
 
     @GetMapping
-    public ResponseEntity<List<FolderResponseDto>> getList() {
+    public CommonResult getList() {
         Long memberId = SecurityUtils.getMemberId();
-        return ResponseEntity.ok(folderService.getList(memberId));
+        return responseService.getListResult(folderService.getList(memberId));
     }
-
     @PatchMapping("/{folderId}")
-    public ResponseEntity<FolderResponseDto> update(
+    public CommonResult update(
         @PathVariable
         Long folderId,
         @RequestBody
@@ -52,19 +53,17 @@ public class WishListFolderController {
     ) {
         Long memberId = SecurityUtils.getMemberId();
         folderService.update(memberId, folderId, updateDto);
-        return ResponseEntity.status(HttpStatus.OK)
-            .build();
+        return responseService.getSuccessResult();
     }
 
     @DeleteMapping("/{folderId}")
-    public ResponseEntity<Void> delete(
+    public CommonResult delete(
         @PathVariable
         Long folderId
     ) {
         Long memberId = SecurityUtils.getMemberId();
         folderService.delete(folderId, memberId);
-        return ResponseEntity.status(HttpStatus.OK)
-            .build();
+        return responseService.getSuccessResult();
     }
 
 }

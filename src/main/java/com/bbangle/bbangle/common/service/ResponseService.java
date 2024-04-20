@@ -102,6 +102,15 @@ public record ResponseService(MessageSource messageSource) {
         return result;
     }
 
+    public CommonResult getSuccessResult(@NonNull String msg, int code) {
+        CommonResult result = new CommonResult();
+        result.setSuccess(true);
+        result.setCode(code);
+        result.setMessage(
+            messageSource.getMessage(msg, null, msg, LocaleContextHolder.getLocale()));
+        return result;
+    }
+
     public CommonResult getError(BbangleErrorCode error) {
         return getFailResult(error.getMessage(), error.getCode());
     }
