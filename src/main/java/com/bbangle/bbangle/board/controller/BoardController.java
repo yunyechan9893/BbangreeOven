@@ -39,12 +39,18 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/boards")
-@RequiredArgsConstructor
 @Tag(name = "Boards", description = "게시판 API")
 public class BoardController {
 
+    public BoardController(
+        BoardService boardService,
+        @Qualifier("defaultRedisTemplate")
+        RedisTemplate<String, Object> redisTemplate) {
+        this.boardService = boardService;
+        this.redisTemplate = redisTemplate;
+    }
+
     private final BoardService boardService;
-    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Operation(summary = "게시글 전체 조회")
