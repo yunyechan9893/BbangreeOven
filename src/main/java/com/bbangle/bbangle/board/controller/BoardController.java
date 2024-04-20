@@ -1,12 +1,13 @@
 package com.bbangle.bbangle.board.controller;
 
+import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.service.BoardService;
-import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.common.message.MessageResDto;
+import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,7 +56,7 @@ public class BoardController {
         )
     )
     @GetMapping
-    public ResponseEntity<CustomPage<List<BoardResponseDto>>> getList(
+    public ResponseEntity<BoardCustomPage<List<BoardResponseDto>>> getList(
         @ParameterObject
         FilterRequest filterRequest,
         @RequestParam(required = false)
@@ -109,7 +110,7 @@ public class BoardController {
                 .build();
         }
 
-        boardService.updateCountView(boardId, viewCountKey);;
+        boardService.updateCountView(boardId, viewCountKey);
 
         return ResponseEntity.status(HttpStatus.OK)
             .build();
