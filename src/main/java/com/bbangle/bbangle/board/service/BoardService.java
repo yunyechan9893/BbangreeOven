@@ -18,6 +18,7 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -93,15 +94,7 @@ public class BoardService {
         CursorInfo cursorInfo,
         Long memberId
     ) {
-        if(Objects.nonNull(memberId)){
-            return boardRepository.getBoardResponseWithLogin(filterRequest, sort, cursorInfo, memberId);
-        }
-
-        return boardRepository.getBoardResponseDtoWithoutLogin(
-            filterRequest,
-            sort,
-            cursorInfo
-        );
+        return boardRepository.getBoardResponse(filterRequest, sort, cursorInfo, memberId);
     }
 
     @Transactional(readOnly = true)
@@ -143,33 +136,6 @@ public class BoardService {
             .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
 
         return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
-    }
-
-    @ExecutionTimeLog
-    public List<Long> getListAdaptingSort(
-        SortType sort
-    ) {
-        if (sort != null && sort.equals(SortType.POPULAR)) {
-            return getPopularIdList();
-        }
-
-        return getRecommentIdList();
-    }
-
-    private List<Long> getRecommentIdList() {
-        return Objects.requireNonNull(redisTemplate.opsForZSet()
-                .reverseRange(RedisKeyUtil.RECOMMEND_KEY, 0, -1))
-            .stream()
-            .map(value -> Long.valueOf(String.valueOf(value)))
-            .toList();
-    }
-
-    private List<Long> getPopularIdList() {
-        return Objects.requireNonNull(redisTemplate.opsForZSet()
-                .reverseRange(RedisKeyUtil.POPULAR_KEY, 0, -1))
-            .stream()
-            .map(value -> Long.valueOf(String.valueOf(value)))
-            .toList();
     }
 
     @Transactional
