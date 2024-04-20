@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RankingUpdate {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
-    RankingRepository rankingRepository;
+    private final RankingRepository rankingRepository;
     @Autowired
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
