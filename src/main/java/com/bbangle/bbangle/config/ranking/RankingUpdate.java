@@ -29,12 +29,10 @@ public class RankingUpdate {
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
-    @Async
     @Transactional
     @Scheduled(cron = "0 0 * * * *") // 매시 정각마다 실행
     public void cleanupLikes() {
-        LocalDateTime updateDate = LocalDateTime.now()
-            .minusDays(1);
+        LocalDateTime updateDate = LocalDateTime.now().minusDays(1);
 
         Set<String> keys = boardLikeInfoRedisTemplate.keys("*");
         if (keys != null) {
