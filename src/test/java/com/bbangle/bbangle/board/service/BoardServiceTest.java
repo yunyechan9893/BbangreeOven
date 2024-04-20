@@ -14,8 +14,11 @@ import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.BoardCustomPage;
+import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,7 +58,13 @@ public class BoardServiceTest {
     ProductRepository productRepository;
 
     @Autowired
+    RankingRepository rankingRepository;
+
+    @Autowired
     BoardService boardService;
+
+    @Autowired
+    EntityManager entityManager;
 
     Board board;
     Board board2;
@@ -65,6 +74,11 @@ public class BoardServiceTest {
 
     @BeforeEach
     void setup() {
+        rankingRepository.deleteAll();
+        productRepository.deleteAll();
+        boardRepository.deleteAll();
+        storeRepository.deleteAll();
+
         defaultPage = PageRequest.of(0, 10);
 
         store = storeGenerator();
@@ -91,8 +105,24 @@ public class BoardServiceTest {
             true,
             true,
             10000);
-        boardRepository.save(board);
+        Board save1 = boardRepository.save(board);
+        Board save2 = boardRepository.save(board2);
         boardRepository.save(board2);
+
+        rankingRepository.save(
+            Ranking.builder()
+                .board(save1)
+                .recommendScore(0.0)
+                .popularScore(0.0)
+                .build()
+        );
+        rankingRepository.save(
+            Ranking.builder()
+                .board(save2)
+                .recommendScore(0.0)
+                .popularScore(0.0)
+                .build()
+        );
     }
 
 
@@ -165,6 +195,7 @@ public class BoardServiceTest {
 
     }
 
+    @Transactional
     @ParameterizedTest
     @WithAnonymousUser
     @NullSource
@@ -199,6 +230,10 @@ public class BoardServiceTest {
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
+        entityManager.flush();
+
+        List<Product> all = productRepository.findAll();
+        entityManager.flush();
 
         FilterRequest filterRequest = FilterRequest.builder()
             .orderAvailableToday(true)
@@ -209,7 +244,7 @@ public class BoardServiceTest {
             .get(0);
 
         //then
-        assertThat(boardList.getContent()).hasSize(1);
+        assertThat(boardList.getContent()).hasSize(2);
 
         assertThat(response1.tags()
             .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
