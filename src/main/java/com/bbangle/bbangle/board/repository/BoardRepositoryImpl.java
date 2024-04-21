@@ -554,9 +554,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             filterBuilder.and(product.ketogenicTag.eq(filterRequest.ketogenicTag()));
         }
         if (filterRequest.category() != null) {
-//            if (!Category.checkCategory(filterRequest.category())) {
-//                throw new BbangleException(UNKNOWN_CATEGORY);
-//            }
             filterBuilder.and(product.category.eq(filterRequest.category()));
         }
         if (filterRequest.minPrice() != null) {
