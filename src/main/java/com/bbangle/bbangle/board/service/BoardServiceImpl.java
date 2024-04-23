@@ -3,7 +3,7 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
-import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
+import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
@@ -92,7 +92,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
+    public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
       return boardRepository.getBoardDetailResponse(memberId, boardId);
     }
 

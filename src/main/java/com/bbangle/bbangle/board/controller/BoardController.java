@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
-import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
+import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.service.BoardServiceImpl;
@@ -32,7 +32,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -122,7 +121,7 @@ public class BoardController {
 
     @GetMapping("/{id}")
     @Operation(summary = "상품 상세보기 조회")
-    public ResponseEntity<BoardDetailResponseDto> getBoardDetailResponse(
+    public ResponseEntity<BoardDetailResponse> getBoardDetailResponse(
             @PathVariable("id")
             Long boardId
     ) {

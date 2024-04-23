@@ -38,8 +38,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
-
 @Repository
 @Slf4j
 @RequiredArgsConstructor
@@ -262,7 +260,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
+    public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
         List<Tuple> tuplesRelateBoard = fetchStoreAndBoardAndImageTuple(memberId, boardId);
         List<ProductDto> productDtos = fetchProductDtoByBoardId(boardId);
         List<String> duplicatedTags = getProductDtosToDuplicatedTags(productDtos);
@@ -279,7 +277,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .isWished(tupleReleteBoard.get(wishlistStore.id) != null ? true : false)
                 .build();
 
-        BoardDetailDto boardDto = BoardDetailDto.builder()
+        BoardDetailSelectDto boardDto = BoardDetailSelectDto.builder()
                 .boardId(tupleReleteBoard.get(board.id))
                 .thumbnail(tupleReleteBoard.get(board.profile))
                 .title(tupleReleteBoard.get(board.title))
@@ -305,7 +303,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .isBundled(isBundled)
                 .build();
 
-        return BoardDetailResponseDto.builder()
+        return BoardDetailResponse.builder()
             .store(storeDto)
             .board(boardDto)
             .build();

@@ -4,9 +4,9 @@ import com.bbangle.bbangle.store.dto.StoreDto;
 import lombok.Builder;
 
 @Builder
-public record BoardDetailResponseDto(
+public record BoardDetailResponse(
     StoreDto store,
-    BoardDetailDto board
+    BoardDetailSelectDto board
 ) {
 
 }

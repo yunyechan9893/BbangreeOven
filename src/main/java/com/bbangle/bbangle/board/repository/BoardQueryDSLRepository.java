@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
+import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -25,7 +25,7 @@ public interface BoardQueryDSLRepository {
         WishlistFolder wishlistFolder
     );
 
-    BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId);
+    BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId);
 
     HashMap<Long, String> getAllBoardTitle();
 
