@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.store.controller;
 
 import com.bbangle.bbangle.board.dto.StoreAllBoardDto;
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
@@ -19,28 +21,28 @@ import org.springframework.web.bind.annotation.*;
 public class StoreController {
 
     private final StoreService storeService;
+    private final ResponseService responseService;
 
     @GetMapping
-    public ResponseEntity<CustomPage<List<StoreResponseDto>>> getList(
+    public CommonResult getList(
         Long cursorId
     ) {
-        return ResponseEntity.ok(storeService.getList(cursorId));
+        return responseService.getSingleResult(storeService.getList(cursorId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StoreDetailResponseDto> getStoreDetailResponse(
+    public CommonResult getStoreDetailResponse(
             @PathVariable("id")
             Long storeId
     ){
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
         StoreDetailResponseDto storeDetailResponse = storeService.getStoreDetailResponse(memberId, storeId);
-        ResponseEntity<StoreDetailResponseDto> response = ResponseEntity.ok().body(storeDetailResponse);
-        return response;
+        return responseService.getSingleResult(storeDetailResponse);
     }
 
     @GetMapping("/{id}/boards/all")
-    public ResponseEntity<SliceImpl<StoreAllBoardDto>> getAllBoard(
+    public CommonResult getAllBoard(
             @RequestParam("page")
             int page,
             @PathVariable("id")
@@ -49,6 +51,6 @@ public class StoreController {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
         SliceImpl<StoreAllBoardDto> storeAllBoardDtos = storeService.getAllBoard(page, memberId, storeId);
-        return ResponseEntity.ok().body(storeAllBoardDtos);
+        return responseService.getSingleResult(storeAllBoardDtos);
     }
 }

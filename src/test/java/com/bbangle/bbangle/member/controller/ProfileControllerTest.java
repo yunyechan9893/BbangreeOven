@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.member.controller;
 
 
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.controller.ProfileController;
 import com.bbangle.bbangle.member.repository.ProfileRepository;
 import com.bbangle.bbangle.member.service.ProfileServiceImpl;
@@ -31,10 +32,12 @@ public class ProfileControllerTest {
     ProfileRepository profileRepository;
     @Autowired
     MockMvc mockMvc;
+    @Autowired
+    ResponseService responseService;
 
     @Before
     public void setUpMockMvc() {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(new ProfileController(profileService)).build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(new ProfileController(profileService, responseService)).build();
     }
 
     private final String BEARER = "Bearer";

@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.search.controller;
 
-import com.bbangle.bbangle.common.message.MessageResDto;
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.dto.response.RecencySearchResponse;
 import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
@@ -33,58 +34,59 @@ public class SearchController {
     private final String SUCCESS_SAVEKEYWORD = "검색어 저장 완료";
 
     private final SearchService searchService;
+    private final ResponseService responseService;
   
     @GetMapping(GET_BOARD_KEYWORD_SEARCH_API)
-    public ResponseEntity<SearchBoardResponse> getSearchBoardDtos(
+    public CommonResult getSearchBoardDtos(
             SearchBoardRequest searchBoardRequest
     ){
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
-        return ResponseEntity.ok().body(searchService.getSearchBoardDtos(memberId, searchBoardRequest));
+        SearchBoardResponse searchBoardDtos = searchService.getSearchBoardDtos(memberId,
+            searchBoardRequest);
+        return responseService.getSingleResult(searchBoardDtos);
     }
 
     @GetMapping(GET_STORE_KEYWORD_SEARCH_API)
-    public ResponseEntity<SearchStoreResponse> getSearchStoreDtos(
+    public CommonResult getSearchStoreDtos(
             @RequestParam("page")
             int page,
             @RequestParam(value = "keyword")
             String keyword
     ){
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-
-        return ResponseEntity.ok().body(
-                searchService.getSearchStoreDtos(memberId, page, keyword)
-        );
+        SearchStoreResponse searchStoreDtos = searchService.getSearchStoreDtos(memberId, page,
+            keyword);
+        return responseService.getSingleResult(searchStoreDtos);
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, MessageResDto>> saveKeyword(
+    public CommonResult saveKeyword(
         @RequestParam("keyword")
         String keyword
     ) {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
         searchService.saveKeyword(memberId, keyword);
-        return ResponseEntity.ok()
-            .body(Map.of("content", new MessageResDto(SUCCESS_SAVEKEYWORD)));
+        return responseService.getSingleResult(
+            Map.of("content", SUCCESS_SAVEKEYWORD));
     }
 
     @GetMapping(GET_RECENCY_KEYWORD_SEARCH_API)
-    public ResponseEntity<RecencySearchResponse> getRecencyKeyword() {
+    public CommonResult getRecencyKeyword() {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-
-        return ResponseEntity.ok().body(searchService.getRecencyKeyword(memberId));
+        RecencySearchResponse recencyKeyword = searchService.getRecencyKeyword(memberId);
+        return responseService.getSingleResult(recencyKeyword);
     }
 
     @DeleteMapping(DELETE_RECENCY_KEYWORD_SEARCH_API)
-    public ResponseEntity<Map<String, Boolean>> deleteRecencyKeyword(
+    public CommonResult deleteRecencyKeyword(
         @RequestParam(value = "keyword")
         String keyword
     ) {
         Long memberId = SecurityUtils.getMemberId();
 
-        return ResponseEntity.ok()
-            .body(
+        return responseService.getSingleResult(
                 Map.of("content", searchService.deleteRecencyKeyword(keyword, memberId))
             );
     }
@@ -98,12 +100,11 @@ public class SearchController {
     }
 
     @GetMapping(GET_AUTO_KEYWORD_SEARCH_API)
-    public ResponseEntity<Map<String, List<String>>> getAutoKeyword(
+    public CommonResult getAutoKeyword(
         @RequestParam("keyword")
         String keyword
     ) {
-        return ResponseEntity.ok()
-            .body(
+        return responseService.getSingleResult(
                 Map.of("content", searchService.getAutoKeyword(keyword))
             );
     }
