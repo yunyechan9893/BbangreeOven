@@ -1,15 +1,19 @@
 package com.bbangle.bbangle.wishListStore.controller;
 
-import com.bbangle.bbangle.common.message.MessageResDto;
-import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreServiceImpl;
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.util.SecurityUtils;
+import com.bbangle.bbangle.wishListStore.dto.WishListStorePagingDto;
+import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Slf4j
@@ -17,48 +21,30 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/likes")
 public class WishListStoreController {
     private final WishListStoreServiceImpl wishlistStoreService;
+    private final ResponseService responseService;
 
-    /**
-     * 스토어 위시리스트 조회
-     *
-     * @return the response entity List<wishListStoreResDto>
-     */
     @GetMapping("/stores")
-    public ResponseEntity<WishListStorePagingDto> getWishListStores(Pageable pageable){
+    public CommonResult getWishListStores(Pageable pageable){
         Long memberId = SecurityUtils.getMemberId();
-        WishListStorePagingDto wishListStoresRes = wishlistStoreService.getWishListStoresRes(memberId, pageable);
-        return ResponseEntity.ok().body(wishListStoresRes);
+        WishListStorePagingDto wishListStoresRes = wishlistStoreService.getWishListStoresResponse(memberId, pageable);
+        return responseService.getSingleResult(wishListStoresRes);
     }
 
-    /**
-     * 스토어 위시리스트 추가
-     *
-     * @param storeId 스토어 id
-     * @hidden memberId 멤버 id
-     * @return 메세지
-     */
     @PostMapping("/store/{storeId}")
-    public ResponseEntity<MessageResDto> addWishListStore(@PathVariable Long storeId){
+    public CommonResult addWishListStore(@PathVariable Long storeId){
         Long memberId = SecurityUtils.getMemberId();
         try {
             wishlistStoreService.save(memberId, storeId);
-            return ResponseEntity.ok().body(new MessageResDto("스토어를 찜했습니다"));
+            return responseService.getSuccessResult("스토어를 찜했습니다", 0);
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResDto("스토어를 찜하지 못했습니다"));
+            return responseService.getFailResult("스토어를 찜하지 못했습니다", -1);
         }
     }
 
-    /**
-     * 스토어 위시리스트 삭제
-     *
-     * @param storeId the store id
-     * @return the response entity
-     */
     @PatchMapping("/store/{storeId}")
-    public ResponseEntity<MessageResDto> deleteWishListStore(@PathVariable Long storeId){
+    public CommonResult deleteWishListStore(@PathVariable Long storeId){
         Long memberId = SecurityUtils.getMemberId();
          wishlistStoreService.deleteStore(memberId, storeId);
-         return ResponseEntity.ok().body(new MessageResDto("스토어 찜을 해제했습니다"));
+         return responseService.getSuccessResult("스토어 찜을 해제했습니다", 0);
     }
 }

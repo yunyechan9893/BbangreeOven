@@ -163,18 +163,18 @@ public class SearchRepositoryTest {
 
         // 각 BoardResponseDto에 대한 처리
         Assertions.assertEquals(1L, searchStoreResult.get(0)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", searchStoreResult.get(0)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, searchStoreResult.get(0)
-            .isWished());
+            .getIsWished());
 
         Assertions.assertEquals(2L, searchStoreResult.get(1)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", searchStoreResult.get(1)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, searchStoreResult.get(1)
-            .isWished());
+            .getIsWished());
     }
 
     @Test
@@ -216,13 +216,13 @@ public class SearchRepositoryTest {
         var searchStoreResult = searchRepository.getSearchedStore(memberId, STORE_IDS, PageRequest.of(0, 10));
 
         // 각 BoardResponseDto에 대한 처리
-        Assertions.assertEquals(1L, searchStoreResult.get(0).storeId());
-        Assertions.assertEquals("RAWSOME", searchStoreResult.get(0).storeName());
-        Assertions.assertEquals(false, searchStoreResult.get(0).isWished());
+        Assertions.assertEquals(1L, searchStoreResult.get(0).getStoreId());
+        Assertions.assertEquals("RAWSOME", searchStoreResult.get(0).getStoreName());
+        Assertions.assertEquals(false, searchStoreResult.get(0).getIsWished());
 
-        Assertions.assertEquals(2L, searchStoreResult.get(1).storeId());
-        Assertions.assertEquals("RAWSOME", searchStoreResult.get(1).storeName());
-        Assertions.assertEquals(false, searchStoreResult.get(1).isWished());
+        Assertions.assertEquals(2L, searchStoreResult.get(1).getStoreId());
+        Assertions.assertEquals("RAWSOME", searchStoreResult.get(1).getStoreName());
+        Assertions.assertEquals(false, searchStoreResult.get(1).getIsWished());
     }
 
     @Test

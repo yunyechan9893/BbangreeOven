@@ -1,29 +1,30 @@
 package com.bbangle.bbangle.controller;
 
-import com.bbangle.bbangle.member.controller.ProfileController;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
 import com.bbangle.bbangle.wishListStore.controller.WishListStoreController;
 import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepositoryImpl;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreServiceImpl;
-import com.bbangle.bbangle.wishListStore.service.WishListStoreService;
+import com.bbangle.bbangle.wishListStore.service.WishListStoreServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class WishListStoreControllerTest {
+    //BeforeEach로 데이터 넣기
 
     @Autowired
     MockMvc mockMvc;
@@ -34,9 +35,15 @@ public class WishListStoreControllerTest {
     @Autowired
     WishListStoreRepositoryImpl wishListStoreRepository;
 
+    @MockBean
+    BoardWishListConfig boardWishListConfig;
+
+    @Autowired
+    ResponseService responseService;
+
     @BeforeEach
     public void setUpMockMvc() {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(new WishListStoreController(wishListStoreService)).build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(new WishListStoreController(wishListStoreService, responseService)).build();
     }
 
     private final String BEARER = "Bearer";
@@ -55,5 +62,14 @@ public class WishListStoreControllerTest {
                 .andExpect(jsonPath("$.contents[0].profile").value("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e"))
                 .andDo(print());
 
+    }
+
+    @DisplayName("위시리스트 삭제를 시행한다")
+    @Test
+    public void deleteWishListStore() throws Exception{
+        mockMvc.perform(patch("/api/v1/likes/store/1")
+            .header("Authorization", String.format("%s %s",BEARER, AUTHORIZATION)))
+            .andExpect(status().isOk())
+            .andDo(print());
     }
 }

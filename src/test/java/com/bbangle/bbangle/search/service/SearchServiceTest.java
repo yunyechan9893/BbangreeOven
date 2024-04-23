@@ -202,18 +202,18 @@ public class SearchServiceTest {
         Assertions.assertEquals(10, limitItemCount);
 
         Assertions.assertEquals(1L, stores.get(0)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", stores.get(0)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, stores.get(0)
-            .isWished());
+            .getIsWished());
 
         Assertions.assertEquals(2L, stores.get(1)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", stores.get(1)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, stores.get(1)
-            .isWished());
+            .getIsWished());
 
 
         searchStoreResult = searchService.getSearchStoreDtos(
@@ -231,18 +231,18 @@ public class SearchServiceTest {
         Assertions.assertEquals(10, limitItemCount);
 
         Assertions.assertEquals(11L, stores.get(0)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", stores.get(0)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, stores.get(0)
-            .isWished());
+            .getIsWished());
 
         Assertions.assertEquals(12L, stores.get(1)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", stores.get(1)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, stores.get(1)
-            .isWished());
+            .getIsWished());
     }
 
     @Test
@@ -263,13 +263,13 @@ public class SearchServiceTest {
         Assertions.assertEquals(1, pageNumber);
         Assertions.assertEquals(10, limitItemCount);
 
-        Assertions.assertEquals(11L, stores.get(0).storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(0).storeName());
-        Assertions.assertEquals(false, stores.get(0).isWished());
+        Assertions.assertEquals(11L, stores.get(0).getStoreId());
+        Assertions.assertEquals("RAWSOME", stores.get(0).getStoreName());
+        Assertions.assertEquals(false, stores.get(0).getIsWished());
 
-        Assertions.assertEquals(12L, stores.get(1).storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(1).storeName());
-        Assertions.assertEquals(false, stores.get(1).isWished());
+        Assertions.assertEquals(12L, stores.get(1).getStoreId());
+        Assertions.assertEquals("RAWSOME", stores.get(1).getStoreName());
+        Assertions.assertEquals(false, stores.get(1).getIsWished());
     }
 
     @Test
