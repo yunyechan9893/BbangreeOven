@@ -1,13 +1,11 @@
 package com.bbangle.bbangle.board.repository;
 
-import com.bbangle.bbangle.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.QStore;
@@ -20,7 +18,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
 
-import com.bbangle.bbangle.util.SecurityUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
@@ -63,7 +60,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final QRanking ranking = QRanking.ranking;
 
     @Override
-    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseDtoList(
+    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
         FilterRequest filterRequest,
         SortType sort,
         CursorInfo cursorInfo
@@ -349,7 +346,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         CursorInfo cursorId,
         Long memberId
     ) {
-        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = getBoardResponseDtoList(
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = getBoardResponseList(
             filterRequest, sort, cursorId);
 
         if(Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
