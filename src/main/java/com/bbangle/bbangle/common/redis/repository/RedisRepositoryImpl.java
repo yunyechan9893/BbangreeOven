@@ -1,12 +1,11 @@
 package com.bbangle.bbangle.common.redis.repository;
 
-import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -30,9 +29,7 @@ public class RedisRepositoryImpl implements RedisRepository {
 
     @Override
     public List<String> getStringList(String namespace, String key) {
-        // 네임스페이스와 키를 결합
         String multiKey = String.format("%s:%s", namespace, key);
-        // multiKey를 이용해 레디스 조회 후 값 반환
         return redisTemplate.opsForList()
             .range(multiKey, 0, -1)
             .stream()
@@ -43,18 +40,10 @@ public class RedisRepositoryImpl implements RedisRepository {
     @Override
     public String getString(String namespace, String key) {
         String multiKey = String.format("%s:%s", namespace, key);
-        var value = redisTemplate.opsForValue();
-
-        try {
-            log.info(multiKey);
-            log.info((String) value.get(multiKey));
-            return value.get(multiKey)
-                .toString();
-        } catch (RedisSystemException e) {
-            return null;
-        } catch (NullPointerException e) {
-            return null;
-        }
+        Object value = redisTemplate.opsForValue().get(multiKey);
+        return Optional.ofNullable(value)
+                .map(Object::toString)
+                .orElse("");
     }
 
     @Override

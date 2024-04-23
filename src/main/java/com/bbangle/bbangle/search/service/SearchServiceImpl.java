@@ -130,13 +130,13 @@ public class SearchServiceImpl implements SearchService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneHourAgo = now.minusHours(1);
 
-        String migration = redisRepository.getString(RedisEnum.MIGRATION.name(), migrationType);
+        String migrationInfo = redisRepository.getString(RedisEnum.MIGRATION.name(), migrationType);
         String redisNamespace = migrationType == BOARD_MIGRATION ? RedisEnum.BOARD.name()
                 : RedisEnum.STORE.name();
 
         if (
-                migration == null ||
-                        LocalDateTime.parse(migration)
+                migrationInfo.equals("") ||
+                        LocalDateTime.parse(migrationInfo)
                                 .isBefore(oneHourAgo)
         ) {
             redisRepository.setFromString(RedisEnum.MIGRATION.name(), migrationType,
