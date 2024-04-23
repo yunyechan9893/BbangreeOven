@@ -4,7 +4,7 @@ import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
+import com.bbangle.bbangle.wishList.domain.WishlistFolder;
 import java.util.HashMap;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
