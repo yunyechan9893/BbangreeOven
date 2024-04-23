@@ -52,12 +52,6 @@ public class BoardService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
     private final RankingRepository rankingRepository;
-    private final ObjectStorageRepository objectStorageRepository;
-    private final StoreRepository storeRepository;
-
-    @Value("${cloud.aws.s3.bucket}")
-    private String BUCKET_NAME;
-    private final String DETAIL_HTML_FILE_NAME = "detail.html";
 
     public BoardService(
         @Autowired
@@ -72,10 +66,7 @@ public class BoardService {
         @Autowired
         @Qualifier("boardLikeInfoRedisTemplate")
         RedisTemplate<String, Object> boardLikeInfoRedisTemplate,
-        RankingRepository rankingRepository,
-        ObjectStorageRepository objectStorageRepository,
-        @Autowired
-        StoreRepository storeRepository
+        RankingRepository rankingRepository
     ) {
         this.boardRepository = boardRepository;
         this.memberRepository = memberRepository;
@@ -83,8 +74,6 @@ public class BoardService {
         this.redisTemplate = redisTemplate;
         this.boardLikeInfoRedisTemplate = boardLikeInfoRedisTemplate;
         this.rankingRepository = rankingRepository;
-        this.objectStorageRepository = objectStorageRepository;
-        this.storeRepository = storeRepository;
     }
 
     @Transactional(readOnly = true)
