@@ -121,7 +121,7 @@ public class BoardController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "상품 상세보기 조회 (1/3)")
+    @Operation(summary = "상품 상세보기 조회")
     public ResponseEntity<BoardDetailResponseDto> getBoardDetailResponse(
             @PathVariable("id")
             Long boardId
