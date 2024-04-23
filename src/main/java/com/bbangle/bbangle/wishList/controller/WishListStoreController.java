@@ -8,6 +8,7 @@ import com.bbangle.bbangle.wishList.service.WishListStoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,15 +25,15 @@ public class WishListStoreController {
     private final ResponseService responseService;
 
     @GetMapping("/stores")
-    public CommonResult getWishListStores(Pageable pageable){
-        Long memberId = SecurityUtils.getMemberId();
+    public CommonResult getWishListStores(Pageable pageable,
+        @AuthenticationPrincipal Long memberId){
         WishListStorePagingDto wishListStoresRes = wishlistStoreService.getWishListStoresResponse(memberId, pageable);
         return responseService.getSingleResult(wishListStoresRes);
     }
 
     @PostMapping("/store/{storeId}")
-    public CommonResult addWishListStore(@PathVariable Long storeId){
-        Long memberId = SecurityUtils.getMemberId();
+    public CommonResult addWishListStore(@PathVariable Long storeId,
+        @AuthenticationPrincipal Long memberId){
         try {
             wishlistStoreService.save(memberId, storeId);
             return responseService.getSuccessResult("스토어를 찜했습니다", 0);
@@ -42,8 +43,8 @@ public class WishListStoreController {
     }
 
     @PatchMapping("/store/{storeId}")
-    public CommonResult deleteWishListStore(@PathVariable Long storeId){
-        Long memberId = SecurityUtils.getMemberId();
+    public CommonResult deleteWishListStore(@PathVariable Long storeId,
+        @AuthenticationPrincipal Long memberId){
          wishlistStoreService.deleteStore(memberId, storeId);
          return responseService.getSuccessResult("스토어 찜을 해제했습니다", 0);
     }
