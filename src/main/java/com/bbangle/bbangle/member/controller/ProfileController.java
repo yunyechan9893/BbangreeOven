@@ -30,7 +30,7 @@ public class ProfileController {
     public CommonResult getProfile(){
         Long memberId = SecurityUtils.getMemberId();
         ProfileInfoResponseDto profileInfo = profileService.getProfileInfo(memberId);
-        return responseService.getSingleResult(memberId);
+        return responseService.getSingleResult(profileInfo);
     }
 
 
