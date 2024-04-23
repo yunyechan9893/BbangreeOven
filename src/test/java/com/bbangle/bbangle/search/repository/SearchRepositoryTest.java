@@ -82,19 +82,6 @@ public class SearchRepositoryTest {
         assertThat(boardCount, is(15));
         var productCount = productRepository.findAll().size();
         assertThat(productCount, is(45));
-        productRepository.findAll().forEach(product -> {
-            System.out.println(product);
-            System.out.println(product.getTitle());
-            System.out.println(product.getPrice());
-            System.out.println(product.getCategory());
-            System.out.println(product.isGlutenFreeTag());
-            System.out.println(product.isSugarFreeTag());
-            System.out.println(product.isHighProteinTag());
-            System.out.println(product.isVeganTag());
-            System.out.println(product.isKetogenicTag());
-
-        });
-
     }
 
     @Test
