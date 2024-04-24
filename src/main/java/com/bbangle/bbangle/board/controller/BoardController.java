@@ -120,16 +120,15 @@ public class BoardController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "상품 상세보기 조회")
-    public ResponseEntity<BoardDetailResponse> getBoardDetailResponse(
+    public CommonResult getBoardDetailResponse(
             @PathVariable("id")
             Long boardId
     ) {
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
-        return ResponseEntity.ok().body(
-                boardService.getBoardDetailResponse(memberId, boardId)
-        );
+        BoardDetailResponse boardDetailResponse =
+                boardService.getBoardDetailResponse(memberId, boardId);
+        return responseService.getSingleResult(boardDetailResponse);
     }
 
     @PatchMapping("/{boardId}/purchase")
