@@ -7,12 +7,13 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
-import com.bbangle.bbangle.wishListStore.domain.QWishlistStore;
+import com.bbangle.bbangle.wishList.domain.QWishlistFolder;
+import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishList.domain.QWishlistStore;
+import com.bbangle.bbangle.wishList.domain.WishlistFolder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
@@ -23,7 +24,6 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +37,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
+
+import static com.bbangle.bbangle.wishList.domain.QWishlistProduct.wishlistProduct;
 
 @Repository
 @Slf4j
@@ -133,7 +135,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
 
     private List<BoardDetailDto> fetchBoardDetails(Long boardId){
-        return queryFactory.select(new QDetailDto(
+        return queryFactory.select(new QBoardDetailDto(
                         boardDetail.id,
                         boardDetail.imgIndex,
                         boardDetail.url
@@ -244,7 +246,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
         return jpaQuery.fetch();
     }
-    
+
     private List<BoardImgDto> getBoardImageToDto(List<Tuple> tuplesRelateBoard){
         List<BoardImgDto> boardImgDtos = new ArrayList<>();
         for (Tuple tupleReleteBoard : tuplesRelateBoard) {
@@ -255,7 +257,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                             .build()
             );
         }
-        
+
         return boardImgDtos;
     }
 
