@@ -359,7 +359,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private List<Long> extractResponseIds(BoardCustomPage<List<BoardResponseDto>> boardResponseDto) {
         return boardResponseDto.getContent()
             .stream()
-            .map(BoardResponseDto::boardId)
+            .map(BoardResponseDto::getBoardId)
             .toList();
     }
 
@@ -420,7 +420,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         Ranking cursorRanking = queryFactory.select(ranking)
             .from(ranking)
             .where(ranking.board.id.eq(content.get(content.size() - 1)
-                .boardId()))
+                .getBoardId()))
             .fetchOne();
         double cursorScore = getCursorScore(sort, cursorRanking);
         Long nextCursor = cursorRanking.getBoard()

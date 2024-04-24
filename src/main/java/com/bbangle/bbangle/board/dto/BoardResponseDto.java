@@ -88,41 +88,4 @@ public final class BoardResponseDto {
         this.isWished = status;
     }
 
-    public Long boardId() {
-        return boardId;
-    }
-
-    public Long storeId() {
-        return storeId;
-    }
-
-    public String storeName() {
-        return storeName;
-    }
-
-    public String thumbnail() {
-        return thumbnail;
-    }
-
-    public String title() {
-        return title;
-    }
-
-    public int price() {
-        return price;
-    }
-
-    public Boolean isWished() {
-        return isWished;
-    }
-
-    public Boolean isBundled() {
-        return isBundled;
-    }
-
-    public List<String> tags() {
-        return tags;
-    }
-
-
 }

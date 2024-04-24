@@ -177,19 +177,19 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             BoardResponseDto boardResponseDto = boardMap.get(tuple.get(product.board.id));
 
             if (tuple.get(product.glutenFreeTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.GLUTEN_FREE.label());
+                boardMap.get(boardId).getTags().add(TagEnum.GLUTEN_FREE.label());
             }
             if (tuple.get(product.highProteinTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.HIGH_PROTEIN.label());
+                boardMap.get(boardId).getTags().add(TagEnum.HIGH_PROTEIN.label());
             }
             if (tuple.get(product.sugarFreeTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.SUGAR_FREE.label());
+                boardMap.get(boardId).getTags().add(TagEnum.SUGAR_FREE.label());
             }
             if (tuple.get(product.veganTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.VEGAN.label());
+                boardMap.get(boardId).getTags().add(TagEnum.VEGAN.label());
             }
             if (tuple.get(product.ketogenicTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.KETOGENIC.label());
+                boardMap.get(boardId).getTags().add(TagEnum.KETOGENIC.label());
             }
 
             boardMap.put(tuple.get(product.board.id), boardResponseDto);
@@ -260,17 +260,17 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
 
     private static BoardResponseDto removeDuplicatesFromDto(BoardResponseDto boardResponseDto) {
-        List<String> uniqueTags = boardResponseDto.tags().stream().distinct().collect(Collectors.toList());
+        List<String> uniqueTags = boardResponseDto.getTags().stream().distinct().collect(Collectors.toList());
 
         return BoardResponseDto.builder()
-                .boardId(boardResponseDto.boardId())
-                .storeId(boardResponseDto.storeId())
-                .storeName(boardResponseDto.storeName())
-                .thumbnail(boardResponseDto.thumbnail())
-                .title(boardResponseDto.title())
-                .price(boardResponseDto.price())
-                .isBundled(boardResponseDto.isBundled())
-                .isWished(boardResponseDto.isWished())
+                .boardId(boardResponseDto.getBoardId())
+                .storeId(boardResponseDto.getStoreId())
+                .storeName(boardResponseDto.getStoreName())
+                .thumbnail(boardResponseDto.getThumbnail())
+                .title(boardResponseDto.getTitle())
+                .price(boardResponseDto.getPrice())
+                .isBundled(boardResponseDto.getIsBundled())
+                .isWished(boardResponseDto.getIsWished())
                 .tags(uniqueTags)
                 .build();
     }
