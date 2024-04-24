@@ -81,6 +81,7 @@ public class Board extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    @Builder.Default
     @OneToMany(mappedBy = "board")
     private List<Product> productList = new ArrayList<>();
 

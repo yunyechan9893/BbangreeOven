@@ -3,34 +3,31 @@ package com.bbangle.bbangle.board.repository;
 import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.*;
 import com.bbangle.bbangle.common.sort.SortType;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.ranking.domain.QRanking;
+import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
 import com.bbangle.bbangle.wishList.domain.QWishlistFolder;
 import com.bbangle.bbangle.wishList.domain.WishlistFolder;
 import com.bbangle.bbangle.wishList.domain.QWishlistStore;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.dsl.Expressions;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
 
-import com.bbangle.bbangle.util.SecurityUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -46,44 +43,78 @@ import static com.bbangle.bbangle.wishList.domain.QWishlistProduct.wishlistProdu
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private static final int PAGE_SIZE = 10;
+    private static final Long EMPTY_RESULT_NEXT_CURSOR = -1L;
+    private static final Double EMPTY_RESULT_SCORE = -1.0;
+    private static final Boolean EMPTY_RESULT_HAS_NEXT = false;
 
+    private final MemberRepository memberRepository;
     private final JPAQueryFactory queryFactory;
+    private final QBoard board = QBoard.board;
+    private final QProduct product = QProduct.product;
+    private final QStore store = QStore.store;
+    private final QWishlistProduct products = QWishlistProduct.wishlistProduct;
+    private final QWishlistFolder folder = QWishlistFolder.wishlistFolder;
+    private final QProductImg productImg = QProductImg.productImg;
+    private final QBoardDetail boardDetail = QBoardDetail.boardDetail;
+    private final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
+    private final QRanking ranking = QRanking.ranking;
 
     @Override
-    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseDto(
+    public BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
         FilterRequest filterRequest,
-        List<Long> matchedIdx,
-        Long cursorId
+        SortType sort,
+        CursorInfo cursorInfo
     ) {
-        QBoard board = QBoard.board;
-        QProduct product = QProduct.product;
-        QStore store = QStore.store;
-
         BooleanBuilder filter =
             setFilteringCondition(
                 filterRequest,
                 product,
                 board);
+        OrderSpecifier<Double> orderExpression = getOrderExpression(sort);
 
-        BooleanBuilder cursorBuilder = setCursorBuilder(cursorId, matchedIdx, board);
-
-        List<Board> boards = queryFactory
-            .selectFrom(board)
-            .leftJoin(board.productList, product)
-            .fetchJoin()
-            .leftJoin(board.store, store)
-            .fetchJoin()
+        BooleanBuilder cursorBuilder = setCursorBuilder(cursorInfo, sort);
+        List<Long> fetch = queryFactory
+            .select(board.id)
+            .distinct()
+            .from(product)
+            .join(product.board, board)
+            .join(ranking)
+            .on(board.id.eq(ranking.board.id))
             .where(cursorBuilder.and(filter))
-            .orderBy(orderByFieldList(board, matchedIdx))
+            .orderBy(orderExpression, board.id.desc())
             .limit(PAGE_SIZE + 1)
             .fetch();
+
+        List<Board> boards = queryFactory.select(board)
+            .from(board)
+            .join(board.productList, product)
+            .fetchJoin()
+            .join(board.store, store)
+            .fetchJoin()
+            .join(ranking)
+            .on(board.id.eq(ranking.board.id))
+            .where(board.id.in(fetch))
+            .orderBy(orderExpression, board.id.desc())
+            .fetch();
+
+        if (boards.isEmpty()) {
+            return BoardCustomPage.from(Collections.emptyList(), EMPTY_RESULT_NEXT_CURSOR, EMPTY_RESULT_SCORE, EMPTY_RESULT_HAS_NEXT);
+        }
 
         Map<Long, List<ProductTagDto>> productTagsByBoardId = getLongListMap(boards);
         boolean hasNext = isHasNext(boards);
         List<BoardResponseDto> content = getBoardResponseDtos(
             boards, productTagsByBoardId);
 
-        return getBoardCustomPage(cursorId, board, product, filter, store, content, hasNext);
+        return getBoardCustomPage(sort, cursorInfo, filter, content, hasNext);
+    }
+
+    private OrderSpecifier<Double> getOrderExpression(SortType sort) {
+        if (Objects.isNull(sort) || sort.equals(SortType.RECOMMEND)) {
+            return ranking.recommendScore.desc();
+        }
+
+        return ranking.popularScore.desc();
     }
 
     @Override
@@ -91,12 +122,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         String sort, Pageable pageable, Long wishListFolderId,
         WishlistFolder selectedFolder
     ) {
-        QBoard board = QBoard.board;
-        QProduct product = QProduct.product;
-        QStore store = QStore.store;
-        QWishlistProduct products = wishlistProduct;
-        QWishlistFolder folder = QWishlistFolder.wishlistFolder;
-
         OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort, board, products);
 
         List<Board> boards = queryFactory
@@ -136,15 +161,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
-        QBoard board = QBoard.board;
-        QProduct product = QProduct.product;
-        QStore store = QStore.store;
-        QProductImg productImg = QProductImg.productImg;
-        QBoardDetail boardDetail = QBoardDetail.boardDetail;
-
-        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
-        QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
-
         List<Expression<?>> columns = new ArrayList<>();
         columns.add(store.id);
         columns.add(store.name);
@@ -302,8 +318,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public HashMap<Long, String> getAllBoardTitle() {
-        QBoard board = QBoard.board;
-
         List<Tuple> fetch = queryFactory
             .select(board.id, board.title)
             .from(board)
@@ -316,109 +330,143 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public List<BoardResponseDto> updateLikeStatus(
-        List<Long> matchedIdx,
-        List<BoardResponseDto> content
+    public List<Board> checkingNullRanking() {
+        return queryFactory.select(board)
+            .from(board)
+            .leftJoin(ranking)
+            .on(board.eq(ranking.board))
+            .where(ranking.id.isNull())
+            .fetch();
+    }
+
+    @Override
+    public BoardCustomPage<List<BoardResponseDto>> getBoardResponse(
+        FilterRequest filterRequest,
+        SortType sort,
+        CursorInfo cursorId,
+        Long memberId
     ) {
-        QBoard board = QBoard.board;
-        QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = getBoardResponseList(
+            filterRequest, sort, cursorId);
 
-        Long memberId = SecurityUtils.getMemberId();
+        if(Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
+            updateLikeStatus(boardResponseDto, memberId);
+        }
 
-        BooleanExpression isLikedExpression = wishlistProduct.isDeleted.isFalse();
+        return boardResponseDto;
+    }
 
-        List<ProductBoardLikeStatus> likeFetch = queryFactory
-            .select(Projections.bean(
-                ProductBoardLikeStatus.class,
-                board.id.as("boardId"),
-                isLikedExpression.as("isWished")
-            ))
+    private List<Long> extractResponseIds(BoardCustomPage<List<BoardResponseDto>> boardResponseDto) {
+        return boardResponseDto.getContent()
+            .stream()
+            .map(BoardResponseDto::getBoardId)
+            .toList();
+    }
+
+    private List<Long> getLikedContentsIds(List<Long> responseList, Long memberId) {
+        return queryFactory.select(board.id)
             .from(board)
             .leftJoin(wishlistProduct)
-            .on(board.id.eq(wishlistProduct.board.id)
-                .and(wishlistProduct.memberId.eq(memberId)))
-            .where(board.id.in(matchedIdx))
-            .fetch()
-            .stream()
-            .peek(result -> {
-                if (result.getIsLike() == null) {
-                    result.setIsLike(false);
-                }
-            })
-            .toList();
+            .on(board.eq(wishlistProduct.board))
+            .where(board.id.in(responseList)
+                .and(wishlistProduct.memberId.eq(memberId))
+                .and(wishlistProduct.isDeleted.eq(false)))
+            .fetch();
+    }
 
-        for (ProductBoardLikeStatus likeStatus : likeFetch) {
-            if (likeStatus.getIsLike()) {
-                for (BoardResponseDto boardResponseDto : content) {
-                    if (Objects.equals(likeStatus
-                        .getBoardId(), boardResponseDto
-                        .boardId())) {
-                        boardResponseDto
-                            .updateLike(true);
-                    }
+    private void updateLikeStatus(
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto,
+        Long memberId
+    ) {
+        List<Long> responseList = extractResponseIds(boardResponseDto);
+        List<Long> likedContentIds = getLikedContentsIds(responseList, memberId);
+
+        for (BoardResponseDto response : boardResponseDto.getContent()) {
+            for (Long likedContentId : likedContentIds) {
+                if (response.getBoardId()
+                    .equals(likedContentId)) {
+                    response.updateLike(true);
                 }
             }
         }
-        return content;
     }
 
-    private BooleanBuilder setCursorBuilder(Long cursorId, List<Long> matchedIdx, QBoard board) {
+    private BooleanBuilder setCursorBuilder(CursorInfo cursorInfo, SortType sort) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
-        if (Objects.nonNull(cursorId)) {
-            Long startId = returnStartId(cursorId, matchedIdx);
-            cursorBuilder.and(board.id.loe(startId));
+        if (Objects.isNull(cursorInfo) || Objects.isNull(cursorInfo.targetId())) {
+            return cursorBuilder;
         }
+        if (Objects.isNull(sort) || sort.equals(SortType.POPULAR)) {
+            cursorBuilder.and(ranking.popularScore.lt(cursorInfo.targetScore()))
+                .or(ranking.popularScore.eq(cursorInfo.targetScore())
+                    .and(board.id.lt(cursorInfo.targetId())));
+
+            return cursorBuilder;
+        }
+        cursorBuilder.and(ranking.recommendScore.lt(cursorInfo.targetScore()))
+            .or(ranking.recommendScore.eq(cursorInfo.targetScore())
+                .and(board.id.lt(cursorInfo.targetId())));
 
         return cursorBuilder;
     }
 
     private BoardCustomPage<List<BoardResponseDto>> getBoardCustomPage(
-        Long cursorId,
-        QBoard board,
-        QProduct product,
+        SortType sort,
+        CursorInfo cursorInfo,
         BooleanBuilder filter,
-        QStore store,
         List<BoardResponseDto> content,
         boolean hasNext
     ) {
-        if(Objects.isNull(cursorId)){
+        Ranking cursorRanking = queryFactory.select(ranking)
+            .from(ranking)
+            .where(ranking.board.id.eq(content.get(content.size() - 1)
+                .getBoardId()))
+            .fetchOne();
+        double cursorScore = getCursorScore(sort, cursorRanking);
+        Long nextCursor = cursorRanking.getBoard()
+            .getId();
+
+        if (Objects.isNull(cursorInfo)) {
             Long boardCnt = queryFactory
                 .select(board.countDistinct())
                 .from(store)
-                .join(board).on(board.store.eq(store))
+                .join(board)
+                .on(board.store.eq(store))
                 .join(product)
                 .on(product.board.eq(board))
                 .where(filter)
                 .fetchOne();
 
-            if(Objects.isNull(boardCnt)){
+            if (Objects.isNull(boardCnt)) {
                 boardCnt = 0L;
             }
 
             Long storeCnt = queryFactory
                 .select(store.countDistinct())
                 .from(store)
-                .join(board).on(board.store.eq(store))
+                .join(board)
+                .on(board.store.eq(store))
                 .join(product)
                 .on(product.board.eq(board))
                 .where(filter)
                 .fetchOne();
 
-            if(Objects.isNull(storeCnt)){
+            if (Objects.isNull(storeCnt)) {
                 storeCnt = 0L;
             }
 
-            return BoardCustomPage.from(content, 0L, hasNext, boardCnt, storeCnt);
+            return BoardCustomPage.from(content, nextCursor, cursorScore, hasNext, boardCnt,
+                storeCnt);
         }
-        return BoardCustomPage.from(content, cursorId, hasNext);
+        return BoardCustomPage.from(content, nextCursor, cursorScore, hasNext);
     }
 
-    private Long returnStartId(Long cursorId, List<Long> rankIds) {
-        if (Objects.isNull(cursorId)) {
-            return rankIds.get(0);
+    private double getCursorScore(SortType sort, Ranking cursorRanking) {
+        if (Objects.isNull(sort) || sort.equals(SortType.POPULAR)) {
+            return cursorRanking.getPopularScore();
         }
 
-        return cursorId + 1L;
+        return cursorRanking.getRecommendScore();
     }
 
     private List<BoardResponseDto> getBoardResponseDtos(
@@ -480,16 +528,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return productTagsByBoardId;
     }
 
-    private OrderSpecifier<?> orderByFieldList(QBoard board, List<Long> boardId) {
-        String boardIdStr = boardId.stream()
-            .map(Object::toString)
-            .collect(Collectors.joining(", "));
-
-        String template = String.format("FIELD(%s, %s)", board.id, boardIdStr);
-
-        return new OrderSpecifier<>(Order.ASC, Expressions.stringTemplate(template));
-    }
-
     private static BooleanBuilder setFilteringCondition(
         FilterRequest filterRequest,
         QProduct product,
@@ -513,9 +551,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             filterBuilder.and(product.ketogenicTag.eq(filterRequest.ketogenicTag()));
         }
         if (filterRequest.category() != null) {
-//            if (!Category.checkCategory(filterRequest.category())) {
-//                throw new BbangleException(UNKNOWN_CATEGORY);
-//            }
             filterBuilder.and(product.category.eq(filterRequest.category()));
         }
         if (filterRequest.minPrice() != null) {

@@ -1,10 +1,13 @@
-package com.bbangle.bbangle.texture;
+package com.bbangle.bbangle.fixture;
 
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.datafaker.Faker;
 
-public class MemberTexture {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class MemberFixture {
 
     private static final Faker faker = new Faker();
 
