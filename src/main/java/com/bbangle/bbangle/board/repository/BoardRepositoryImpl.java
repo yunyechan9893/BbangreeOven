@@ -132,7 +132,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
 
-    private List<DetailDto> fetchBoardDetails(Long boardId){
+    private List<BoardDetailDto> fetchBoardDetails(Long boardId){
         return queryFactory.select(new QDetailDto(
                         boardDetail.id,
                         boardDetail.imgIndex,
@@ -265,7 +265,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         List<ProductDto> productDtos = fetchProductDtoByBoardId(boardId);
         List<String> duplicatedTags = getProductDtosToDuplicatedTags(productDtos);
         Boolean isBundled = isBundleBoard(productDtos);
-        List<DetailDto> boardDetails = fetchBoardDetails(boardId);
+        List<BoardDetailDto> boardDetails = fetchBoardDetails(boardId);
 
         Tuple tupleReleteBoard = tuplesRelateBoard.get(0);
         List<BoardImgDto> boardImgDtos = getBoardImageToDto(tuplesRelateBoard);
