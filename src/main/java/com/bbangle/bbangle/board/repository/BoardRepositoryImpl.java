@@ -10,10 +10,10 @@ import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishListFolder.domain.QWishlistFolder;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
-import com.bbangle.bbangle.wishListStore.domain.QWishlistStore;
+import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishList.domain.QWishlistFolder;
+import com.bbangle.bbangle.wishList.domain.WishlistFolder;
+import com.bbangle.bbangle.wishList.domain.QWishlistStore;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
@@ -35,7 +35,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
-import static com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct.wishlistProduct;
+import static com.bbangle.bbangle.wishList.domain.QWishlistProduct.wishlistProduct;
 
 @Repository
 @Slf4j
@@ -52,7 +52,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
     private final QStore store = QStore.store;
-    private final QWishlistProduct products = wishlistProduct;
+    private final QWishlistProduct products = QWishlistProduct.wishlistProduct;
     private final QWishlistFolder folder = QWishlistFolder.wishlistFolder;
     private final QProductImg productImg = QProductImg.productImg;
     private final QBoardDetail boardDetail = QBoardDetail.boardDetail;

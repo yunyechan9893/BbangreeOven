@@ -3,12 +3,10 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
-import com.bbangle.bbangle.aop.ExecutionTimeLog;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
@@ -18,14 +16,10 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
-import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.util.RedisKeyUtil;
-import com.bbangle.bbangle.util.SecurityUtils;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
-import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishList.domain.WishlistFolder;
+import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,7 +27,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
