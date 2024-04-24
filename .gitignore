@@ -221,7 +221,6 @@ redis/data/dump.rdb
 
 .idea/
 
-src/main/generated/
 /src/main/generated/
 !/.github/
 !/.github/workflows/cd-pipeline-dev.yml

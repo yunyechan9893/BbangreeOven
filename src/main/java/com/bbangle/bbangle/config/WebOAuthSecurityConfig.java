@@ -39,18 +39,18 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")
-                .allowedOrigins("http://www.bbangle.store")
-                .allowedOrigins("https://api.bbangle.store")
-                .allowedMethods(
-                        HttpMethod.GET.name(),
-                        HttpMethod.POST.name(),
-                        HttpMethod.PUT.name(),
-                        HttpMethod.DELETE.name(),
-                        HttpMethod.PATCH.name()
-                )
-                .allowCredentials(true)
-                .exposedHeaders("*");
+            .allowedOrigins("http://localhost:3000")
+            .allowedOrigins("http://www.bbangle.store")
+            .allowedOrigins("https://api.bbangle.store")
+            .allowedMethods(
+                HttpMethod.GET.name(),
+                HttpMethod.POST.name(),
+                HttpMethod.PUT.name(),
+                HttpMethod.DELETE.name(),
+                HttpMethod.PATCH.name()
+            )
+            .allowCredentials(true)
+            .exposedHeaders("*");
     }
 
     @Bean
@@ -107,11 +107,11 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
         return new TokenAuthenticationFilter(tokenProvider);
     }
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 
 
 }
