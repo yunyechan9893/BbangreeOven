@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.*;
 @Transactional
 @Rollback
 public class SearchServiceTest {
+
     @Autowired
     MemberRepository memberRepository;
     @Autowired
@@ -62,14 +63,14 @@ public class SearchServiceTest {
     public void saveEntity() {
         createMember();
         createProductRelatedContent(15);
-        redisRepository.delete("MIGRATION","board");
-        redisRepository.delete("MIGRATION","store");
+        redisRepository.delete("MIGRATION", "board");
+        redisRepository.delete("MIGRATION", "store");
         searchService.initSetting();
         searchService.updateRedisAtBestKeyword();
     }
 
     @AfterEach
-    public void deleteAllEntity(){
+    public void deleteAllEntity() {
         redisRepository.deleteAll();
         memberRepository.deleteAll();
         productRepository.deleteAll();
@@ -79,7 +80,7 @@ public class SearchServiceTest {
 
     @Test
     @DisplayName("게시물이 잘 저장돼있다")
-    public void checkAllBoardCountTest(){
+    public void checkAllBoardCountTest() {
         var boardCount = boardRepository.findAll().size();
         assertThat(boardCount, is(15));
     }
@@ -115,23 +116,12 @@ public class SearchServiceTest {
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
     public void getSearchBoard() {
         String SEARCH_KEYWORD = "비건 베이커리";
-        var searchBoardRequest= SearchBoardRequest.builder()
-                .keyword(SEARCH_KEYWORD)
-                .sort("LATEST")
-                .glutenFreeTag(true)
-                .highProteinTag(false)
-                .sugarFreeTag(false)
-                .veganTag(false)
-                .ketogenicTag(false)
-                .orderAvailableToday(true)
-                .category(Category.COOKIE.name())
-                .minPrice(0)
-                .maxPrice(6000)
-                .page(0)
-                .build();
+        var searchBoardRequest = SearchBoardRequest.builder().keyword(SEARCH_KEYWORD).sort("LATEST")
+                .glutenFreeTag(true).highProteinTag(false).sugarFreeTag(false).veganTag(false)
+                .ketogenicTag(false).orderAvailableToday(true).category(Category.COOKIE.name())
+                .minPrice(0).maxPrice(6000).page(0).build();
 
-        var searchBoardResult = searchService.getSearchBoardDtos(
-                member.getId(),
+        var searchBoardResult = searchService.getSearchBoardDtos(member.getId(),
                 searchBoardRequest);
 
         assertThat(searchBoardResult.currentItemCount(), is(10));
@@ -141,7 +131,7 @@ public class SearchServiceTest {
         assertThat(searchBoardResult.existNextPage(), is(true));
 
         var BoardDtos = searchBoardResult.content();
-        for(int i = 0; BoardDtos.size() > i; i++){
+        for (int i = 0; BoardDtos.size() > i; i++) {
             var boardDto = BoardDtos.get(i);
             assertThat(boardDto.tags(), hasItem("glutenFree"));
             assertThat(boardDto.price(), lessThanOrEqualTo(6000));
@@ -153,8 +143,8 @@ public class SearchServiceTest {
     public void getSearchedStore() {
         int storePage = 0;
         String SEARCH_KEYWORD_STORE = "RAWSOME";
-        var searchStoreResult = searchService.getSearchStoreDtos(
-                member.getId(), storePage, SEARCH_KEYWORD_STORE);
+        var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
+                SEARCH_KEYWORD_STORE);
 
         var stores = searchStoreResult.content();
 
@@ -164,7 +154,7 @@ public class SearchServiceTest {
         assertThat(searchStoreResult.limitItemCount(), is(10));
         assertThat(searchStoreResult.existNextPage(), is(true));
 
-        for (int i = 0; stores.size() > i; i++){
+        for (int i = 0; stores.size() > i; i++) {
             var store = stores.get(i);
             assertThat(store.getStoreName(), is("RAWSOME"));
             assertThat(store.getIsWished(), is(false));
@@ -178,8 +168,8 @@ public class SearchServiceTest {
     public void TestInfiniteScroll() {
         int storePage = 1;
         String SEARCH_KEYWORD_STORE = "RAWSOME";
-        var searchStoreResult = searchService.getSearchStoreDtos(
-                member.getId(), storePage, SEARCH_KEYWORD_STORE);
+        var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
+                SEARCH_KEYWORD_STORE);
 
         var stores = searchStoreResult.content();
 
@@ -189,7 +179,7 @@ public class SearchServiceTest {
         assertThat(searchStoreResult.limitItemCount(), is(10));
         assertThat(searchStoreResult.existNextPage(), is(false));
 
-        for (int i = 0; stores.size() > i; i++){
+        for (int i = 0; stores.size() > i; i++) {
             var store = stores.get(i);
             assertThat(store.getStoreName(), is("RAWSOME"));
             assertThat(store.getIsWished(), is(false));
@@ -200,83 +190,43 @@ public class SearchServiceTest {
     @DisplayName("기본으로 등록된 베스트 키워드를 가져올 수 있다")
     public void getBestKeyword() {
         String BEST_KEYWORD_KEY = "keyword";
-        var bestKewords = redisRepository.getStringList(
-            RedisEnum.BEST_KEYWORD.name(),
-            BEST_KEYWORD_KEY
-        );
+        var bestKewords = redisRepository.getStringList(RedisEnum.BEST_KEYWORD.name(),
+                BEST_KEYWORD_KEY);
 
         assertThat(bestKewords, is(List.of("글루텐프리", "비건", "저당", "키토제닉")));
     }
 
     private void createProductRelatedContent(int count) {
         for (int i = 0; i < count; i++) {
-            store = storeRepository.save(
-                    Store.builder()
-                    .identifier("7962401222")
-                    .name("RAWSOME")
-                    .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
+            store = storeRepository.save(Store.builder().identifier("7962401222").name("RAWSOME")
+                    .profile(
+                            "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
                     .build());
 
             board = boardRepository.save(
-                    Board.builder()
-                            .store(store)
-                            .title("비건 베이커리 로썸 비건빵")
-                            .price(5400)
-                            .status(true)
-                            .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
+                    Board.builder().store(store).title("비건 베이커리 로썸 비건빵").price(5400).status(true)
+                            .profile(
+                                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
                             .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
-                            .view(100)
-                            .sunday(true)
-                            .monday(true)
-                            .tuesday(true)
-                            .wednesday(true)
-                            .thursday(true)
-                            .friday(true)
-                            .saturday(true)
-                            .build());
+                            .view(100).sunday(true).monday(true).tuesday(true).wednesday(true)
+                            .thursday(true).friday(true).saturday(true).build());
 
-            productRepository.saveAll(List.of(
-                    Product.builder()
-                            .board(board)
-                            .title("콩볼")
-                            .price(3600)
-                            .category(Category.COOKIE)
-                            .glutenFreeTag(true)
-                            .sugarFreeTag(true)
-                            .veganTag(true)
-                            .ketogenicTag(true)
-                            .build(),
-                    Product.builder()
-                            .board(board)
-                            .title("카카모카")
-                            .price(5000)
-                            .category(Category.BREAD)
-                            .glutenFreeTag(true)
-                            .veganTag(true)
-                            .build(),
-                    Product.builder()
-                            .board(board)
-                            .title("로미넛쑥")
-                            .price(5000)
-                            .category(Category.BREAD)
-                            .glutenFreeTag(true)
-                            .sugarFreeTag(true)
-                            .veganTag(true)
-                            .build()
-            ));
+            productRepository.saveAll(List.of(Product.builder().board(board).title("콩볼").price(3600)
+                            .category(Category.COOKIE).glutenFreeTag(true).sugarFreeTag(true).veganTag(true)
+                            .ketogenicTag(true).build(),
+                    Product.builder().board(board).title("카카모카").price(5000)
+                            .category(Category.BREAD).glutenFreeTag(true).veganTag(true).build(),
+                    Product.builder().board(board).title("로미넛쑥").price(5000)
+                            .category(Category.BREAD).glutenFreeTag(true).sugarFreeTag(true)
+                            .veganTag(true).build()));
         }
     }
+
     private void createMember() {
-        member = memberRepository.save(Member.builder()
-                        .id(2L)
-                        .build());
+        member = memberRepository.save(Member.builder().id(2L).build());
     }
 
     private Search createSearchKeyword(String keyword) {
-        return searchRepository.save(
-                Search.builder()
-                        .member(member)
-                        .keyword(keyword)
-                        .build());
+        return searchRepository.save(Search.builder().member(member).keyword(keyword).build());
     }
 }

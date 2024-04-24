@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.*;
 @Transactional
 @Rollback
 public class SearchRepositoryTest {
+
     @Autowired
     MemberRepository memberRepository;
     @Autowired
@@ -60,24 +61,24 @@ public class SearchRepositoryTest {
     public void saveEntity() {
         createMember();
         createProductRelatedContent(15);
-        redisRepository.delete("MIGRATION","board");
-        redisRepository.delete("MIGRATION","store");
+        redisRepository.delete("MIGRATION", "board");
+        redisRepository.delete("MIGRATION", "store");
         searchService.initSetting();
         searchService.updateRedisAtBestKeyword();
     }
 
     @AfterEach
-    public void deleteAllEntity(){
+    public void deleteAllEntity() {
         redisRepository.deleteAll();
         memberRepository.deleteAll();
         productRepository.deleteAll();
         boardRepository.deleteAll();
         storeRepository.deleteAll();
     }
-    
+
     @Test
     @DisplayName("게시물이 잘 저장돼있다")
-    public void checkAllBoardCountTest(){
+    public void checkAllBoardCountTest() {
         var boardCount = boardRepository.findAll().size();
         assertThat(boardCount, is(15));
         var productCount = productRepository.findAll().size();
@@ -86,9 +87,10 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("필터 설정에 맞게 상품 게시물 전체 개수를 가져올 수 있다")
-    public void getSearchedBoardAllCountTest(){
-        List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId()).toList();
-        var searchBoardRequest= SearchBoardRequest.builder()
+    public void getSearchedBoardAllCountTest() {
+        List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId())
+                .toList();
+        var searchBoardRequest = SearchBoardRequest.builder()
                 .sort("LATEST")
                 .glutenFreeTag(true)
                 .highProteinTag(false)
@@ -98,7 +100,8 @@ public class SearchRepositoryTest {
                 .page(0)
                 .build();
 
-        var searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(searchBoardRequest, boardIds);
+        var searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(searchBoardRequest,
+                boardIds);
         assertThat(searchedBoardAllCount, is(15L));
     }
 
@@ -109,8 +112,9 @@ public class SearchRepositoryTest {
         int page = 0;
         int limit = 10;
 
-        List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId()).toList();
-        var searchBoardRequest= SearchBoardRequest.builder()
+        List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId())
+                .toList();
+        var searchBoardRequest = SearchBoardRequest.builder()
                 .sort("LATEST")
                 .glutenFreeTag(true)
                 .highProteinTag(false)
@@ -120,9 +124,11 @@ public class SearchRepositoryTest {
                 .page(0)
                 .build();
 
-        var searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(searchBoardRequest, boardIds);
+        var searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(searchBoardRequest,
+                boardIds);
         var searchBoardResult = searchRepository.getSearchedBoard(
-                1L, boardIds, searchBoardRequest, PageRequest.of(page, limit), searchedBoardAllCount);
+                1L, boardIds, searchBoardRequest, PageRequest.of(page, limit),
+                searchedBoardAllCount);
 
         assertThat(searchBoardResult.currentItemCount(), is(10));
         assertThat(searchBoardResult.pageNumber(), is(0));
@@ -131,7 +137,7 @@ public class SearchRepositoryTest {
         assertThat(searchBoardResult.existNextPage(), is(true));
 
         var BoardDtos = searchBoardResult.content();
-        for(int i = 0; BoardDtos.size() > i; i++){
+        for (int i = 0; BoardDtos.size() > i; i++) {
             var boardDto = BoardDtos.get(i);
             assertThat(boardDto.tags(), hasItem("glutenFree"));
             assertThat(boardDto.price(), lessThanOrEqualTo(6000));
@@ -140,11 +146,13 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("스토어 검색")
-    public void getSearchStoreTest(){
-        List<Long> storeIds = storeRepository.findAll().stream().map(store1 -> store1.getId()).toList();
-        var searchedStores = searchRepository.getSearchedStore(member.getId(), storeIds, PageRequest.of(0, 10));
+    public void getSearchStoreTest() {
+        List<Long> storeIds = storeRepository.findAll().stream().map(store1 -> store1.getId())
+                .toList();
+        var searchedStores = searchRepository.getSearchedStore(member.getId(), storeIds,
+                PageRequest.of(0, 10));
 
-        for(int i = 0; i < 2; i++){
+        for (int i = 0; i < 2; i++) {
             assertThat(searchedStores.get(i).getStoreName(), is("RAWSOME"));
             assertThat(searchedStores.get(i).getIsWished(), is(false));
         }
@@ -165,25 +173,26 @@ public class SearchRepositoryTest {
         var recencyKewords = searchRepository.getRecencyKeyword(member);
 
         int index = 0;
-        for(KeywordDto recencyKeword : recencyKewords){
-            index ++;
+        for (KeywordDto recencyKeword : recencyKewords) {
+            index++;
             // 알고리즘이 잘못되어 임시로 주석처리합니다. 고친 후 다시 PR 요청하겠습니다.
             //  assertThat(recencyKeword.keyword(), is(savingKeyword.get(savingKeyword.size() - index)));
         }
     }
+
     @Test
     @DisplayName("키워드를 저장할 수 있다")
-    public void getAllSearch(){
+    public void getAllSearch() {
         List<String> savingKeyword = Arrays.asList("초콜릿", "키토제닉 빵", "비건", "비건 베이커리", "키토제닉 빵",
                 "초코 휘낭시에", "바나나 빵", "배부른 음식", "당당 치킨");
-        savingKeyword.forEach(keyword-> createSearchKeyword(keyword));
+        savingKeyword.forEach(keyword -> createSearchKeyword(keyword));
         var kewords = searchRepository.findAll();
-        assertThat( kewords.size(),is(savingKeyword.size()));
+        assertThat(kewords.size(), is(savingKeyword.size()));
     }
 
     @Test
     @DisplayName("저장된 키워드를 삭제할 수 있다")
-    public void deleteKeyword(){
+    public void deleteKeyword() {
         String keyword = "비건";
         var search = createSearchKeyword(keyword);
         checkSearchKeyword(searchRepository, search, keyword);
@@ -192,7 +201,8 @@ public class SearchRepositoryTest {
         checkSearchKeyword(searchRepository, search, keyword);
     }
 
-    private void checkSearchKeyword(SearchRepository searchRepository, Search search, String keyword){
+    private void checkSearchKeyword(SearchRepository searchRepository, Search search,
+            String keyword) {
         var savedSearch = searchRepository.findById(search.getId()).get();
         assertThat(savedSearch.getKeyword(), is(keyword));
     }
@@ -203,7 +213,8 @@ public class SearchRepositoryTest {
                     Store.builder()
                             .identifier("7962401222")
                             .name("RAWSOME")
-                            .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
+                            .profile(
+                                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e")
                             .build());
 
             board = boardRepository.save(
@@ -212,7 +223,8 @@ public class SearchRepositoryTest {
                             .title("비건 베이커리 로썸 비건빵")
                             .price(5400)
                             .status(true)
-                            .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
+                            .profile(
+                                    "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
                             .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
                             .view(100)
                             .sunday(true)
@@ -256,6 +268,7 @@ public class SearchRepositoryTest {
             ));
         }
     }
+
     private void createMember() {
         member = memberRepository.save(Member.builder()
                 .id(2L)
