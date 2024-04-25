@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - dev
+      - swagger-login-fix
 
 jobs:
   job:
