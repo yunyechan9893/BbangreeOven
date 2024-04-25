@@ -25,6 +25,7 @@ public class StoreController {
 
     @GetMapping
     public CommonResult getList(
+        @RequestParam(required = false)
         Long cursorId
     ) {
         return responseService.getSingleResult(storeService.getList(cursorId));

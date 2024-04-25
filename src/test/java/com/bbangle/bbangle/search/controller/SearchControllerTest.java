@@ -6,7 +6,6 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
-import com.bbangle.bbangle.configuration.AbstractRestDocsTests;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.search.domain.Search;
@@ -28,15 +27,16 @@ import org.springframework.test.annotation.Rollback;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 @Rollback
-public class SearchControllerTest extends AbstractRestDocsTests {
+public class SearchControllerTest{
     /*
      * 우테코 기술 블로그
      * https://techblog.woowahan.com/2597/
@@ -63,6 +63,9 @@ public class SearchControllerTest extends AbstractRestDocsTests {
     private MemberRepository memberRepository;
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    protected MockMvc mockMvc;
 
     @BeforeEach
     public void saveData() {
