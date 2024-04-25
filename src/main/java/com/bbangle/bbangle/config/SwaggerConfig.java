@@ -43,7 +43,7 @@ public class SwaggerConfig {
                 .flows(oAuthFlows);
         SecurityRequirement tokenLogin = new SecurityRequirement().addList("토큰 로그인");
         Server server = new Server();
-        server.setUrl("https://api.bbangle.store");
+        server.setUrl("/");
         return new OpenAPI()
                 .info(info)
                 .servers(List.of(server))
