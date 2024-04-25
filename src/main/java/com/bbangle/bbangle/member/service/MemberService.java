@@ -1,25 +1,26 @@
 package com.bbangle.bbangle.member.service;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+
 import com.bbangle.bbangle.common.image.service.S3Service;
 import com.bbangle.bbangle.common.image.validation.ImageValidator;
-import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
-import com.bbangle.bbangle.exception.MemberNotFoundException;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Agreement;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.SignatureAgreement;
 import com.bbangle.bbangle.member.domain.Withdrawal;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
+import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
-import com.bbangle.bbangle.BbangleApplication.WishListFolderService;
-import com.bbangle.bbangle.wishListFolder.service.WishListProductService;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreServiceImpl;
+import com.bbangle.bbangle.wishList.service.WishListBoardService;
+import com.bbangle.bbangle.wishList.service.WishListFolderService;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.bbangle.bbangle.wishList.service.WishListStoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,13 +38,12 @@ public class MemberService {
     private static final String DEFAULT_MEMBER_EMAIL = "example@xxxxx.com";
 
     private final S3Service imageService;
-
     private final MemberRepository memberRepository;
     private final SignatureAgreementRepository signatureAgreementRepository;
-    private final WishListStoreServiceImpl wishListStoreServiceImpl;
-    private final WishListProductService wishListProductService;
-    private final WishListFolderService wishListFolderService;
+    private final WishListStoreService wishListStoreServiceImpl;
+    private final WishListBoardService wishListBoardService;
     private final WithdrawalRepository withdrawalRepository;
+    private final WishListFolderService wishListFolderService;
 
     @PostConstruct
     public void initSetting() {
@@ -64,10 +64,10 @@ public class MemberService {
             );
     }
 
-    public Member findById(Long id) {
-        return memberRepository.findById(id)
-            .orElseThrow(MemberNotFoundException::new);
-    }
+  public Member findById(Long id) {
+    return memberRepository.findById(id)
+        .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+  }
 
     @Transactional
     public void updateMemberInfo(
@@ -125,29 +125,22 @@ public class MemberService {
     @Transactional
     public void deleteMember(Long memberId) {
         Member member = findById(memberId);
-        //멤버 탈퇴 표시
         member.delete();
-
-        //위시리스트 스토어 삭제 표시
         wishListStoreServiceImpl.deletedByDeletedMember(memberId);
-
-        //위시리스트 상품 삭제 표시
-        wishListProductService.deletedByDeletedMember(memberId);
-
-        //위시리스트 폴더 삭제 표시
+        wishListBoardService.deletedByDeletedMember(memberId);
         wishListFolderService.deletedByDeletedMember(memberId);
     }
 
-    @Transactional
-    public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
-        String[] reasons = withdrawalRequestDto.getReasons().split(",");
-        for (String reason : reasons) {
-            withdrawalRepository.save(Withdrawal.builder()
-                    .reason(reason)
-                    .member(member)
-                    .build());
-        }
+  @Transactional
+  public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
+    Member member = memberRepository.findById(memberId)
+        .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+    String[] reasons = withdrawalRequestDto.getReasons().split(",");
+    for (String reason : reasons) {
+      withdrawalRepository.save(Withdrawal.builder()
+          .reason(reason)
+          .member(member)
+          .build());
     }
+  }
 }

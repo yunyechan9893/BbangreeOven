@@ -13,13 +13,12 @@ import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishListBoard.domain.WishlistProduct;
-import com.bbangle.bbangle.wishListBoard.repository.WishListProductRepository;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
-import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishList.domain.WishlistProduct;
+import com.bbangle.bbangle.wishList.repository.WishListProductRepository;
+import com.bbangle.bbangle.wishList.domain.WishlistFolder;
+import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishList.domain.WishlistStore;
+import com.bbangle.bbangle.wishList.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -308,7 +307,6 @@ public class StoreRepositoryImplTest {
                 .price(5400)
                 .status(true)
                 .profile("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                .detail("test.txt")
                 .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
                 .view(boardView)
                 .sunday(false).monday(false).tuesday(false).wednesday(false).thursday(true).sunday(false)

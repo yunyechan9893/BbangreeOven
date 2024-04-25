@@ -38,6 +38,7 @@ CREATE TABLE search
     id         BIGINT AUTO_INCREMENT,
     member_id  BIGINT,
     user_type  VARCHAR(20),
+    is_deleted tinyint,
     keyword    VARCHAR(255) NOT NULL,
     created_at DATETIME(6),
     CONSTRAINT search_pk PRIMARY KEY (id),
@@ -65,7 +66,6 @@ CREATE TABLE product_board
     price        INT          NOT NULL,
     status       TINYINT      NOT NULL,
     profile      VARCHAR(255),
-    detail       VARCHAR(255) NOT NULL,
     purchase_url VARCHAR(255) NOT NULL,
     view         INT          NOT NULL DEFAULT 0,
     sunday       TINYINT      NOT NULL DEFAULT 0,
@@ -149,9 +149,50 @@ CREATE TABLE product_img
 
 CREATE TABLE refresh_token
 (
-    id               BIGINT AUTO_INCREMENT,
-    member_id        BIGINT       NOT NULL,
-    refresh_token    VARCHAR(255) NOT NULL,
+    id            BIGINT AUTO_INCREMENT,
+    member_id     BIGINT       NOT NULL,
+    refresh_token VARCHAR(255) NOT NULL,
     CONSTRAINT refresh_token_pk PRIMARY KEY (id),
     CONSTRAINT fk_refresh_token_user FOREIGN KEY (member_id) REFERENCES member (id)
 );
+
+CREATE TABLE ranking
+(
+    id               BIGINT AUTO_INCREMENT,
+    product_board_id BIGINT NOT NULL,
+    recommend_score  DOUBLE NOT NULL  default 0,
+    popular_score    DOUBLE NOT NULL  default 0,
+    CONSTRAINT product_img_pk PRIMARY KEY (id),
+    CONSTRAINT fk_ranking_product_board FOREIGN KEY (product_board_id) REFERENCES product_board (id)
+);
+
+CREATE TABLE notice
+(
+    id         BIGINT AUTO_INCREMENT,
+    title      varchar(255) NOT NULL,
+    content    varchar(255) NOT NULL,
+    CONSTRAINT product_img_pk PRIMARY KEY (id),
+    created_at DATETIME(6)
+);
+create table product_detail
+(
+    id               bigint auto_increment,
+    product_board_id bigint,
+    img_index        int,
+    url              varchar(255),
+    CONSTRAINT product_detail_pk PRIMARY KEY (id),
+    constraint fk_product_board_product_detail
+        foreign key (product_board_id) references product_board (id)
+);
+create table withdrawal
+(
+    id          bigint auto_increment,
+    member_id   bigint       not null,
+    reason      varchar(255) null,
+    created_at  datetime(6)  null,
+    modified_at datetime(6)  null,
+    CONSTRAINT withdrawal_pk PRIMARY KEY (id),
+    constraint fk_member_withdrawal
+        foreign key (member_id) references member (id)
+);
+

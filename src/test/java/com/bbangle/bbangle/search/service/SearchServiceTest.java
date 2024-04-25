@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.search.service;
+
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -101,24 +103,26 @@ public class SearchServiceTest {
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
     public void getSearchBoard() {
+
         Long memberId = 1L;
-        String sort = "LATEST";
-        Boolean glutenFreeTag = true;
-        Boolean highProteinTag = false;
-        Boolean sugarFreeTag = false;
-        Boolean veganTag = false;
-        Boolean ketogenicTag = false;
-        Boolean orderAvailableToday = true;
-        String category = "COOKIE";
-        Integer minPrice = 0;
-        Integer maxPrice = 6000;
-        int page = 0;
+        var searchBoardRequest= SearchBoardRequest.builder()
+                .keyword(SEARCH_KEYWORD)
+                .sort("LATEST")
+                .glutenFreeTag(true)
+                .highProteinTag(false)
+                .sugarFreeTag(false)
+                .veganTag(false)
+                .ketogenicTag(false)
+                .orderAvailableToday(true)
+                .category("Cookie")
+                .minPrice(0)
+                .maxPrice(6000)
+                .page(0)
+                .build();
+
 
         var searchBoardResult = searchService.getSearchBoardDtos(
-            memberId, BOARD_PAGE, SEARCH_KEYWORD,
-            sort, glutenFreeTag, highProteinTag,
-            sugarFreeTag, veganTag, ketogenicTag,
-            orderAvailableToday, category, minPrice, maxPrice);
+            memberId,searchBoardRequest);
 
         var boards = searchBoardResult.content();
 
@@ -198,18 +202,18 @@ public class SearchServiceTest {
         Assertions.assertEquals(10, limitItemCount);
 
         Assertions.assertEquals(1L, stores.get(0)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", stores.get(0)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, stores.get(0)
-            .isWished());
+            .getIsWished());
 
         Assertions.assertEquals(2L, stores.get(1)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", stores.get(1)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, stores.get(1)
-            .isWished());
+            .getIsWished());
 
 
         searchStoreResult = searchService.getSearchStoreDtos(
@@ -227,18 +231,18 @@ public class SearchServiceTest {
         Assertions.assertEquals(10, limitItemCount);
 
         Assertions.assertEquals(11L, stores.get(0)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", stores.get(0)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, stores.get(0)
-            .isWished());
+            .getIsWished());
 
         Assertions.assertEquals(12L, stores.get(1)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", stores.get(1)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, stores.get(1)
-            .isWished());
+            .getIsWished());
     }
 
     @Test
@@ -259,13 +263,13 @@ public class SearchServiceTest {
         Assertions.assertEquals(1, pageNumber);
         Assertions.assertEquals(10, limitItemCount);
 
-        Assertions.assertEquals(11L, stores.get(0).storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(0).storeName());
-        Assertions.assertEquals(false, stores.get(0).isWished());
+        Assertions.assertEquals(11L, stores.get(0).getStoreId());
+        Assertions.assertEquals("RAWSOME", stores.get(0).getStoreName());
+        Assertions.assertEquals(false, stores.get(0).getIsWished());
 
-        Assertions.assertEquals(12L, stores.get(1).storeId());
-        Assertions.assertEquals("RAWSOME", stores.get(1).storeName());
-        Assertions.assertEquals(false, stores.get(1).isWished());
+        Assertions.assertEquals(12L, stores.get(1).getStoreId());
+        Assertions.assertEquals("RAWSOME", stores.get(1).getStoreName());
+        Assertions.assertEquals(false, stores.get(1).getIsWished());
     }
 
     @Test
@@ -318,7 +322,6 @@ public class SearchServiceTest {
                 .status(true)
                 .profile(
                     "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                .detail("test.txt")
                 .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
                 .view(100)
                 .sunday(false)

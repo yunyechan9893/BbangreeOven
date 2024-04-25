@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.board.controller;
 
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -8,15 +7,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.board.service.BoardService;
+import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -39,6 +41,9 @@ class BoardControllerTest {
     ProductRepository productRepository;
 
     @Autowired
+    RankingRepository rankingRepository;
+
+    @Autowired
     BoardService boardService;
 
     @Autowired
@@ -50,6 +55,7 @@ class BoardControllerTest {
     @BeforeEach
     void setup() {
         productRepository.deleteAll();
+        rankingRepository.deleteAll();
         boardRepository.deleteAll();
         storeRepository.deleteAll();
 
@@ -73,8 +79,18 @@ class BoardControllerTest {
             false,
             true,
             true);
-        boardRepository.save(board);
-        boardRepository.save(board2);
+        Board save1 = boardRepository.save(board);
+        Board save2 = boardRepository.save(board2);
+        rankingRepository.save(Ranking.builder()
+            .board(save1)
+            .popularScore(0.0)
+            .recommendScore(0.0)
+            .build());
+        rankingRepository.save(Ranking.builder()
+            .board(save2)
+            .popularScore(0.0)
+            .recommendScore(0.0)
+            .build());
 
         Product product1 = productGenerator(board,
             false,
@@ -127,12 +143,12 @@ class BoardControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT", "ETC"})
+    @EnumSource(value = Category.class)
     @DisplayName("순서가 없고 카테고리 필터링 조건이 있어도 정상적으로 조회한다.")
-    public void getBoardListSuccessWithCategoryCondition(String category) throws Exception {
+    public void getBoardListSuccessWithCategoryCondition(Category category) throws Exception {
         //given, when, then
         mockMvc.perform(get("/api/v1/boards")
-                .param("category", category))
+                .param("category", category.name()))
             .andExpect(status().isOk())
             .andDo(print());
     }
@@ -146,7 +162,7 @@ class BoardControllerTest {
         MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
         info.add(ingredient, "true");
         info.add("category", "BREAD");
-        info.add("sort", "latest");
+        info.add("sort", "POPULAR");
 
         // when, then
         mockMvc.perform(get("/api/v1/boards")
@@ -183,7 +199,6 @@ class BoardControllerTest {
             .price(1000)
             .status(true)
             .profile("profile")
-            .detail("detail")
             .purchaseUrl("purchaseUrl")
             .view(1)
             .sunday(sunday)

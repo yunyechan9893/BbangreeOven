@@ -1,19 +1,19 @@
 package com.bbangle.bbangle.search.repository;
 
-import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.search.domain.Search;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
-import com.bbangle.bbangle.search.repository.SearchRepository;
-import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.search.domain.Search;
+import com.bbangle.bbangle.search.dto.KeywordDto;
 import com.bbangle.bbangle.search.service.SearchService;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -84,19 +84,23 @@ public class SearchRepositoryTest {
 
     @Test
     public void getSearchBoard() {
-        String sort = "LATEST";
-        Boolean glutenFreeTag = true;
-        Boolean highProteinTag = false;
-        Boolean sugarFreeTag = false;
-        Boolean veganTag = false;
-        Boolean ketogenicTag = false;
-        Boolean orderAvailableToday = false;
-        String category = "BREAD";
-        Integer minPrice = 0;
-        Integer maxPrice = 6000;
+
         int page = 0;
         int limit = 10;
         //스토어 및 보드 검색 결과 가져오기
+        var searchBoardRequest= SearchBoardRequest.builder()
+                .sort("LATEST")
+                .glutenFreeTag(true)
+                .highProteinTag(false)
+                .sugarFreeTag(false)
+                .veganTag(false)
+                .ketogenicTag(false)
+                .orderAvailableToday(true)
+                .category("Cookie")
+                .minPrice(0)
+                .maxPrice(6000)
+                .page(0)
+                .build();
 
         var result = boardRepository.findAll();
         var resultBoardIds = result.stream()
@@ -104,10 +108,8 @@ public class SearchRepositoryTest {
             .toList();
         Assertions.assertEquals(15, resultBoardIds.size(), "전체 아이템 개수가 다릅니다");
 
-        var searchBoardResult = searchRepository.getSearchResult(
-                1L, BOARD_IDS, sort, glutenFreeTag, highProteinTag,
-                sugarFreeTag, veganTag, ketogenicTag, orderAvailableToday,
-                category, minPrice, maxPrice, PageRequest.of(page, limit));
+        var searchBoardResult = searchRepository.getSearchedBoard(
+                1L, BOARD_IDS, searchBoardRequest, PageRequest.of(page, limit));
 
 
         // 각 BoardResponseDto에 대한 처리
@@ -161,18 +163,18 @@ public class SearchRepositoryTest {
 
         // 각 BoardResponseDto에 대한 처리
         Assertions.assertEquals(1L, searchStoreResult.get(0)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", searchStoreResult.get(0)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, searchStoreResult.get(0)
-            .isWished());
+            .getIsWished());
 
         Assertions.assertEquals(2L, searchStoreResult.get(1)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", searchStoreResult.get(1)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(false, searchStoreResult.get(1)
-            .isWished());
+            .getIsWished());
     }
 
     @Test
@@ -214,13 +216,13 @@ public class SearchRepositoryTest {
         var searchStoreResult = searchRepository.getSearchedStore(memberId, STORE_IDS, PageRequest.of(0, 10));
 
         // 각 BoardResponseDto에 대한 처리
-        Assertions.assertEquals(1L, searchStoreResult.get(0).storeId());
-        Assertions.assertEquals("RAWSOME", searchStoreResult.get(0).storeName());
-        Assertions.assertEquals(false, searchStoreResult.get(0).isWished());
+        Assertions.assertEquals(1L, searchStoreResult.get(0).getStoreId());
+        Assertions.assertEquals("RAWSOME", searchStoreResult.get(0).getStoreName());
+        Assertions.assertEquals(false, searchStoreResult.get(0).getIsWished());
 
-        Assertions.assertEquals(2L, searchStoreResult.get(1).storeId());
-        Assertions.assertEquals("RAWSOME", searchStoreResult.get(1).storeName());
-        Assertions.assertEquals(false, searchStoreResult.get(1).isWished());
+        Assertions.assertEquals(2L, searchStoreResult.get(1).getStoreId());
+        Assertions.assertEquals("RAWSOME", searchStoreResult.get(1).getStoreName());
+        Assertions.assertEquals(false, searchStoreResult.get(1).getIsWished());
     }
 
     @Test
@@ -335,7 +337,6 @@ public class SearchRepositoryTest {
                 .status(true)
                 .profile(
                     "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203")
-                .detail("test.txt")
                 .purchaseUrl("https://smartstore.naver.com/rawsome/products/5727069436")
                 .view(100)
                 .sunday(false)

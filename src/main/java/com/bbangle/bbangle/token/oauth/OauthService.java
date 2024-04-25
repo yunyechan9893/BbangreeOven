@@ -1,13 +1,15 @@
 package com.bbangle.bbangle.token.oauth;
 
-import com.bbangle.bbangle.BbangleApplication.WishListFolderService;
+import com.bbangle.bbangle.common.redis.repository.RefreshTokenRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.token.domain.RefreshToken;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.token.oauth.domain.client.OauthMemberClientComposite;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
-import com.bbangle.bbangle.wishListFolder.dto.FolderRequestDto;
+import com.bbangle.bbangle.wishList.dto.FolderRequestDto;
+import com.bbangle.bbangle.wishList.service.WishListFolderService;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class OauthService {
     private final MemberRepository memberRepository;
     private final WishListFolderService folderService;
     private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public LoginTokenResponse login(OauthServerType oauthServerType, String authCode) {
         Member oauthMember = oauthMemberClientComposite.fetch(oauthServerType, authCode);
@@ -45,7 +48,19 @@ public class OauthService {
             });
         String refreshToken = tokenProvider.generateToken(saved, REFRESH_TOKEN_DURATION);
         String accessToken = tokenProvider.generateToken(saved, ACCESS_TOKEN_DURATION);
+
+        saveRefreshToken(refreshToken, saved);
+
         return new LoginTokenResponse(accessToken, refreshToken);
+    }
+
+    private void saveRefreshToken(String refreshToken, Member saved) {
+        RefreshToken saveToken = RefreshToken.builder()
+            .refreshToken(refreshToken)
+            .memberId(saved.getId())
+            .build();
+
+        refreshTokenRepository.save(saveToken);
     }
 
 }

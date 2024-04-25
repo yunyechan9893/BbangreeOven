@@ -2,6 +2,7 @@ package com.bbangle.bbangle.board.dto;
 
 import com.bbangle.bbangle.board.domain.Board;
 import java.util.List;
+import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -42,8 +43,7 @@ public final class BoardResponseDto {
     }
 
     public static BoardResponseDto from(Board board, List<String> tags) {
-        boolean isBundled = board.getProductList()
-            .size() > 1;
+        boolean isBundled = isBundled(board);
 
         return BoardResponseDto.builder()
             .boardId(board.getId())
@@ -58,6 +58,11 @@ public final class BoardResponseDto {
             .isBundled(isBundled)
             .tags(tags)
             .build();
+    }
+
+    private static boolean isBundled(Board board) {
+        return !Objects.isNull(board.getProductList()) && board.getProductList()
+            .size() != 1;
     }
 
     public static BoardResponseDto inFolder(Board board, List<String> tags) {
@@ -79,45 +84,8 @@ public final class BoardResponseDto {
             .build();
     }
 
-    public void updateLike(boolean status){
+    public void updateLike(boolean status) {
         this.isWished = status;
     }
-
-    public Long boardId() {
-        return boardId;
-    }
-
-    public Long storeId() {
-        return storeId;
-    }
-
-    public String storeName() {
-        return storeName;
-    }
-
-    public String thumbnail() {
-        return thumbnail;
-    }
-
-    public String title() {
-        return title;
-    }
-
-    public int price() {
-        return price;
-    }
-
-    public Boolean isWished() {
-        return isWished;
-    }
-
-    public Boolean isBundled() {
-        return isBundled;
-    }
-
-    public List<String> tags() {
-        return tags;
-    }
-
 
 }

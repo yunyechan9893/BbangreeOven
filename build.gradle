@@ -113,6 +113,9 @@ dependencies {
 	// 자연어 처리 - 형태소 분석기
 	implementation 'com.github.shin285:KOMORAN:3.3.4'
 
+	//swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+
 	//restdocs
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
@@ -123,5 +126,8 @@ dependencies {
 
 	// 아마존 S3 API
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.11.238'
+
+    // faker
+    implementation 'net.datafaker:datafaker:2.1.0'
 }
 

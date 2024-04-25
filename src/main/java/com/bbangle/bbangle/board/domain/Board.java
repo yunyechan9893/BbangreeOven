@@ -48,9 +48,6 @@ public class Board extends BaseEntity {
     @Column(name = "profile")
     private String profile;
 
-    @Column(name = "detail")
-    private String detail;
-
     @Column(name = "purchase_url")
     private String purchaseUrl;
 
@@ -84,6 +81,7 @@ public class Board extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
+    @Builder.Default
     @OneToMany(mappedBy = "board")
     private List<Product> productList = new ArrayList<>();
 

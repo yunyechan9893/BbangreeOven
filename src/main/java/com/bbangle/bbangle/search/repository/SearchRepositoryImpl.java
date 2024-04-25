@@ -1,20 +1,23 @@
 package com.bbangle.bbangle.search.repository;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.UNKNOWN_CATEGORY;
+
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.exception.CategoryTypeException;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.search.domain.QSearch;
 import com.bbangle.bbangle.search.dto.KeywordDto;
-import com.bbangle.bbangle.search.dto.SearchBoardDto;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
+import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishListBoard.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishListStore.domain.QWishlistStore;
+import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishList.domain.QWishlistStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
@@ -22,14 +25,18 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Repository
@@ -42,9 +49,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
 
     @Override
-    public SearchBoardDto getSearchResult(Long memberId, List<Long> boardIds, String sort, Boolean glutenFreeTag, Boolean highProteinTag,
-                                          Boolean sugarFreeTag, Boolean veganTag, Boolean ketogenicTag, Boolean orderAvailableToday,
-                                          String category, Integer minPrice, Integer maxPrice, Pageable pageable) {
+    public SearchBoardResponse getSearchedBoard(Long memberId, List<Long> boardIds, SearchBoardRequest boardRequest, Pageable pageable) {
         QBoard board = QBoard.board;
         QProduct product = QProduct.product;
         QStore store = QStore.store;
@@ -52,24 +57,19 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
 
         BooleanBuilder filter =
-                setFilteringCondition(glutenFreeTag,
-                        highProteinTag,
-                        sugarFreeTag,
-                        veganTag,
-                        ketogenicTag,
-                        orderAvailableToday,
-                        category,
-                        minPrice,
-                        maxPrice,
+                setFilteringCondition(boardRequest.glutenFreeTag(),
+                        boardRequest.highProteinTag(),
+                        boardRequest.sugarFreeTag(),
+                        boardRequest.veganTag(),
+                        boardRequest.ketogenicTag(),
+                        boardRequest.orderAvailableToday(),
+                        boardRequest.category(),
+                        boardRequest.minPrice(),
+                        boardRequest.maxPrice(),
                         product,
                         board);
 
-        // 인가 상품인 경우
-        // 조회수 1점, 위시리스트 10점 점수가 가장 높은 순으로 정렬
-        var orderByBuilder =
-                sort.equals(SortType.POPULAR.getValue())?
-                        board.view.add(board.wishCnt.multiply(10)).desc():
-                        orderByFieldList(boardIds, product.board.id);
+
 
 
         var defaultQuery = queryFactory
@@ -80,22 +80,35 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
                         board.id.in(boardIds),
                         filter
-                )
-                .orderBy(orderByBuilder);
+                );
+
 
         // 검색된 게시물 전체 개수
         var queryAllCount = defaultQuery.fetch().stream().toList().size();
 
         // 게시글이 없다면 빈 DTO 반환
         if (queryAllCount <= 0){
-            return SearchBoardDto.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE);
+            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE, queryAllCount);
         }
+
+        // 인가 상품인 경우
+        // 조회수 1점, 위시리스트 10점 점수가 가장 높은 순으로 정렬
+        var orderByBuilder =
+                boardRequest.sort().equals(SortType.POPULAR.getValue())?
+                        board.view.add(board.wishCnt.multiply(10)).desc():
+                        orderByFieldList(boardIds, product.board.id);
+
 
         // 필터링된 board의 id를 10개의 데이터를 끊어서 가져옴
         var filterQuery = defaultQuery
+                .orderBy(orderByBuilder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        if (filterQuery.size() <= 0){
+            return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_ITEM_SIZE, queryAllCount);
+        }
 
         // 가져올 컬럼명 입력
         List<Expression<?>> columns = new ArrayList<>();
@@ -122,8 +135,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 .select(columns.toArray(new Expression[0]))
                 .from(product)
                 .join(product.board, board)
-                .join(board.store, store)
-                .where(board.id.in(filterQuery))
+                .join(product.board.store, store)
+                .where(product.board.id.in(filterQuery))
                 .orderBy(orderByFieldList(filterQuery, product.board.id));
 
         // 회원이라면 위시리스트 조인
@@ -164,19 +177,19 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
             BoardResponseDto boardResponseDto = boardMap.get(tuple.get(product.board.id));
 
             if (tuple.get(product.glutenFreeTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.GLUTEN_FREE.label());
+                boardMap.get(boardId).getTags().add(TagEnum.GLUTEN_FREE.label());
             }
             if (tuple.get(product.highProteinTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.HIGH_PROTEIN.label());
+                boardMap.get(boardId).getTags().add(TagEnum.HIGH_PROTEIN.label());
             }
             if (tuple.get(product.sugarFreeTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.SUGAR_FREE.label());
+                boardMap.get(boardId).getTags().add(TagEnum.SUGAR_FREE.label());
             }
             if (tuple.get(product.veganTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.VEGAN.label());
+                boardMap.get(boardId).getTags().add(TagEnum.VEGAN.label());
             }
             if (tuple.get(product.ketogenicTag)) {
-                boardMap.get(boardId).tags().add(TagEnum.KETOGENIC.label());
+                boardMap.get(boardId).getTags().add(TagEnum.KETOGENIC.label());
             }
 
             boardMap.put(tuple.get(product.board.id), boardResponseDto);
@@ -189,7 +202,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                 boardResponseDto -> removeDuplicatesFromDto(boardResponseDto)
         ).toList();
 
-        return SearchBoardDto.builder()
+        return SearchBoardResponse.builder()
                 .content(content)
                 .pageNumber(pageable.getPageNumber())
                 .itemAllCount(queryAllCount)
@@ -247,17 +260,17 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
 
     private static BoardResponseDto removeDuplicatesFromDto(BoardResponseDto boardResponseDto) {
-        List<String> uniqueTags = boardResponseDto.tags().stream().distinct().collect(Collectors.toList());
+        List<String> uniqueTags = boardResponseDto.getTags().stream().distinct().collect(Collectors.toList());
 
         return BoardResponseDto.builder()
-                .boardId(boardResponseDto.boardId())
-                .storeId(boardResponseDto.storeId())
-                .storeName(boardResponseDto.storeName())
-                .thumbnail(boardResponseDto.thumbnail())
-                .title(boardResponseDto.title())
-                .price(boardResponseDto.price())
-                .isBundled(boardResponseDto.isBundled())
-                .isWished(boardResponseDto.isWished())
+                .boardId(boardResponseDto.getBoardId())
+                .storeId(boardResponseDto.getStoreId())
+                .storeName(boardResponseDto.getStoreName())
+                .thumbnail(boardResponseDto.getThumbnail())
+                .title(boardResponseDto.getTitle())
+                .price(boardResponseDto.getPrice())
+                .isBundled(boardResponseDto.getIsBundled())
+                .isWished(boardResponseDto.getIsWished())
                 .tags(uniqueTags)
                 .build();
     }
@@ -358,7 +371,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         }
         if (category != null && !category.isBlank()) {
             if (!Category.checkCategory(category)) {
-                throw new CategoryTypeException();
+                throw new BbangleException(UNKNOWN_CATEGORY);
             }
             filterBuilder.and(product.category.eq(Category.valueOf(category)));
         }
