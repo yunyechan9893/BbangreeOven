@@ -8,6 +8,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.2.1'
 	id 'io.spring.dependency-management' version '1.1.4'
+	id 'jacoco'
 }
 
 group = 'com.bbangle'
@@ -15,6 +16,11 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	sourceCompatibility = '17'
+}
+
+jacoco {
+	toolVersion = "0.8.9"
+	reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
 
 configurations {
@@ -25,8 +31,86 @@ configurations {
 
 test {
 	useJUnitPlatform()
+	finalizedBy 'jacocoTestReport'
+	jacoco {
+		excludes += [
+				'**/*Application*',
+				'**/*Exception*',
+				'**/dto/**',
+				'**/repository/**',
+				'**/adaptor'
+		]
+	}
+}
+/** Jacoco Start! **/
+//보고서
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+		html.outputLocation = layout.buildDirectory.dir('reports/jacoco/jacocoHtml')
+
+		// QueryDSL Q클래스 제외
+		def Qdomains = []
+		for (qPattern in "**/QA".."**/QZ") {
+			Qdomains.add(qPattern + "*")
+		}
+
+		afterEvaluate {
+			classDirectories.setFrom(files(classDirectories.files.collect {
+				fileTree(dir: it,
+						exclude: [
+						        '**/*Application*',
+								'**/*Exception*',
+								'**/dto/**',
+								'**/repository/**',
+								'**/adaptor',
+								'**/token/**'
+						] + Qdomains)
+			}))
+		}
+	}
+	//finalizedBy 'jacocoTestCoverageVerification'
 }
 
+//코드 커버리지 확인
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			enabled = true
+			element = 'CLASS'
+
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.70
+			}
+
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.70
+			}
+
+			limit {
+				counter = 'CLASS'
+				value = 'COVEREDRATIO'
+				minimum = 0.70
+			}
+		}
+	}
+}
+/** Jacoco End! **/
+
+bootJar {
+	// Gradle build시 createDocument ->  bootJar 순으로 진행됨
+	dependsOn createDocument
+	// Gradle build시 asciidoctor.outputDir에 Html 파일이 생기고 이것을 jar 안에 /resources/static 폴더에 복사
+	from("${asciidoctor.outputDir}") {
+		into 'static/docs'
+	}
+
+}
 
 repositories {
 	mavenCentral()
