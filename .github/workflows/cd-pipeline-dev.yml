@@ -1,6 +1,7 @@
 name: Dev 서버 CD 파이프라인
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev
