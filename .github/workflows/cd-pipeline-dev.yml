@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - cd-pipeline
 
 jobs:
   job:
