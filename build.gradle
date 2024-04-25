@@ -102,16 +102,6 @@ jacocoTestCoverageVerification {
 }
 /** Jacoco End! **/
 
-bootJar {
-	// Gradle build시 createDocument ->  bootJar 순으로 진행됨
-	dependsOn createDocument
-	// Gradle build시 asciidoctor.outputDir에 Html 파일이 생기고 이것을 jar 안에 /resources/static 폴더에 복사
-	from("${asciidoctor.outputDir}") {
-		into 'static/docs'
-	}
-
-}
-
 repositories {
 	mavenCentral()
 	maven { url 'https://jitpack.io' }
