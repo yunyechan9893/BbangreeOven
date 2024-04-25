@@ -136,42 +136,42 @@ public class SearchServiceTest {
         Assertions.assertTrue(boards.size() <= itemAllCount);
 
         Assertions.assertEquals(1L, boards.get(0)
-            .boardId());
+            .getBoardId());
         Assertions.assertEquals(1L, boards.get(0)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", boards.get(0)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(
             "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203"
             , boards.get(0)
-                .thumbnail());
+                .getThumbnail());
         Assertions.assertEquals("비건 베이커리 로썸 비건빵", boards.get(0)
-            .title());
+            .getTitle());
         Assertions.assertEquals(5400, boards.get(0)
-            .price());
+            .getPrice());
         Assertions.assertEquals(true, boards.get(0)
-            .isWished());
+            .getIsWished());
         Assertions.assertEquals(List.of("glutenFree", "sugarFree", "vegan"), boards.get(0)
-            .tags());
+            .getTags());
 
         Assertions.assertEquals(2L, boards.get(1)
-            .boardId());
+            .getBoardId());
         Assertions.assertEquals(2L, boards.get(1)
-            .storeId());
+            .getStoreId());
         Assertions.assertEquals("RAWSOME", boards.get(1)
-            .storeName());
+            .getStoreName());
         Assertions.assertEquals(
             "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203"
             , boards.get(1)
-                .thumbnail());
+                .getThumbnail());
         Assertions.assertEquals("비건 베이커리 로썸 비건빵", boards.get(1)
-            .title());
+            .getTitle());
         Assertions.assertEquals(5400, boards.get(1)
-            .price());
+            .getPrice());
         Assertions.assertEquals(true, boards.get(1)
-            .isWished());
+            .getIsWished());
         Assertions.assertEquals(List.of("glutenFree", "sugarFree", "vegan"), boards.get(1)
-            .tags());
+            .getTags());
     }
 
     @Test
