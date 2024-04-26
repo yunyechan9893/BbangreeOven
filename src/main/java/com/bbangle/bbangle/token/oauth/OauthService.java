@@ -11,8 +11,10 @@ import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
 import com.bbangle.bbangle.wishList.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishList.service.WishListFolderService;
 import java.time.Duration;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class OauthService {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    @Transactional
     public LoginTokenResponse login(OauthServerType oauthServerType, String authCode) {
         Member oauthMember = oauthMemberClientComposite.fetch(oauthServerType, authCode);
         String nickname = oauthMember.getNickname();
@@ -39,6 +42,7 @@ public class OauthService {
                     .nickname(nickname)
                     .provider(oauthMember.getProvider())
                     .providerId(oauthMember.getProviderId())
+                    .profile(oauthMember.getProfile())
                     .build();
                 memberRepository.save(newMember);
                 Long newMemberId = newMember.getId();
@@ -48,9 +52,11 @@ public class OauthService {
             });
         String refreshToken = tokenProvider.generateToken(saved, REFRESH_TOKEN_DURATION);
         String accessToken = tokenProvider.generateToken(saved, ACCESS_TOKEN_DURATION);
-
-        saveRefreshToken(refreshToken, saved);
-
+        Optional<RefreshToken> refreshTokenByMemberId =
+            refreshTokenRepository.findByMemberId(saved.getId());
+        refreshTokenByMemberId.ifPresentOrElse(
+            token -> refreshTokenByMemberId.get().update(refreshToken),
+            () -> saveRefreshToken(refreshToken, saved));
         return new LoginTokenResponse(accessToken, refreshToken);
     }
 
