@@ -19,54 +19,52 @@ public class RedisRepositoryImpl implements RedisRepository {
 
     @Override
     public List<Long> get(String namespace, String key) {
-        String multiKey = String.format("%s:%s", namespace, key);
+        String multiKey = namespace + ":" + key;
         return redisTemplate.opsForList()
-                .range(multiKey, 0, -1)
-                .stream()
-                .map(o -> Long.parseLong(o.toString()))
-                .toList();
+            .range(multiKey, 0, -1)
+            .stream()
+            .map(o -> Long.parseLong(o.toString()))
+            .toList();
     }
 
     @Override
     public List<String> getStringList(String namespace, String key) {
-        String multiKey = String.format("%s:%s", namespace, key);
+        String multiKey = namespace + ":" + key;
         return redisTemplate.opsForList()
-                .range(multiKey, 0, -1)
-                .stream()
-                .map(Object::toString)
-                .toList();
+            .range(multiKey, 0, -1)
+            .stream()
+            .map(Object::toString)
+            .toList();
     }
 
     @Override
     public String getString(String namespace, String key) {
-        String multiKey = String.format("%s:%s", namespace, key);
+        String multiKey = namespace + ":" + key;
         Object value = redisTemplate.opsForValue().get(multiKey);
         return Optional.ofNullable(value)
-                .map(Object::toString)
-                .orElse("");
+            .map(Object::toString)
+            .orElse("");
     }
 
     @Override
     public void set(String namespace, String key, String... values) {
-        // 네임스페이스와 키를 결합
-        String multiKey = String.format("%s:%s", namespace, key);
+        String multiKey = namespace + ":" + key;
         redisTemplate.opsForList()
-                .rightPushAll(multiKey, values);
+            .rightPushAll(multiKey, values);
         log.info("[완료] 레디스 값 저장");
     }
 
     @Override
     public void setFromString(String namespace, String key, String value) {
-        // 네임스페이스와 키를 결합
-        String multiKey = String.format("%s:%s", namespace, key);
+        String multiKey = namespace + ":" + key;
         redisTemplate.opsForValue()
-                .set(multiKey, value);
+            .set(multiKey, value);
         log.info("[완료] 레디스 값 저장");
     }
 
     @Override
     public void delete(String namespace, String key) {
-        String multiKey = String.format("%s:%s", namespace, key);
+        String multiKey = namespace + ":" + key;
         redisTemplate.delete(multiKey);
         log.info("[완료] 레디스 값 삭제");
     }
