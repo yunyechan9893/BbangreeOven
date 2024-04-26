@@ -3,13 +3,13 @@ package com.bbangle.bbangle.board.dto;
 import com.querydsl.core.annotations.QueryProjection;
 
 public record BoardDetailDto(
-        Long id,
+        Long boardId,
         Integer imgIndex,
         String url
 ) {
     @QueryProjection
-    public BoardDetailDto(Long id, Integer imgIndex, String url){
-        this.id = id;
+    public BoardDetailDto(Long boardId, Integer imgIndex, String url){
+        this.boardId = boardId;
         this.imgIndex = imgIndex;
         this.url = url;
     }
