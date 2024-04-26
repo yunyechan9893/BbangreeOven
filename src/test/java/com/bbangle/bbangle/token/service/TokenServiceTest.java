@@ -1,12 +1,9 @@
 package com.bbangle.bbangle.token.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.texture.MemberTexture;
+import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.OauthService;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
@@ -45,7 +42,7 @@ class TokenServiceTest {
     @DisplayName("로그인 후 리프레시 토큰을 요청하면 정상적으로 리프레시 토큰을 반환한다.")
     public void refreshSuccessTest() throws Exception {
         //given
-        Member kakaoMember = MemberTexture.createKakaoMember();
+        Member kakaoMember = MemberFixture.createKakaoMember();
         String token = faker.random()
             .toString();
         given(oauthMemberClientComposite.fetch(OauthServerType.KAKAO, token)).willReturn(kakaoMember);

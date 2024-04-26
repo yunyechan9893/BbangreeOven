@@ -18,6 +18,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -31,6 +32,13 @@ public class GlobalControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public CommonResult defaultExceptionHandler(HttpServletRequest request, Exception ex) {
         slackAdaptor.sendAlert(request, ex);
+        return responseService.getFailResult(ex.getLocalizedMessage(), -1);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public CommonResult notFoundExceptionHandler(NoResourceFoundException ex) {
+        // 404 는 쓸데없는 알람이 너무 많이와서 얼럿에서 제외
         return responseService.getFailResult(ex.getLocalizedMessage(), -1);
     }
 
@@ -51,7 +59,8 @@ public class GlobalControllerAdvice {
     public ResponseEntity<CommonResult> handleMethodArgumentNotValidException(
         MethodArgumentNotValidException ex
     ) {
-        CommonResult methodArgumentNotValidExceptionResult = responseService.getMethodArgumentNotValidExceptionResult(ex);
+        CommonResult methodArgumentNotValidExceptionResult = responseService
+            .getMethodArgumentNotValidExceptionResult(ex);
         return new ResponseEntity<>(methodArgumentNotValidExceptionResult, HttpStatus.BAD_REQUEST);
     }
 

@@ -13,12 +13,12 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishListBoard.domain.WishlistProduct;
-import com.bbangle.bbangle.wishListBoard.repository.WishListProductRepository;
-import com.bbangle.bbangle.wishListFolder.domain.WishlistFolder;
-import com.bbangle.bbangle.wishListFolder.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishListStore.domain.WishlistStore;
-import com.bbangle.bbangle.wishListStore.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishList.domain.WishlistProduct;
+import com.bbangle.bbangle.wishList.repository.WishListProductRepository;
+import com.bbangle.bbangle.wishList.domain.WishlistFolder;
+import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishList.domain.WishlistStore;
+import com.bbangle.bbangle.wishList.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
@@ -27,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
 import java.util.List;
-import java.util.Optional;
 
 @SpringBootTest
 @Transactional

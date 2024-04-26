@@ -14,12 +14,17 @@ public class CorsConfig implements WebMvcConfigurer {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOriginPatterns("http://localhost:3000", "http://landing.bbangle.store",
-                        "http://127.0.0.1:5000", "http://www.bbangle.store", "http://localhost:63342")
-                    .allowedHeaders("*")
-                    .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH")
-                    .allowCredentials(true);
+                        .allowedOriginPatterns(
+                                "http://localhost:5000",
+                                "http://localhost:3000",
+                                "http://localhost:63342",
+                                "http://115.85.181.105:8000",
+                                "http://www.bbangle.store",
+                                "http://landing.bbangle.store")
+                        .allowedHeaders("*")
+                        .exposedHeaders("ACCESS_KEY", "Authorization", "RefreshToken")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH")
+                        .allowCredentials(true);
             }
         };
     }

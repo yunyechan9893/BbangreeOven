@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.member.controller;
 
+import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.message.MessageResDto;
+import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.service.ProfileServiceImpl;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProfileController {
 
     private final ProfileServiceImpl profileService;
+    private final ResponseService responseService;
 
     /**
      * 프로필 조회
@@ -24,9 +27,10 @@ public class ProfileController {
      * @return 프로필 정보
      */
     @GetMapping
-    public ResponseEntity<ProfileInfoResponseDto> getProfile(){
+    public CommonResult getProfile(){
         Long memberId = SecurityUtils.getMemberId();
-        return ResponseEntity.ok().body(profileService.getProfileInfo(memberId));
+        ProfileInfoResponseDto profileInfo = profileService.getProfileInfo(memberId);
+        return responseService.getSingleResult(profileInfo);
     }
 
 
@@ -37,24 +41,24 @@ public class ProfileController {
      * @return 메세지
      */
     @GetMapping("/doublecheck")
-    public ResponseEntity<MessageResDto> doubleCheckNickname(@RequestParam String nickname){
+    public CommonResult doubleCheckNickname(@RequestParam String nickname){
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
         if(nickname.isEmpty() || nickname == null){
-            ResponseEntity.ok().body(new MessageResDto("닉네임을 입력해주세요!"));
+            return responseService.getSuccessResult("닉네임을 입력해주세요!", 0);
         }
         if(nickname.length() > 20){
-            return ResponseEntity.ok().body(new MessageResDto("닉네임은 20자 제한이에요!"));
+            return responseService.getSuccessResult("닉네임은 20자 제한이에요!", 0);
         }
         String existedNickname = profileService.doubleCheckNickname(nickname);
         if (!existedNickname.isEmpty()){
-            return ResponseEntity.ok().body(new MessageResDto("중복된 닉네임이에요"));
+            return responseService.getSuccessResult("중복된 닉네임이에요", 0);
         }
-        return ResponseEntity.ok().body(new MessageResDto("사용가능한 닉네임이에요!"));
+        return responseService.getSuccessResult("사용가능한 닉네임이에요!", 0);
     }
 
     @PutMapping
-    public ResponseEntity<Void> update(
+    public CommonResult update(
         @RequestPart(required = false)
         InfoUpdateRequest infoUpdateRequest,
         @RequestPart(required = false)
@@ -62,7 +66,6 @@ public class ProfileController {
     ) {
         Long memberId = SecurityUtils.getMemberId();
         profileService.updateProfileInfo(infoUpdateRequest, memberId, profileImg);
-        return ResponseEntity.ok()
-            .build();
+        return responseService.getSuccessResult();
     }
 }

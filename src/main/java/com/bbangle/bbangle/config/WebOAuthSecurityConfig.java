@@ -39,18 +39,18 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")
-                .allowedOrigins("http://www.bbangle.store")
-                .allowedOrigins("https://api.bbangle.store")
-                .allowedMethods(
-                        HttpMethod.GET.name(),
-                        HttpMethod.POST.name(),
-                        HttpMethod.PUT.name(),
-                        HttpMethod.DELETE.name(),
-                        HttpMethod.PATCH.name()
-                )
-                .allowCredentials(true)
-                .exposedHeaders("*");
+            .allowedOrigins("http://localhost:3000")
+            .allowedOrigins("http://www.bbangle.store")
+            .allowedOrigins("https://api.bbangle.store")
+            .allowedMethods(
+                HttpMethod.GET.name(),
+                HttpMethod.POST.name(),
+                HttpMethod.PUT.name(),
+                HttpMethod.DELETE.name(),
+                HttpMethod.PATCH.name()
+            )
+            .allowCredentials(true)
+            .exposedHeaders("*");
     }
 
     @Bean
@@ -77,16 +77,16 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
             .permitAll()
             .requestMatchers("/api/v1/health/**")
             .permitAll()
-            .requestMatchers(HttpMethod.GET, "api/v1/boards/**")
+            .requestMatchers(HttpMethod.GET, "/api/v1/boards/**")
             .permitAll()
-            .requestMatchers(HttpMethod.GET, "api/v1/notice/**")
+            .requestMatchers(HttpMethod.GET, "/api/v1/notice/**")
             .permitAll()
-            .requestMatchers(HttpMethod.PATCH, "api/v1/boards/**")
+            .requestMatchers(HttpMethod.PATCH, "/api/v1/boards/**")
             .permitAll()
-            .requestMatchers(HttpMethod.GET, "api/v1/boards/folders/**")
+            .requestMatchers(HttpMethod.GET, "/api/v1/boards/folders/**")
             .authenticated()
             //TODO: 글을 작성하는 경우에 ADMIN 계정만 가능하도록 설정이 필요 authority 에 대한 추가 설정이 필요한 것으로 보임
-            .requestMatchers(HttpMethod.GET, "api/v1/boards/notification/**")
+            .requestMatchers(HttpMethod.GET, "/api/v1/boards/notification/**")
             .permitAll()
 
             .requestMatchers("/api/**")
@@ -107,11 +107,11 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
         return new TokenAuthenticationFilter(tokenProvider);
     }
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 
 
 }
