@@ -9,6 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: 체크 아웃
+        uses: actions/checkout@v4
       - name: 테스트 커버리지를 PR에 코멘트로 등록합니다
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1
