@@ -115,10 +115,10 @@ public class BoardController {
     @GetMapping("/{id}")
     public CommonResult getBoardDetailResponse(
             @PathVariable("id")
-            Long boardId
+            Long boardId,
+            @AuthenticationPrincipal
+            Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberIdWithAnonymous();
-
         BoardDetailResponse boardDetailResponse =
                 boardService.getBoardDetailResponse(memberId, boardId);
         return responseService.getSingleResult(boardDetailResponse);
