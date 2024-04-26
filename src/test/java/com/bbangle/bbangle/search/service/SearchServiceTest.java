@@ -5,6 +5,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.repository.SearchRepository;
@@ -16,7 +17,6 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.util.TrieUtil;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 
 import java.util.*;
 
@@ -27,14 +27,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest
-@Transactional
-@Rollback
 public class SearchServiceTest {
 
     @Autowired
@@ -51,6 +48,8 @@ public class SearchServiceTest {
     RedisRepository redisRepository;
     @Autowired
     SearchService searchService;
+    @Autowired
+    RankingRepository rankingRepository;
     @Autowired
     EntityManager entityManager;
 
@@ -72,6 +71,8 @@ public class SearchServiceTest {
     @AfterEach
     public void deleteAllEntity() {
         redisRepository.deleteAll();
+        searchRepository.deleteAll();
+        rankingRepository.deleteAll();
         memberRepository.deleteAll();
         productRepository.deleteAll();
         boardRepository.deleteAll();
@@ -133,8 +134,8 @@ public class SearchServiceTest {
         var BoardDtos = searchBoardResult.content();
         for (int i = 0; BoardDtos.size() > i; i++) {
             var boardDto = BoardDtos.get(i);
-            assertThat(boardDto.tags(), hasItem("glutenFree"));
-            assertThat(boardDto.price(), lessThanOrEqualTo(6000));
+            assertThat(boardDto.getTags(), hasItem("glutenFree"));
+            assertThat(boardDto.getPrice(), lessThanOrEqualTo(6000));
         }
     }
 

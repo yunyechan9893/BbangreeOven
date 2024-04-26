@@ -3,46 +3,47 @@ package com.bbangle.bbangle.board.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.BoardFixture;
+import com.bbangle.bbangle.fixture.ProductFixture;
+import com.bbangle.bbangle.fixture.RankingFixture;
+import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.mock.web.MockMultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@Transactional
 public class BoardServiceTest {
 
-    private static final Long NULL_CURSOR = null;
+    private static final CursorInfo NULL_CURSOR = null;
     private static final SortType NULL_SORT_TYPE = null;
+    private static final Long NULL_MEMBER = null;
 
     @Autowired
     StoreRepository storeRepository;
@@ -54,76 +55,74 @@ public class BoardServiceTest {
     ProductRepository productRepository;
 
     @Autowired
+    RankingRepository rankingRepository;
+
+    @Autowired
     BoardService boardService;
+
+    @Autowired
+    EntityManager entityManager;
 
     Board board;
     Board board2;
     Store store;
     Store store2;
-    PageRequest defaultPage;
 
     @BeforeEach
     void setup() {
-        defaultPage = PageRequest.of(0, 10);
+        rankingRepository.deleteAll();
+        productRepository.deleteAll();
+        boardRepository.deleteAll();
+        storeRepository.deleteAll();
 
-        store = storeGenerator();
+        store = StoreFixture.storeGenerator();
         storeRepository.save(store);
-        store2 = storeGenerator();
+        store2 = StoreFixture.storeGenerator();
         storeRepository.save(store2);
 
-        board = boardGenerator(store,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            1000);
+        board = BoardFixture.randomBoardWithMoney(store, 1000);
+        board2 = BoardFixture.randomBoardWithMoney(store, 10000);
 
-        board2 = boardGenerator(store,
-            true,
-            false,
-            true,
-            true,
-            false,
-            true,
-            true,
-            10000);
-        boardRepository.save(board);
+        Board save1 = boardRepository.save(board);
+        Board save2 = boardRepository.save(board2);
         boardRepository.save(board2);
+
+        rankingRepository.save(
+            RankingFixture.newRanking(save1)
+        );
+        rankingRepository.save(
+            RankingFixture.newRanking(save2)
+        );
     }
 
 
-    @ParameterizedTest
-    @NullSource
-    @DisplayName("모든 리스트를 정상적으로 조회한다. 필터가 없을 경우")
-    public void showAllList(Boolean noFilter) {
+    @Test
+    @DisplayName("필터가 없는 경우에도 모든 리스트를 정상적으로 조회한다.")
+    public void showAllList() {
         //given, when
+        Product product1 = ProductFixture.productWithFullInfo(board,
+            true,
+            true,
+            true,
+            true,
+            true,
+            Category.BREAD);
 
-        Product product1 = productGenerator(board,
+        Product product2 = ProductFixture.productWithFullInfo(board2,
+            false,
             true,
             true,
             true,
-            true,
-            true,
-            "BREAD");
+            false,
+            Category.BREAD);
 
-        Product product2 = productGenerator(board2,
-            false,
-            true,
-            true,
-            true,
-            false,
-            "BREAD");
-
-        Product product3 = productGenerator(board2,
+        Product product3 = ProductFixture.productWithFullInfo(board2,
             true,
             false,
             true,
             false,
             false,
-            "BREAD");
+            Category.BREAD);
 
         productRepository.save(product1);
         productRepository.save(product2);
@@ -132,7 +131,7 @@ public class BoardServiceTest {
             .build();
 
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         BoardResponseDto response1 = boardList.getContent()
             .get(0);
         BoardResponseDto response2 = boardList.getContent()
@@ -141,256 +140,130 @@ public class BoardServiceTest {
         //then
         assertThat(boardList.getContent()).hasSize(2);
 
-        assertThat(response1.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.VEGAN.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.KETOGENIC.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.VEGAN.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.KETOGENIC.label())).isEqualTo(false);
-
     }
 
-    @ParameterizedTest
-    @NullSource
+    @Test
     @DisplayName("glutenFree 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterByGlutenFree(Boolean noFilter) {
+    public void showListFilterByGlutenFree() {
         //given, when
-
-        Product product1 = productGenerator(board,
-            true,
-            true,
-            true,
-            true,
-            false,
-            "BREAD");
-
-        Product product2 = productGenerator(board,
-            false,
-            true,
-            true,
-            true,
-            false,
-            "BREAD");
-
-        Product product3 = productGenerator(board2,
-            false,
-            false,
-            true,
-            false,
-            false,
-            "BREAD");
+        Product product1 = ProductFixture.gluetenFreeProduct(board);
+        Product product2 = ProductFixture.nonGluetenFreeProduct(board);
+        Product product3 = ProductFixture.nonGluetenFreeProduct(board);
 
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
 
         FilterRequest filterRequest = FilterRequest.builder()
-            .orderAvailableToday(true)
+            .glutenFreeTag(true)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
-        BoardResponseDto response1 = boardList.getContent()
-            .get(0);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
-
-        assertThat(response1.tags()
-            .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags()
-            .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
-        assertThat(response1.tags()
-            .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags()
-            .contains(TagEnum.VEGAN.label())).isEqualTo(true);
-        assertThat(response1.tags()
-            .contains(TagEnum.KETOGENIC.label())).isEqualTo(false);
-
     }
 
-    @ParameterizedTest
-    @NullSource
+    @Test
     @DisplayName("highProtein 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterByHighProtein(Boolean noFilter) {
+    public void showListFilterByHighProtein() {
         //given, when
-
-        Product product1 = productGenerator(board,
-            false,
-            false,
-            true,
-            true,
-            false,
-            "BREAD");
-
-        Product product2 = productGenerator(board,
-            false,
-            true,
-            true,
-            true,
-            false,
-            "BREAD");
-
-        Product product3 = productGenerator(board2,
-            true,
-            false,
-            true,
-            false,
-            true,
-            "BREAD");
+        Product product1 = ProductFixture.highProteinProduct(board);
+        Product product2 = ProductFixture.highProteinProduct(board);
+        Product product3 = ProductFixture.nonHighProteinProduct(board2);
 
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        FilterRequest filterRequest = new FilterRequest(true,
-            noFilter,
-            noFilter,
-            noFilter, noFilter, null, null, null, null);
+        FilterRequest filterRequest = FilterRequest
+            .builder()
+            .highProteinTag(true)
+            .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            null, null);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
     }
 
-    @ParameterizedTest
-    @NullSource
+    @Test
     @DisplayName("sugarFree 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterBySugarFree(Boolean noFilter) {
+    public void showListFilterBySugarFree() {
         //given, when
-
-        Product product1 = productGenerator(board,
-            false,
-            false,
-            true,
-            true,
-            false,
-            "BREAD");
-
-        Product product2 = productGenerator(board,
-            false,
-            true,
-            true,
-            true,
-            false,
-            "BREAD");
-
-        Product product3 = productGenerator(board2,
-            true,
-            false,
-            true,
-            false,
-            true,
-            "BREAD");
+        Product product1 = ProductFixture.sugarFreeProduct(board);
+        Product product2 = ProductFixture.sugarFreeProduct(board);
+        Product product3 = ProductFixture.nonSugarFreeProduct(board);
 
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-        FilterRequest filterRequest = new FilterRequest(true,
-            noFilter,
-            noFilter,
-            noFilter, noFilter, null, null, null, null);
+        FilterRequest filterRequest = FilterRequest.builder()
+            .sugarFreeTag(true)
+            .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            null, null);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
-
     }
 
-    @ParameterizedTest
-    @NullSource
-    @DisplayName("veganFre 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterByVeganFree(Boolean noFilter) {
+    @Test
+    @DisplayName("veganFree 제품이 포함된 게시물만 조회한다.")
+    public void showListFilterByVeganFree() {
         //given, when
-
-        Product product1 = productGenerator(board,
-            false,
-            false,
-            true,
-            false,
-            false,
-            "BREAD");
-
-        Product product2 = productGenerator(board,
-            false,
-            true,
-            true,
-            false,
-            false,
-            "BREAD");
-
-        Product product3 = productGenerator(board2,
-            true,
-            false,
-            true,
-            false,
-            true,
-            "BREAD");
+        Product product1 = ProductFixture.veganFreeProduct(board);
+        Product product2 = ProductFixture.veganFreeProduct(board);
+        Product product3 = ProductFixture.nonVeganFreeProduct(board2);
 
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
         FilterRequest filterRequest = FilterRequest.builder()
+            .veganTag(true)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
-        assertThat(boardList.getContent()).hasSize(0);
-
+        assertThat(boardList.getContent()).hasSize(1);
     }
 
-    @ParameterizedTest
-    @NullSource
+    @Test
     @DisplayName("ketogenic 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterKetogenic(Boolean noFilter) {
+    public void showListFilterKetogenic() {
         //given, when
-
-        Product product1 = productGenerator(board,
-            false,
-            false,
-            true,
-            false,
-            true,
-            "BREAD");
-
-        Product product2 = productGenerator(board,
-            false,
-            true,
-            true,
-            false,
-            true,
-            "BREAD");
-
-        Product product3 = productGenerator(board2,
-            true,
-            false,
-            true,
-            false,
-            true,
-            "BREAD");
+        Product product1 = ProductFixture.ketogenicProduct(board);
+        Product product2 = ProductFixture.ketogenicProduct(board);
+        Product product3 = ProductFixture.ketogenicProduct(board2);
 
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
         FilterRequest filterRequest = FilterRequest.builder()
+            .ketogenicTag(true)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(2);
@@ -398,56 +271,31 @@ public class BoardServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT"})
+    @EnumSource(value = Category.class)
     @DisplayName("카테고리로 필터링하여서 조회한다.")
-    public void showListFilterCategory(String category) {
+    public void showListFilterCategory(Category category) {
         //given
-
-        Product product1 = productGenerator(board,
-            false,
-            false,
-            true,
-            false,
-            true,
-            category);
-
-        Product product2 = productGenerator(board2,
-            false,
-            true,
-            true,
-            false,
-            true,
-            "ETC");
-
-        Product product3 = productGenerator(board2,
-            true,
-            false,
-            true,
-            false,
-            true,
-            "ETC");
+        Product product1 = ProductFixture.categoryBasedProduct(board, category);
+        Product product2 = ProductFixture.categoryBasedProduct(board2, Category.ETC);
+        Product product3 = ProductFixture.categoryBasedProduct(board2, Category.ETC);
 
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
 
-        Category realCategory;
-        if (category != null & !category.isBlank()) {
-            realCategory = Category.valueOf("ETC");
-        } else {
-            realCategory = Category.valueOf(category);
-        }
-
         //when
         FilterRequest filterRequest = FilterRequest.builder()
-            .category(realCategory)
+            .category(category)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
+        if(category.equals(Category.ETC)){
+            assertThat(boardList.getContent()).hasSize(2);
+            return;
+        }
         assertThat(boardList.getContent()).hasSize(1);
-
     }
 
     @ParameterizedTest
@@ -455,30 +303,9 @@ public class BoardServiceTest {
     @DisplayName("잘못된 카테고리로 조회할 경우 예외가 발생한다.")
     public void showListFilterWithInvalidCategory(String category) {
         //given, when
-
-        Product product1 = productGenerator(board,
-            false,
-            false,
-            true,
-            false,
-            true,
-            "BREAD");
-
-        Product product2 = productGenerator(board2,
-            false,
-            true,
-            true,
-            false,
-            true,
-            "ETC");
-
-        Product product3 = productGenerator(board2,
-            true,
-            false,
-            true,
-            false,
-            true,
-            "JAM");
+        Product product1 = ProductFixture.randomProduct(board);
+        Product product2 = ProductFixture.randomProduct(board2);
+        Product product3 = ProductFixture.randomProduct(board2);
 
         productRepository.save(product1);
         productRepository.save(product2);
@@ -488,111 +315,83 @@ public class BoardServiceTest {
         Assertions.assertThatThrownBy(() -> FilterRequest.builder()
                 .category(Category.valueOf(category))
                 .build())
-            .isInstanceOf(BbangleException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT"})
+    @EnumSource(value = Category.class)
     @DisplayName("성분과 카테고리를 한꺼번에 요청 시 정상적으로 필터링해서 반환한다.")
-    public void showListFilterCategoryAndIngredient(String category) {
+    public void showListFilterCategoryAndIngredient(Category category) {
         //given, when
-
-        Product product1 = productGenerator(board,
-            true,
-            true,
-            false,
-            true,
-            true,
-            category);
-
-        Product product2 = productGenerator(board2,
-            false,
-            false,
-            false,
-            false,
-            true,
-            category);
-
-        Product product3 = productGenerator(board2,
-            false,
-            false,
-            true,
-            false,
-            true,
-            category);
-
+        Product product1 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
+        Product product2 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
+        Product product3 = ProductFixture.categoryBasedWithNonSugarFreeProduct(board, category);
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
+
         FilterRequest filterRequest = FilterRequest.builder()
             .sugarFreeTag(true)
-            .category(Category.valueOf(category))
+            .category(category)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
-        BoardResponseDto response1 = boardList.getContent()
-            .get(0);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
-
-        assertThat(response1.tags()
-            .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(false);
-        assertThat(response1.tags()
-            .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(false);
-        assertThat(response1.tags()
-            .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags()
-            .contains(TagEnum.VEGAN.label())).isEqualTo(false);
-        assertThat(response1.tags()
-            .contains(TagEnum.KETOGENIC.label())).isEqualTo(true);
-
     }
 
     @Test
     @DisplayName("가격 필터를 적용 시 그에 맞춰 작동한다.")
     public void showListFilterPrice() {
         //given, when
+        Product product1 = ProductFixture.randomProduct(board);
+        Product product2 = ProductFixture.randomProduct(board);
+        Product product3 = ProductFixture.randomProduct(board2);
+        productRepository.save(product1);
+        productRepository.save(product2);
+        productRepository.save(product3);
+
         FilterRequest filterRequest = FilterRequest.builder()
             .minPrice(5000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList =
-            boardService.getBoardList(filterRequest, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest2 =  FilterRequest.builder()
             .minPrice(1000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList2 =
-            boardService.getBoardList(filterRequest2, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest2, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest3 = FilterRequest.builder()
             .maxPrice(10000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList3 =
-            boardService.getBoardList(filterRequest3, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest3, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest4 = FilterRequest.builder()
             .maxPrice(1000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList4 =
-            boardService.getBoardList(filterRequest4, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest4, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest5 = FilterRequest.builder()
             .maxPrice(900)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList5 =
-            boardService.getBoardList(filterRequest5, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest5, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest6 = FilterRequest.builder()
             .minPrice(1000)
             .maxPrice(10000)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList6 =
-            boardService.getBoardList(filterRequest6, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest6, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest7 = FilterRequest.builder()
             .minPrice(1001)
             .maxPrice(9999)
             .build();
         BoardCustomPage<List<BoardResponseDto>> boardList7 =
-            boardService.getBoardList(filterRequest7, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest7, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
         FilterRequest filterRequest8 = FilterRequest.builder().build();
         BoardCustomPage<List<BoardResponseDto>> boardList8 =
-            boardService.getBoardList(filterRequest8, NULL_SORT_TYPE, NULL_CURSOR);
+            boardService.getBoardList(filterRequest8, NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(1);
@@ -602,142 +401,41 @@ public class BoardServiceTest {
         assertThat(boardList5.getContent()).hasSize(0);
         assertThat(boardList6.getContent()).hasSize(2);
         assertThat(boardList7.getContent()).hasSize(0);
-
+        assertThat(boardList8.getContent()).hasSize(2);
     }
 
 
     @Test
-    @DisplayName("성분과 카테고리를 한꺼번에 요청 시 정상적으로 필터링해서 반환한다.")
-    public void SliceTest() {
+    @DisplayName("10개 단위로 정상적인 페이지네이션 후 반환한다.")
+    public void pageTest() {
         //given, when
-
-        Product product1 = productGenerator(board,
-            true,
-            true,
-            false,
-            true,
-            true,
-            Category.BREAD.name());
-
-        Product product2 = productGenerator(board2,
-            false,
-            false,
-            false,
-            false,
-            true,
-            Category.BREAD.name());
-
-        Product product3 = productGenerator(board2,
-            false,
-            false,
-            true,
-            false,
-            true,
-            Category.BREAD.name());
+        Product product1 = ProductFixture.randomProduct(board);
+        Product product2 = ProductFixture.randomProduct(board2);
+        Product product3 = ProductFixture.randomProduct(board2);
 
         for (int i = 0; i < 12; i++) {
-            board = boardGenerator(store,
-                true,
-                true,
-                true,
-                true,
-                true,
-                true,
-                true,
-                1000);
-            boardRepository.save(board);
+            board = BoardFixture.randomBoard(store);
+            Board newSavedBoard = boardRepository.save(board);
+            rankingRepository.save(
+                RankingFixture.newRanking(newSavedBoard)
+            );
 
-            Product product5 = productGenerator(board2,
-                false,
-                false,
-                false,
-                false,
-                true,
-                Category.BREAD.name());
-
-            Product product4 = productGenerator(board,
-                false,
-                false,
-                true,
-                false,
-                true,
-                Category.BREAD.name());
-            productRepository.save(product5);
+            Product product4 = ProductFixture.randomProduct(board);
+            Product product5 = ProductFixture.randomProduct(board);
             productRepository.save(product4);
+            productRepository.save(product5);
         }
 
         productRepository.save(product1);
         productRepository.save(product2);
         productRepository.save(product3);
-
-        List<Board> all = boardRepository.findAll();
         FilterRequest filterRequest = FilterRequest.builder().build();
         BoardCustomPage<List<BoardResponseDto>> boardList = boardService.getBoardList(filterRequest,
-            NULL_SORT_TYPE, NULL_CURSOR);
+            NULL_SORT_TYPE, NULL_CURSOR, NULL_MEMBER);
 
         //then
         assertThat(boardList.getContent()).hasSize(10);
+        assertThat(boardList.getBoardCount()).isEqualTo(14);
     }
 
-    private Board boardGenerator(
-        Store store,
-        boolean sunday,
-        boolean monday,
-        boolean tuesday,
-        boolean wednesday,
-        boolean thursday,
-        boolean friday,
-        boolean saturday,
-        int price
-    ) {
-        return Board.builder()
-            .store(store)
-            .title("title")
-            .price(price)
-            .status(true)
-            .profile("profile")
-            .purchaseUrl("purchaseUrl")
-            .view(1)
-            .sunday(sunday)
-            .monday(monday)
-            .tuesday(tuesday)
-            .wednesday(wednesday)
-            .thursday(thursday)
-            .friday(friday)
-            .saturday(saturday)
-            .isDeleted(sunday)
-            .build();
-    }
-
-    private Store storeGenerator() {
-        return Store.builder()
-            .identifier("identifier")
-            .name("name")
-            .introduce("introduce")
-            .profile("profile")
-            .isDeleted(false)
-            .build();
-    }
-
-    private Product productGenerator(
-        Board board,
-        boolean glutenFreeTag,
-        boolean highProteinTag,
-        boolean sugarFreeTag,
-        boolean veganTag,
-        boolean ketogenicTag,
-        String category
-    ) {
-        return Product.builder()
-            .board(board)
-            .title("title")
-            .price(1000)
-            .category(Category.valueOf(category))
-            .glutenFreeTag(glutenFreeTag)
-            .highProteinTag(highProteinTag)
-            .sugarFreeTag(sugarFreeTag)
-            .veganTag(veganTag)
-            .ketogenicTag(ketogenicTag)
-            .build();
-    }
 }

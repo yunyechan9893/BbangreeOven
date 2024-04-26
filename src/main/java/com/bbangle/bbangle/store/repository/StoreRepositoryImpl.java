@@ -33,7 +33,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
-    private static final Long PAGE_SIZE = 10L;
+    private static final Long PAGE_SIZE = 20L;
 
     private final QStore store = QStore.store;
     private final QBoard board = QBoard.board;

@@ -5,6 +5,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
@@ -31,8 +32,6 @@ import static org.hamcrest.Matchers.*;
 
 
 @SpringBootTest
-@Transactional
-@Rollback
 public class SearchRepositoryTest {
 
     @Autowired
@@ -49,6 +48,8 @@ public class SearchRepositoryTest {
     RedisRepository redisRepository;
     @Autowired
     SearchService searchService;
+    @Autowired
+    RankingRepository rankingRepository;
     @Autowired
     EntityManager entityManager;
 
@@ -70,6 +71,8 @@ public class SearchRepositoryTest {
     @AfterEach
     public void deleteAllEntity() {
         redisRepository.deleteAll();
+        searchRepository.deleteAll();
+        rankingRepository.deleteAll();
         memberRepository.deleteAll();
         productRepository.deleteAll();
         boardRepository.deleteAll();
@@ -139,8 +142,8 @@ public class SearchRepositoryTest {
         var BoardDtos = searchBoardResult.content();
         for (int i = 0; BoardDtos.size() > i; i++) {
             var boardDto = BoardDtos.get(i);
-            assertThat(boardDto.tags(), hasItem("glutenFree"));
-            assertThat(boardDto.price(), lessThanOrEqualTo(6000));
+            assertThat(boardDto.getTags(), hasItem("glutenFree"));
+            assertThat(boardDto.getPrice(), lessThanOrEqualTo(6000));
         }
     }
 

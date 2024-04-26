@@ -1,7 +1,10 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.CursorInfo;
+import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.wishList.domain.WishlistFolder;
@@ -12,10 +15,17 @@ import org.springframework.data.domain.Slice;
 
 public interface BoardQueryDSLRepository {
 
-    BoardCustomPage<List<BoardResponseDto>> getBoardResponseDto(
+    BoardCustomPage<List<BoardResponseDto>> getBoardResponse(
         FilterRequest filterRequest,
-        List<Long> matchedIdx,
-        Long cursorId
+        SortType sort,
+        CursorInfo cursorId,
+        Long memberId
+    );
+
+    BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
+        FilterRequest filterRequest,
+        SortType sort,
+        CursorInfo cursorInfo
     );
 
     Slice<BoardResponseDto> getAllByFolder(
@@ -29,7 +39,7 @@ public interface BoardQueryDSLRepository {
 
     HashMap<Long, String> getAllBoardTitle();
 
-    List<BoardResponseDto> updateLikeStatus(List<Long> matchedIdx, List<BoardResponseDto> content);
+    List<Board> checkingNullRanking();
 
 }
 

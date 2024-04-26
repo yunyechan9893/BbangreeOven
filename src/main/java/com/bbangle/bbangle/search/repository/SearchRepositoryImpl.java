@@ -38,9 +38,11 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Repository
+@Transactional
 @RequiredArgsConstructor
 public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
@@ -172,19 +174,19 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         BoardResponseDto boardResponseDto = boardIdToResponseMap.get(boardDetail.get(product.board.id));
 
         if (boardDetail.get(product.glutenFreeTag)) {
-            boardIdToResponseMap.get(boardId).tags().add(TagEnum.GLUTEN_FREE.label());
+            boardIdToResponseMap.get(boardId).getTags().add(TagEnum.GLUTEN_FREE.label());
         }
         if (boardDetail.get(product.highProteinTag)) {
-            boardIdToResponseMap.get(boardId).tags().add(TagEnum.HIGH_PROTEIN.label());
+            boardIdToResponseMap.get(boardId).getTags().add(TagEnum.HIGH_PROTEIN.label());
         }
         if (boardDetail.get(product.sugarFreeTag)) {
-            boardIdToResponseMap.get(boardId).tags().add(TagEnum.SUGAR_FREE.label());
+            boardIdToResponseMap.get(boardId).getTags().add(TagEnum.SUGAR_FREE.label());
         }
         if (boardDetail.get(product.veganTag)) {
-            boardIdToResponseMap.get(boardId).tags().add(TagEnum.VEGAN.label());
+            boardIdToResponseMap.get(boardId).getTags().add(TagEnum.VEGAN.label());
         }
         if (boardDetail.get(product.ketogenicTag)) {
-            boardIdToResponseMap.get(boardId).tags().add(TagEnum.KETOGENIC.label());
+            boardIdToResponseMap.get(boardId).getTags().add(TagEnum.KETOGENIC.label());
         }
 
         return boardResponseDto;
@@ -280,17 +282,17 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
 
     private static BoardResponseDto removeDuplicatesFromDto(BoardResponseDto boardResponseDto) {
-        List<String> uniqueTags = boardResponseDto.tags().stream().distinct().collect(Collectors.toList());
+        List<String> uniqueTags = boardResponseDto.getTags().stream().distinct().collect(Collectors.toList());
 
         return BoardResponseDto.builder()
-                .boardId(boardResponseDto.boardId())
-                .storeId(boardResponseDto.storeId())
-                .storeName(boardResponseDto.storeName())
-                .thumbnail(boardResponseDto.thumbnail())
-                .title(boardResponseDto.title())
-                .price(boardResponseDto.price())
-                .isBundled(boardResponseDto.isBundled())
-                .isWished(boardResponseDto.isWished())
+                .boardId(boardResponseDto.getBoardId())
+                .storeId(boardResponseDto.getStoreId())
+                .storeName(boardResponseDto.getStoreName())
+                .thumbnail(boardResponseDto.getThumbnail())
+                .title(boardResponseDto.getTitle())
+                .price(boardResponseDto.getPrice())
+                .isBundled(boardResponseDto.getIsBundled())
+                .isWished(boardResponseDto.getIsWished())
                 .tags(uniqueTags)
                 .build();
     }
