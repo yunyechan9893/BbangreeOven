@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
-@Transactional
-@Rollback
 public class BoardRepositoryTest {
     @Autowired
     MemberRepository memberRepository;
