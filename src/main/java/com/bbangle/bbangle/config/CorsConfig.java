@@ -19,6 +19,7 @@ public class CorsConfig implements WebMvcConfigurer {
                                 "http://localhost:3000",
                                 "http://localhost:63342",
                                 "http://115.85.181.105:8000",
+                                "https://api.bbangle.store",
                                 "http://www.bbangle.store",
                                 "http://landing.bbangle.store")
                         .allowedHeaders("*")
