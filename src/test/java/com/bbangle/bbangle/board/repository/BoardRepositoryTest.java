@@ -20,12 +20,10 @@ import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishList.repository.WishListProductRepository;
 import com.bbangle.bbangle.wishList.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import static org.hamcrest.Matchers.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +48,6 @@ public class BoardRepositoryTest {
     WishListProductRepository wishListProductRepository;
     @Autowired
     WishListStoreRepository wishListStoreRepository;
-    private final Long memberId = 2L;
     Store store;
     Board board;
     Member member;
@@ -99,7 +96,7 @@ public class BoardRepositoryTest {
     @Test
     @DisplayName("상품 게시물 상세보기 조회가 잘되고 있다")
     public void getBoardResponseDtoTest(){
-        var boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, board.getId());
+        var boardDetailResponse = boardRepository.getBoardDetailResponse(member.getId(), board.getId());
 
         var firstBoard = boardDetailResponse.board();
         assertThat(firstBoard.title(), is("비건 베이커리 로썸 비건빵"));
@@ -126,7 +123,7 @@ public class BoardRepositoryTest {
     @Test
     @DisplayName("Wished Product 테이블에 값들이 존재해도, 내 데이터가 아니면 isWished는 false가 된다")
     public void getBoardResponseDtoLikeTest(){
-        var boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, board.getId());
+        var boardDetailResponse = boardRepository.getBoardDetailResponse(member.getId(), board.getId());
 
         assertThat(boardDetailResponse.store().isWished(), is(false));
         assertThat(boardDetailResponse.board().isWished(), is(false));
@@ -135,7 +132,7 @@ public class BoardRepositoryTest {
     @Test
     @DisplayName("Wished Productm isWished는 true가 된다")
     public void getBoardLikeTrueTest(){
-        var boardDetailResponse = boardRepository.getBoardDetailResponse(memberId, board.getId());
+        var boardDetailResponse = boardRepository.getBoardDetailResponse(member.getId(), board.getId());
 
         assertThat(boardDetailResponse.store().isWished(), is(false));
         assertThat(boardDetailResponse.board().isWished(), is(false));
