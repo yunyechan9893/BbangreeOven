@@ -42,11 +42,21 @@ public class SwaggerConfig {
                 .type(SecurityScheme.Type.OAUTH2)
                 .flows(oAuthFlows);
         SecurityRequirement tokenLogin = new SecurityRequirement().addList("토큰 로그인");
-        Server server = new Server();
-        server.setUrl("/");
+        Server localServer = new Server();
+        localServer.setDescription("local-server");
+        localServer.setUrl("http://localhost:8000");
+
+        Server devServerWithHttp = new Server();
+        devServerWithHttp.setDescription("dev-server-http");
+        devServerWithHttp.setUrl("http://115.85.181.105:8000");
+
+        Server devServerWithHttps = new Server();
+        devServerWithHttps.setDescription("dev-server-https");
+        devServerWithHttps.setUrl("https://api.bbangle.store");
+
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(server))
+                .servers(List.of(localServer, devServerWithHttp, devServerWithHttps))
                 .addSecurityItem(tokenLogin)
                 .addSecurityItem(new SecurityRequirement().addList("토큰 받아오기"))
                 .components(new Components()
