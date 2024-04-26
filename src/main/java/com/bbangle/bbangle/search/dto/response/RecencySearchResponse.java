@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.search.dto.response;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.bbangle.bbangle.search.dto.KeywordDto;
@@ -11,7 +12,7 @@ public record RecencySearchResponse(
 ) {
     public static RecencySearchResponse getEmpty(){
         return RecencySearchResponse.builder()
-                .content(List.of())
+                .content(Collections.emptyList())
                 .build();
     }
 }

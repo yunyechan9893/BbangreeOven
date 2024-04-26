@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.search.dto.response;
 
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
 
@@ -15,7 +16,7 @@ public record SearchBoardResponse(
 ) {
 
     public static SearchBoardResponse getEmpty(int pageNumber, int limitItemCount, Long itemAllCount){
-        return SearchBoardResponse.builder().content(List.of())
+        return SearchBoardResponse.builder().content(Collections.emptyList())
                 .itemAllCount(itemAllCount)
                 .pageNumber(pageNumber)
                 .limitItemCount(limitItemCount)

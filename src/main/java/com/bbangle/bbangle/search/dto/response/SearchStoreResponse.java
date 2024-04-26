@@ -1,6 +1,8 @@
 package com.bbangle.bbangle.search.dto.response;
 
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
 
@@ -15,7 +17,7 @@ public record SearchStoreResponse(
 ){
 
     public static SearchStoreResponse getEmpty(int pageNumber, int limitItemCount){
-        return SearchStoreResponse.builder().content(List.of())
+        return SearchStoreResponse.builder().content(Collections.emptyList())
                 .itemAllCount(0)
                 .pageNumber(pageNumber)
                 .limitItemCount(limitItemCount)
