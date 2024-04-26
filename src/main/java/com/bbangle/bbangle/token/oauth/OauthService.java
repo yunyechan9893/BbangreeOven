@@ -54,11 +54,9 @@ public class OauthService {
         String accessToken = tokenProvider.generateToken(saved, ACCESS_TOKEN_DURATION);
         Optional<RefreshToken> refreshTokenByMemberId =
             refreshTokenRepository.findByMemberId(saved.getId());
-        if(refreshTokenByMemberId.isEmpty()){
-            saveRefreshToken(refreshToken, saved);
-        }else {
-            refreshTokenByMemberId.get().update(refreshToken);
-        }
+        refreshTokenByMemberId.ifPresentOrElse(
+            token -> refreshTokenByMemberId.get().update(refreshToken),
+            () -> saveRefreshToken(refreshToken, saved));
         return new LoginTokenResponse(accessToken, refreshToken);
     }
 
