@@ -6,13 +6,13 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
+import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
@@ -24,8 +24,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@RequiredArgsConstructor
 public class BoardService {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
@@ -42,32 +43,11 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
+    @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
+    @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
     private final RankingRepository rankingRepository;
-
-    public BoardService(
-        @Autowired
-        BoardRepository boardRepository,
-        @Autowired
-        MemberRepository memberRepository,
-        @Autowired
-        WishListFolderRepository folderRepository,
-        @Autowired
-        @Qualifier("defaultRedisTemplate")
-        RedisTemplate<String, Object> redisTemplate,
-        @Autowired
-        @Qualifier("boardLikeInfoRedisTemplate")
-        RedisTemplate<String, Object> boardLikeInfoRedisTemplate,
-        RankingRepository rankingRepository
-    ) {
-        this.boardRepository = boardRepository;
-        this.memberRepository = memberRepository;
-        this.folderRepository = folderRepository;
-        this.redisTemplate = redisTemplate;
-        this.boardLikeInfoRedisTemplate = boardLikeInfoRedisTemplate;
-        this.rankingRepository = rankingRepository;
-    }
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -76,7 +56,36 @@ public class BoardService {
         CursorInfo cursorInfo,
         Long memberId
     ) {
-        return boardRepository.getBoardResponse(filterRequest, sort, cursorInfo, memberId);
+        BoardCustomPage<List<BoardResponseDto>> boards = boardRepository
+            .getBoardResponseList(filterRequest, sort, cursorInfo);
+
+        if (Objects.nonNull(memberId) && memberRepository.existsById(memberId)) {
+            updateLikeStatus(boards, memberId);
+        }
+
+        return boards;
+    }
+
+    private void updateLikeStatus(
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto,
+        Long memberId
+    ) {
+        List<Long> responseList = extractIds(boardResponseDto);
+        List<Long> likedContentIds = boardRepository.getLikedContentsIds(responseList, memberId);
+
+        boardResponseDto.getContent()
+            .stream()
+            .filter(board -> likedContentIds.contains(board.getBoardId()))
+            .forEach(board -> board.updateLike(true));
+    }
+
+    private List<Long> extractIds(
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto
+    ) {
+        return boardResponseDto.getContent()
+            .stream()
+            .map(BoardResponseDto::getBoardId)
+            .toList();
     }
 
     @Transactional(readOnly = true)
@@ -149,5 +158,4 @@ public class BoardService {
         redisTemplate.opsForValue()
             .set(purchaseCountKey, "true", Duration.ofMinutes(3));
     }
-
 }

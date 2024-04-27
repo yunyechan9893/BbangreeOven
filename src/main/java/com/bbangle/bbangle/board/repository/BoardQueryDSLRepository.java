@@ -4,9 +4,9 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
+import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.wishList.domain.WishlistFolder;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 public interface BoardQueryDSLRepository {
-
-    BoardCustomPage<List<BoardResponseDto>> getBoardResponse(
-        FilterRequest filterRequest,
-        SortType sort,
-        CursorInfo cursorId,
-        Long memberId
-    );
 
     BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
         FilterRequest filterRequest,
@@ -41,5 +34,6 @@ public interface BoardQueryDSLRepository {
 
     List<Board> checkingNullRanking();
 
+    List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);
 }
 

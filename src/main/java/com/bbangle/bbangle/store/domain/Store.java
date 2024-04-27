@@ -44,9 +44,6 @@ public class Store extends BaseEntity {
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    @OneToMany(mappedBy = "store")
-    private List<WishlistStore> wishlistStores;
-
     public Store updateProfile(String profile){
         this.profile = profile;
         return this;
