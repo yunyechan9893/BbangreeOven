@@ -2,7 +2,7 @@ package com.bbangle.bbangle.notice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record NoticeUploadRequest(
+public record NotificationUploadRequest(
     @NotBlank
     String title,
     @NotBlank

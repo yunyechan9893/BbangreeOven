@@ -1,14 +1,14 @@
 package com.bbangle.bbangle.notice.controller;
 
-import com.bbangle.bbangle.notice.dto.NoticeUploadRequest;
-import com.bbangle.bbangle.notice.dto.NotificationResponse;
+import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.notice.dto.NotificationUploadRequest;
 import com.bbangle.bbangle.notice.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,23 +20,30 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final ResponseService responseService;
 
     @GetMapping
-    public ResponseEntity<Page<NotificationResponse>> getList(
+    public CommonResult getList(
         @PageableDefault
         Pageable pageable
     ) {
-        return ResponseEntity.ok(notificationService.getList(pageable));
+        return responseService.getSingleResult(notificationService.getList(pageable));
+    }
+
+    @GetMapping("/{id}")
+    public CommonResult getNoticeDetail(
+        @PathVariable
+        Long id
+    ) {
+        return responseService.getSingleResult(notificationService.getNoticeDetail(id));
     }
 
     @PostMapping
-    public ResponseEntity<Void> upload(
+    public CommonResult upload(
         @RequestBody
-        NoticeUploadRequest noticeUploadRequest
+        NotificationUploadRequest notificationUploadRequest
     ) {
-        notificationService.upload(noticeUploadRequest);
-        return ResponseEntity.ok()
-            .build();
+        notificationService.upload(notificationUploadRequest);
+        return responseService.getSuccessResult();
     }
-
 }

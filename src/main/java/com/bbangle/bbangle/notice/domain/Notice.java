@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.notice.domain;
 
-import com.bbangle.bbangle.notice.dto.NoticeResponseDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,14 +28,4 @@ public class Notice {
     private String content;
     @CreationTimestamp
     private LocalDateTime createdAt;
-
-
-    public static NoticeResponseDto toDto(Notice notice) {
-        return NoticeResponseDto.builder()
-            .id(notice.getId())
-            .title(notice.getTitle())
-            .createdAt(String.valueOf(notice.getCreatedAt()))
-            .build();
-    }
-
 }

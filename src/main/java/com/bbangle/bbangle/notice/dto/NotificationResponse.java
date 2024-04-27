@@ -15,5 +15,4 @@ public record NotificationResponse(
             notice.getContent(),
             notice.getCreatedAt());
     }
-
 }
