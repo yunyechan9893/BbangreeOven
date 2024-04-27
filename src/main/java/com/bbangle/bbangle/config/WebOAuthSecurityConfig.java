@@ -41,6 +41,8 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
             .allowedOrigins("http://localhost:3000")
             .allowedOrigins("http://www.bbangle.store")
+            .allowedOrigins("http://api.bbangle.store")
+            .allowedOrigins("https://www.bbangle.store")
             .allowedOrigins("https://api.bbangle.store")
             .allowedMethods(
                 HttpMethod.GET.name(),
