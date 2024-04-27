@@ -2,10 +2,9 @@ package com.bbangle.bbangle.member.controller;
 
 
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.member.controller.ProfileController;
 import com.bbangle.bbangle.member.repository.ProfileRepository;
 import com.bbangle.bbangle.member.service.ProfileServiceImpl;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,7 +34,7 @@ public class ProfileControllerTest {
     @Autowired
     ResponseService responseService;
 
-    @Before
+    @BeforeEach
     public void setUpMockMvc() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(new ProfileController(profileService, responseService)).build();
     }

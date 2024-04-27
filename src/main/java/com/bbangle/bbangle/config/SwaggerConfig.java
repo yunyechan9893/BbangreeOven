@@ -4,7 +4,9 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.*;
+import io.swagger.v3.oas.models.servers.Server;
 import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,9 +42,21 @@ public class SwaggerConfig {
                 .type(SecurityScheme.Type.OAUTH2)
                 .flows(oAuthFlows);
         SecurityRequirement tokenLogin = new SecurityRequirement().addList("토큰 로그인");
+        Server localServer = new Server();
+        localServer.setDescription("local-server");
+        localServer.setUrl("http://localhost:8000");
+
+        Server devServerWithHttp = new Server();
+        devServerWithHttp.setDescription("dev-server-http");
+        devServerWithHttp.setUrl("http://115.85.181.105:8000");
+
+        Server devServerWithHttps = new Server();
+        devServerWithHttps.setDescription("dev-server-https");
+        devServerWithHttps.setUrl("https://api.bbangle.store");
 
         return new OpenAPI()
                 .info(info)
+                .servers(List.of(localServer, devServerWithHttp, devServerWithHttps))
                 .addSecurityItem(tokenLogin)
                 .addSecurityItem(new SecurityRequirement().addList("토큰 받아오기"))
                 .components(new Components()
