@@ -1,15 +1,13 @@
 package com.bbangle.bbangle.member.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.message.MessageResDto;
+import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +39,6 @@ public class MemberController {
         Long memberId = SecurityUtils.getMemberId();
         memberService.saveDeleteReason(withdrawalRequestDto, memberId);
         memberService.deleteMember(memberId);
-        return responseService.getSuccessResult(deleteSuccessMsg, 0);
+        return responseService.getSingleResult(new MessageDto(deleteSuccessMsg));
     }
 }

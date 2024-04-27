@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.member.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
+import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.message.MessageResDto;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
@@ -45,16 +46,16 @@ public class ProfileController {
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
         if(nickname.isEmpty() || nickname == null){
-            return responseService.getSuccessResult("닉네임을 입력해주세요!", 0);
+            return responseService.getSingleResult(new MessageDto("닉네임을 입력해주세요!"));
         }
         if(nickname.length() > 20){
-            return responseService.getSuccessResult("닉네임은 20자 제한이에요!", 0);
+            return responseService.getSingleResult(new MessageDto("닉네임은 20자 제한이에요!"));
         }
         String existedNickname = profileService.doubleCheckNickname(nickname);
         if (!existedNickname.isEmpty()){
-            return responseService.getSuccessResult("중복된 닉네임이에요", 0);
+            return responseService.getSingleResult(new MessageDto("중복된 닉네임이에요"));
         }
-        return responseService.getSuccessResult("사용가능한 닉네임이에요!", 0);
+        return responseService.getSingleResult(new MessageDto("사용가능한 닉네임이에요!"));
     }
 
     @PutMapping
