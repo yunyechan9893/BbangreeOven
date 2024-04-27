@@ -140,25 +140,25 @@ public class BoardServiceTest {
         //then
         assertThat(boardList.getContent()).hasSize(2);
 
-        assertThat(response2.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.VEGAN.label())).isEqualTo(true);
-        assertThat(response2.tags()
+        assertThat(response2.getTags()
             .contains(TagEnum.KETOGENIC.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.GLUTEN_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.HIGH_PROTEIN.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.SUGAR_FREE.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.VEGAN.label())).isEqualTo(true);
-        assertThat(response1.tags()
+        assertThat(response1.getTags()
             .contains(TagEnum.KETOGENIC.label())).isEqualTo(false);
     }
 
