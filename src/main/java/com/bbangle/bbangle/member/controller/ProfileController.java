@@ -46,16 +46,16 @@ public class ProfileController {
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
         if(nickname.isEmpty() || nickname == null){
-            return responseService.getSingleResult(new MessageDto("닉네임을 입력해주세요!"));
+            return responseService.getSingleResult(new MessageDto("닉네임을 입력해주세요!", false));
         }
         if(nickname.length() > 20){
-            return responseService.getSingleResult(new MessageDto("닉네임은 20자 제한이에요!"));
+            return responseService.getSingleResult(new MessageDto("닉네임은 20자 제한이에요!", false));
         }
         String existedNickname = profileService.doubleCheckNickname(nickname);
         if (!existedNickname.isEmpty()){
-            return responseService.getSingleResult(new MessageDto("중복된 닉네임이에요"));
+            return responseService.getSingleResult(new MessageDto("중복된 닉네임이에요", false));
         }
-        return responseService.getSingleResult(new MessageDto("사용가능한 닉네임이에요!"));
+        return responseService.getSingleResult(new MessageDto("사용가능한 닉네임이에요!", true));
     }
 
     @PutMapping
