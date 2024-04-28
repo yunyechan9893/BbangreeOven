@@ -1,7 +1,6 @@
-package com.bbangle.bbangle.notice.dto;
+package com.bbangle.bbangle.notification.dto;
 
-import com.bbangle.bbangle.notice.domain.Notice;
-import java.time.LocalDateTime;
+import com.bbangle.bbangle.notification.domain.Notice;
 import java.time.format.DateTimeFormatter;
 import lombok.Builder;
 

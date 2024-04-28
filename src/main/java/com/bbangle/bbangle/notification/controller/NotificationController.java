@@ -1,17 +1,16 @@
-package com.bbangle.bbangle.notice.controller;
+package com.bbangle.bbangle.notification.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.notice.dto.NotificationUploadRequest;
-import com.bbangle.bbangle.notice.service.NotificationService;
+import com.bbangle.bbangle.notification.dto.NotificationUploadRequest;
+import com.bbangle.bbangle.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,10 +23,10 @@ public class NotificationController {
 
     @GetMapping
     public CommonResult getList(
-        @PageableDefault
-        Pageable pageable
+       @RequestParam(required = false)
+        Long cursorId
     ) {
-        return responseService.getSingleResult(notificationService.getList(pageable));
+        return responseService.getSingleResult(notificationService.getList(cursorId));
     }
 
     @GetMapping("/{id}")

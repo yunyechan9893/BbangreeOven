@@ -1,11 +1,13 @@
-package com.bbangle.bbangle.notice.domain;
+package com.bbangle.bbangle.notification.domain;
 
+import com.bbangle.bbangle.notification.dto.NotificationResponse;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,4 +30,15 @@ public class Notice {
     private String content;
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    public static NotificationResponse makeNotificationResponse(Notice notice){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String formattedDateTime = notice.getCreatedAt().format(formatter);
+        return new NotificationResponse(
+            notice.getId(),
+            notice.getTitle(),
+            notice.getContent(),
+            formattedDateTime
+        );
+    }
 }

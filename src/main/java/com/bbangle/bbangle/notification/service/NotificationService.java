@@ -1,16 +1,16 @@
-package com.bbangle.bbangle.notice.service;
+package com.bbangle.bbangle.notification.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTIFICATION_NOT_FOUND;
 
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.notice.domain.Notice;
-import com.bbangle.bbangle.notice.dto.NotificationDetailResponseDto;
-import com.bbangle.bbangle.notice.dto.NotificationResponse;
-import com.bbangle.bbangle.notice.dto.NotificationUploadRequest;
-import com.bbangle.bbangle.notice.repository.NotificationRepository;
+import com.bbangle.bbangle.notification.domain.Notice;
+import com.bbangle.bbangle.notification.dto.NotificationDetailResponseDto;
+import com.bbangle.bbangle.notification.dto.NotificationResponse;
+import com.bbangle.bbangle.notification.dto.NotificationUploadRequest;
+import com.bbangle.bbangle.notification.repository.NotificationRepository;
+import com.bbangle.bbangle.page.NotificationCustomPage;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +22,8 @@ public class NotificationService {
 
 
     @Transactional(readOnly = true)
-    public Page<NotificationResponse> getList(Pageable pageable) {
-        return notificationRepository.findAll(pageable)
-            .map(NotificationResponse::from);
+    public NotificationCustomPage<List<NotificationResponse>> getList(Long cursorId) {
+        return notificationRepository.findNextCursorPage(cursorId);
     }
 
     public NotificationDetailResponseDto getNoticeDetail(Long id) {

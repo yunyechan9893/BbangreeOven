@@ -1,4 +1,4 @@
-package com.bbangle.bbangle.notice.dto;
+package com.bbangle.bbangle.notification.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
