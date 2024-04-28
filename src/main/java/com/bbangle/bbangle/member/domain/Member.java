@@ -5,8 +5,8 @@ import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.exception.UserValidator;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
-import com.bbangle.bbangle.wishList.domain.WishlistFolder;
-import com.bbangle.bbangle.wishList.domain.WishlistStore;
+import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
+import com.bbangle.bbangle.wishlist.domain.WishlistStore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;

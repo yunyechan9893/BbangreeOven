@@ -10,10 +10,10 @@ import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishList.domain.QWishlistFolder;
-import com.bbangle.bbangle.wishList.domain.WishlistFolder;
-import com.bbangle.bbangle.wishList.domain.QWishlistStore;
+import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.QWishlistFolder;
+import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
+import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
@@ -35,7 +35,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
-import static com.bbangle.bbangle.wishList.domain.QWishlistProduct.wishlistProduct;
+import static com.bbangle.bbangle.wishlist.domain.QWishlistProduct.wishlistProduct;
 
 @Repository
 @Slf4j
