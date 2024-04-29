@@ -21,6 +21,10 @@ public class ProfileController {
 
     private final ProfileServiceImpl profileService;
     private final ResponseService responseService;
+    private static final String TYPING_NICKNAME = "닉네임을 입력해주세요!";
+    private static final String RESTRICT_NICKNAME_20 = "닉네임은 20자 제한이에요!";
+    private static final String DUPLICATE_NICKNAME = "중복된 닉네임이에요";
+    private static final String AVAILABLE_NICKNAME = "사용가능한 닉네임이에요!";
 
     /**
      * 프로필 조회
@@ -46,16 +50,16 @@ public class ProfileController {
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
         if(nickname.isEmpty() || nickname == null){
-            return responseService.getSingleResult(new MessageDto("닉네임을 입력해주세요!", false));
+            return responseService.getSingleResult(new MessageDto(TYPING_NICKNAME, false));
         }
         if(nickname.length() > 20){
-            return responseService.getSingleResult(new MessageDto("닉네임은 20자 제한이에요!", false));
+            return responseService.getSingleResult(new MessageDto(RESTRICT_NICKNAME_20, false));
         }
         String existedNickname = profileService.doubleCheckNickname(nickname);
         if (!existedNickname.isEmpty()){
-            return responseService.getSingleResult(new MessageDto("중복된 닉네임이에요", false));
+            return responseService.getSingleResult(new MessageDto(DUPLICATE_NICKNAME, false));
         }
-        return responseService.getSingleResult(new MessageDto("사용가능한 닉네임이에요!", true));
+        return responseService.getSingleResult(new MessageDto(AVAILABLE_NICKNAME, true));
     }
 
     @PutMapping

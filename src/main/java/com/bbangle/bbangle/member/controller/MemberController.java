@@ -19,6 +19,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final ResponseService responseService;
+    private static final String DELETE_SUCCESS_MSG = "회원 탈퇴에 성공했습니다";
 
     @PutMapping("additional-information")
     public CommonResult updateInfo(
@@ -38,9 +39,8 @@ public class MemberController {
         @RequestBody WithdrawalRequestDto withdrawalRequestDto,
         @AuthenticationPrincipal
         Long memberId){
-        String deleteSuccessMsg = "회원 탈퇴에 성공했습니다";
         memberService.saveDeleteReason(withdrawalRequestDto, memberId);
         memberService.deleteMember(memberId);
-        return responseService.getSingleResult(new MessageDto(deleteSuccessMsg,true));
+        return responseService.getSingleResult(new MessageDto(DELETE_SUCCESS_MSG,true));
     }
 }

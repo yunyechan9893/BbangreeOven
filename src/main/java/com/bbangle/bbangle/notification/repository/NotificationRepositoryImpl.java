@@ -1,5 +1,8 @@
 package com.bbangle.bbangle.notification.repository;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTIFICATION_NOT_FOUND;
+
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.domain.QNotice;
@@ -16,8 +19,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class NotificationRepositoryImpl implements NotificationQueryDSLRepository{
-    private final JPAQueryFactory queryFactory;
+
     private static final Long PAGE_SIZE = 20L;
+    private final JPAQueryFactory queryFactory;
     private final QNotice notice = QNotice.notice;
     @Override
     public NotificationCustomPage<List<NotificationResponse>> findNextCursorPage(Long cursorId) {
@@ -48,7 +52,7 @@ public class NotificationRepositoryImpl implements NotificationQueryDSLRepositor
     private BooleanBuilder getCursorCondition(Long cursorId) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         if (Objects.isNull(cursorId)) {
-            return booleanBuilder.and(notice.id.loe(Long.MAX_VALUE));
+            return booleanBuilder;
         }
         Long startId = checkingNotificationExistence(cursorId);
 
@@ -63,7 +67,7 @@ public class NotificationRepositoryImpl implements NotificationQueryDSLRepositor
             .fetchOne();
 
         if (Objects.isNull(checkingId)) {
-            throw new BbangleException("존재하지 않는 공지사항 아이디입니다.");
+            throw new BbangleException(NOTIFICATION_NOT_FOUND);
         }
 
         return cursorId+1;
