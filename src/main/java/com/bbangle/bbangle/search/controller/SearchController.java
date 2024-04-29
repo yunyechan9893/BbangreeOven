@@ -40,7 +40,6 @@ public class SearchController {
     public CommonResult getSearchBoardDtos(
             SearchBoardRequest searchBoardRequest
     ){
-        // 회원, 비회원 둘 다 사용 가능
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();
 
         SearchBoardResponse searchBoardDtos = searchService.getSearchBoardDtos(memberId,

@@ -3,7 +3,7 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
-import com.bbangle.bbangle.board.dto.BoardDetailResponseDto;
+import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.repository.BoardRepository;
@@ -32,7 +32,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class BoardService {
@@ -80,29 +79,8 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardDetailResponseDto getBoardDetailResponse(Long memberId, Long boardId) {
-
+    public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
         return boardRepository.getBoardDetailResponse(memberId, boardId);
-    }
-
-    @Transactional
-    public Boolean saveBoardDetailHtml(Long boardId, MultipartFile htmlFile) {
-//        Long storeId = boardRepository.findById(boardId)
-//            .get()
-//            .getStore()
-//            .getId();
-//        String filePath = String.format("%s/%s/%s", storeId, boardId, DETAIL_HTML_FILE_NAME);
-//        // Board DetailUrl FilePath로 수정
-//        if (boardRepository.updateDetailWhereStoreIdEqualsBoardId(
-//            boardId,
-//            filePath
-//        ) != 1) {
-//            return false;
-//        }
-
-        // ObjectStorage에 파일 생성
-//        return objectStorageRepository.createFile(BUCKET_NAME, filePath, htmlFile);
-        return null;
     }
 
     public Slice<BoardResponseDto> getPostInFolder(

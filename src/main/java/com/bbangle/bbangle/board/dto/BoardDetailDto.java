@@ -1,21 +1,16 @@
 package com.bbangle.bbangle.board.dto;
 
-import lombok.Builder;
+import com.querydsl.core.annotations.QueryProjection;
 
-import java.util.List;
-
-@Builder
 public record BoardDetailDto(
         Long boardId,
-        String thumbnail,
-        List<BoardImgDto> images,
-        String title,
-        int price,
-        BoardAvailableDayDto orderAvailableDays,
-        String purchaseUrl,
-        Boolean isWished,
-        Boolean isBundled,
-        List<DetailResponseDto> detail,
-        List<String> tags,
-        List<ProductDto> products
-) {}
+        Integer imgIndex,
+        String url
+) {
+    @QueryProjection
+    public BoardDetailDto(Long boardId, Integer imgIndex, String url){
+        this.boardId = boardId;
+        this.imgIndex = imgIndex;
+        this.url = url;
+    }
+}
