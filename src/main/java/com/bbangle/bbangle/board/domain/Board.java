@@ -33,7 +33,7 @@ public class Board extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
+    @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Store store;
 
     @Column(name = "title")

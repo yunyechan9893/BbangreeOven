@@ -28,7 +28,7 @@ public class BoardDetail {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_board_id")
+    @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;
 
     @Column(name = "img_index")

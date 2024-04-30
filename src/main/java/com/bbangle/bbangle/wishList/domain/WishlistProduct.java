@@ -30,11 +30,11 @@ public class WishlistProduct extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wishlist_folder_id")
+    @JoinColumn(name = "wishlist_folder_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private WishlistFolder wishlistFolder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_board_id")
+    @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;
 
     @Column(name = "member_id")

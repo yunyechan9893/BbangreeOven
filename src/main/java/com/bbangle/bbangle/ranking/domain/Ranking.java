@@ -29,7 +29,7 @@ public class Ranking {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_board_id")
+    @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;
 
     @Column(name = "popular_score")

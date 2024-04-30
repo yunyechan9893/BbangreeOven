@@ -28,7 +28,7 @@ public class Search {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Member member;
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
