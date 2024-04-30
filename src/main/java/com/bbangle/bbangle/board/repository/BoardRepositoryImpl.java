@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
-import static com.bbangle.bbangle.wishList.domain.QWishlistProduct.wishlistProduct;
+import static com.bbangle.bbangle.wishlist.domain.QWishlistProduct.wishlistProduct;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
@@ -24,12 +24,11 @@ import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
-import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.wishList.domain.QWishlistFolder;
-import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishList.domain.QWishlistStore;
+import com.bbangle.bbangle.wishlist.domain.QWishlistFolder;
+import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
@@ -64,7 +63,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
-    private static final QWishlistProduct products = QWishlistProduct.wishlistProduct;
+    private static final QWishlistProduct products = wishlistProduct;
     private static final QWishlistFolder folder = QWishlistFolder.wishlistFolder;
     private static final QProductImg productImg = QProductImg.productImg;
     private static final QBoardDetail boardDetail = QBoardDetail.boardDetail;
@@ -95,7 +94,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         String sort, Pageable pageable, Long wishListFolderId,
         WishlistFolder selectedFolder
     ) {
-        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort, board, products);
+        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort);
 
         List<Board> boards = queryFactory
             .selectFrom(board)
@@ -123,7 +122,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return new SliceImpl<>(content, pageable, hasNext);
     }
 
-
     private List<BoardDetailDto> fetchBoardDetails(Long boardId) {
         return queryFactory.select(new QBoardDetailDto(
                 boardDetail.id,
@@ -137,16 +135,23 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private List<String> getTagsToStringList(Product product) {
         List<String> tags = new ArrayList<>();
-        if (product.isGlutenFreeTag() && tags.add(TagEnum.GLUTEN_FREE.label()))
-            ;
-        if (product.isSugarFreeTag() && tags.add(TagEnum.SUGAR_FREE.label()))
-            ;
-        if (product.isHighProteinTag() && tags.add(TagEnum.HIGH_PROTEIN.label()))
-            ;
-        if (product.isVeganTag() && tags.add(TagEnum.VEGAN.label()))
-            ;
-        if (product.isKetogenicTag() && tags.add(TagEnum.KETOGENIC.label()))
-            ;
+        if (product.isGlutenFreeTag()) {
+            tags.add(TagEnum.GLUTEN_FREE.label());
+        }
+        if (product.isSugarFreeTag()) {
+            tags.add(TagEnum.SUGAR_FREE.label());
+        }
+
+        if (product.isHighProteinTag()) {
+            tags.add(TagEnum.HIGH_PROTEIN.label());
+        }
+        if (product.isVeganTag()) {
+            tags.add(TagEnum.VEGAN.label());
+        }
+        if (product.isKetogenicTag()) {
+            tags.add(TagEnum.KETOGENIC.label());
+        }
+
         return tags;
     }
 
@@ -167,8 +172,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public List<String> getProductDtosToDuplicatedTags(List<ProductDto> productDtos) {
         return productDtos.stream()
-            .map(productDto -> productDto.tags())
-            .filter(list -> list != null)
+            .map(ProductDto::tags)
+            .filter(Objects::nonNull)
             .flatMap(List::stream)
             .distinct()
             .collect(Collectors.toList());
@@ -176,19 +181,17 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public boolean isBundleBoard(List<ProductDto> productDtos) {
         return productDtos.stream()
-            .map(productDto -> productDto.category())
+            .map(ProductDto::category)
             .distinct()
             .count() > 1;
     }
 
-    private Boolean setWishlistBoard(List<Expression<?>> columns) {
+    private void setWishlistBoard(List<Expression<?>> columns) {
         columns.add(wishlistProduct.id);
-        return true;
     }
 
-    private Boolean setWishlistStore(List<Expression<?>> columns) {
+    private void setWishlistStore(List<Expression<?>> columns) {
         columns.add(wishlistStore.id);
-        return true;
     }
 
     private Expression[] setColomns(Long memberId) {
@@ -211,10 +214,13 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         columns.add(productImg.id);
         columns.add(productImg.url);
 
-        if (memberId != null && memberId > 0 && setWishlistBoard(columns))
-            ;
-        if (memberId != null && memberId > 0 && setWishlistStore(columns))
-            ;
+        if (memberId != null && memberId > 0) {
+            setWishlistBoard(columns);
+        }
+
+        if (memberId != null && memberId > 0) {
+            setWishlistStore(columns);
+        }
 
         return columns.toArray(new Expression[0]);
     }
@@ -223,15 +229,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return queryFactory.select(setColomns(memberId));
     }
 
-    private Boolean setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId) {
-        return jpaQuery.leftJoin(wishlistProduct)
+    private void setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId) {
+        jpaQuery.leftJoin(wishlistProduct)
             .on(wishlistProduct.board.id.eq(board.id),
                 wishlistProduct.memberId.eq(memberId),
                 wishlistProduct.isDeleted.eq(false))
             .leftJoin(wishlistStore)
             .on(wishlistStore.store.id.eq(store.id),
                 wishlistStore.member.id.eq(memberId),
-                wishlistStore.isDeleted.eq(false)) != null; // if문 안에 함수를 넣기 위해 사용
+                wishlistStore.isDeleted.eq(false));
     }
 
     public List<Tuple> fetchStoreAndBoardAndImageTuple(Long memberId, Long boardId) {
@@ -240,8 +246,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .join(board.store, store)
             .leftJoin(productImg).on(board.id.eq(productImg.board.id));
 
-        if (memberId != null && memberId > 0 && setWishlistJoin(jpaQuery, memberId))
-            ;
+        if (memberId != null && memberId > 0) {
+            setWishlistJoin(jpaQuery, memberId);
+        }
 
         return jpaQuery.fetch();
     }
@@ -275,7 +282,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .storeId(tupleReleteBoard.get(store.id))
             .storeName(tupleReleteBoard.get(store.name))
             .profile(tupleReleteBoard.get(store.profile))
-            .isWished(tupleReleteBoard.get(wishlistStore.id) != null ? true : false)
+            .isWished(tupleReleteBoard.get(wishlistStore.id) != null)
             .build();
 
         BoardDetailSelectDto boardDto = BoardDetailSelectDto.builder()
@@ -300,7 +307,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .images(boardImgDtos.stream()
                 .toList())
             .tags(duplicatedTags)
-            .isWished(tupleReleteBoard.get(wishlistProduct.id) != null ? true : false)
+            .isWished(tupleReleteBoard.get(wishlistProduct.id) != null)
             .isBundled(isBundled)
             .build();
 
@@ -406,32 +413,20 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return SortType.POPULAR.equals(sort) ? ranking.popularScore : ranking.recommendScore;
     }
 
-    private double getCursorScore(SortType sort, Ranking cursorRanking) {
-        if (Objects.isNull(sort) || sort.equals(SortType.POPULAR)) {
-            return cursorRanking.getPopularScore();
-        }
-
-        return cursorRanking.getRecommendScore();
-    }
-
     private boolean isHasNext(List<Board> boards) {
         return boards.size() >= BOARD_PAGE_SIZE + 1;
     }
 
-    private static OrderSpecifier<?> sortTypeFolder(
-        String sort,
-        QBoard board,
-        QWishlistProduct products
-    ) {
+    private OrderSpecifier<?> sortTypeFolder(String sort) {
         OrderSpecifier<?> orderSpecifier;
         if (sort == null) {
-            orderSpecifier = products.createdAt.desc();
+            orderSpecifier = wishlistProduct.createdAt.desc();
             return orderSpecifier;
         }
         orderSpecifier = switch (SortType.fromString(sort)) {
-            case RECENT -> products.createdAt.desc();
-            case LOW_PRICE -> board.price.asc();
-            case POPULAR -> board.wishCnt.desc();
+            case RECENT -> wishlistProduct.createdAt.desc();
+            case LOW_PRICE -> BoardRepositoryImpl.board.price.asc();
+            case POPULAR -> BoardRepositoryImpl.board.wishCnt.desc();
             default -> throw new BbangleException("Invalid SortType");
         };
         return orderSpecifier;
