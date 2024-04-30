@@ -18,10 +18,10 @@ public class PopularBoardQueryProvider implements BoardQueryProvider {
 
     private final JPAQueryFactory queryFactory;
     private final CursorInfo cursorInfo;
-    private final QBoard board = QBoard.board;
-    private final QProduct product = QProduct.product;
-    private final QStore store = QStore.store;
-    private final QRanking ranking = QRanking.ranking;
+    private static final QBoard board = QBoard.board;
+    private static final QProduct product = QProduct.product;
+    private static final QStore store = QStore.store;
+    private static final QRanking ranking = QRanking.ranking;
 
     @Override
     public List<Board> findBoards(BooleanBuilder filter) {

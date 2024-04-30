@@ -22,10 +22,10 @@ public class DefaultBoardQueryProvider implements BoardQueryProvider {
     private final JPAQueryFactory queryFactory;
     private final SortType sortType;
     private final CursorInfo cursorInfo;
-    private final QBoard board = QBoard.board;
-    private final QProduct product = QProduct.product;
-    private final QStore store = QStore.store;
-    private final QRanking ranking = QRanking.ranking;
+    private static final QBoard board = QBoard.board;
+    private static final QProduct product = QProduct.product;
+    private static final QStore store = QStore.store;
+    private static final QRanking ranking = QRanking.ranking;
 
     @Override
     public List<Board> findBoards(BooleanBuilder filter) {
@@ -67,14 +67,12 @@ public class DefaultBoardQueryProvider implements BoardQueryProvider {
 
     private BooleanBuilder getCursorBuilder() {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
-        if (cursorInfo == null || sortType == null) {
+        if (cursorInfo == null || cursorInfo.isEmpty() || sortType == null) {
             return cursorBuilder;
         }
 
-        cursorBuilder.and(ranking.recommendScore.lt(cursorInfo.targetScore()))
-            .or(ranking.recommendScore.eq(cursorInfo.targetScore())
-                .and(board.id.lt(cursorInfo.targetId())));
-
+        cursorBuilder.and(ranking.recommendScore.loe(cursorInfo.targetScore()))
+            .and(board.id.lt(cursorInfo.targetId()));
         return cursorBuilder;
     }
 }

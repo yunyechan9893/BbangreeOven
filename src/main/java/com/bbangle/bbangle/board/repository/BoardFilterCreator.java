@@ -46,12 +46,6 @@ public class BoardFilterCreator {
     }
 
     private void addCategoryCondition() {
-        builder.and(
-            filterRequest.category() == null ?
-                null :
-                product.category.eq(filterRequest.category())
-        );
-
         if (filterRequest.category() != null) {
             builder.and(product.category.eq(filterRequest.category()));
         }

@@ -35,6 +35,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -320,16 +321,22 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         List<BoardResponseDto> content,
         boolean hasNext
     ) {
-        Ranking cursorRanking = queryFactory.select(ranking)
+        if (content.isEmpty()) {
+            return BoardCustomPage.emptyPage();
+        }
+
+        Long boardCursor = content.get(content.size() - 1).getBoardId();
+        Double cursorScore = queryFactory
+            .select(getScoreColumnBySortType(sort))
             .from(ranking)
-            .where(ranking.board.id.eq(content.get(content.size() - 1)
-                .getBoardId()))
-            .fetchOne();
-        double cursorScore = getCursorScore(sort, cursorRanking);
-        Long nextCursor = cursorRanking.getBoard()
-            .getId();
+            .join(board)
+            .on(ranking.board.eq(board))
+            .fetchJoin()
+            .where(ranking.board.id.eq(boardCursor))
+            .fetchFirst();
 
         if (Objects.isNull(cursorInfo.targetId())) {
+            // FIXME: count 쿼리 분리 필요
             Long boardCnt = queryFactory
                 .select(board.countDistinct())
                 .from(store)
@@ -358,10 +365,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 storeCnt = 0L;
             }
 
-            return BoardCustomPage.from(content, nextCursor, cursorScore, hasNext, boardCnt,
+            return BoardCustomPage.from(content, boardCursor, cursorScore, hasNext, boardCnt,
                 storeCnt);
         }
-        return BoardCustomPage.from(content, nextCursor, cursorScore, hasNext);
+        return BoardCustomPage.from(content, boardCursor, cursorScore, hasNext);
+    }
+
+    private NumberPath<Double> getScoreColumnBySortType(SortType sort) {
+        return SortType.POPULAR.equals(sort) ? ranking.popularScore : ranking.recommendScore;
     }
 
     private double getCursorScore(SortType sort, Ranking cursorRanking) {
@@ -386,19 +397,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             orderSpecifier = products.createdAt.desc();
             return orderSpecifier;
         }
-        switch (SortType.fromString(sort)) {
-            case RECENT:
-                orderSpecifier = products.createdAt.desc();
-                break;
-            case LOW_PRICE:
-                orderSpecifier = board.price.asc();
-                break;
-            case POPULAR:
-                orderSpecifier = board.wishCnt.desc();
-                break;
-            default:
-                throw new BbangleException("Invalid SortType");
-        }
+        orderSpecifier = switch (SortType.fromString(sort)) {
+            case RECENT -> products.createdAt.desc();
+            case LOW_PRICE -> board.price.asc();
+            case POPULAR -> board.wishCnt.desc();
+            default -> throw new BbangleException("Invalid SortType");
+        };
         return orderSpecifier;
     }
 
@@ -416,49 +420,22 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private List<String> extractTags(List<Product> products) {
-        List<String> tags = new ArrayList<>();
-        boolean glutenFreeTag = false;
-        boolean highProteinTag = false;
-        boolean sugarFreeTag = false;
-        boolean veganTag = false;
-        boolean ketogenicTag = false;
         if (products == null) {
             return Collections.emptyList();
         }
 
+        HashSet<String> tags = new HashSet<>();
         for (Product dto : products) {
-            if (dto.isGlutenFreeTag()) {
-                glutenFreeTag = true;
-            }
-            if (dto.isHighProteinTag()) {
-                highProteinTag = true;
-            }
-            if (dto.isSugarFreeTag()) {
-                sugarFreeTag = true;
-            }
-            if (dto.isVeganTag()) {
-                veganTag = true;
-            }
-            if (dto.isKetogenicTag()) {
-                ketogenicTag = true;
-            }
+            addTagIfTrue(tags, dto.isGlutenFreeTag(), TagEnum.GLUTEN_FREE.label());
+            addTagIfTrue(tags, dto.isHighProteinTag(), TagEnum.HIGH_PROTEIN.label());
+            addTagIfTrue(tags, dto.isSugarFreeTag(), TagEnum.SUGAR_FREE.label());
+            addTagIfTrue(tags, dto.isVeganTag(), TagEnum.VEGAN.label());
+            addTagIfTrue(tags, dto.isKetogenicTag(), TagEnum.KETOGENIC.label());
         }
-        if (glutenFreeTag) {
-            tags.add(TagEnum.GLUTEN_FREE.label());
-        }
-        if (highProteinTag) {
-            tags.add(TagEnum.HIGH_PROTEIN.label());
-        }
-        if (sugarFreeTag) {
-            tags.add(TagEnum.SUGAR_FREE.label());
-        }
-        if (veganTag) {
-            tags.add(TagEnum.VEGAN.label());
-        }
-        if (ketogenicTag) {
-            tags.add(TagEnum.KETOGENIC.label());
-        }
-        return tags;
+        return new ArrayList<>(tags);
     }
 
+    private void addTagIfTrue(Set<String> tags, boolean condition, String tag) {
+        if (condition) tags.add(tag);
+    }
 }
