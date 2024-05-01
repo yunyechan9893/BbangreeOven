@@ -8,11 +8,14 @@ import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
+import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
+import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 
+import java.util.Optional;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -160,6 +163,115 @@ class WishListFolderServiceTest {
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.OVER_MAX_FOLDER.getMessage());
 
+        }
+
+    }
+
+    @Nested
+    @DisplayName("위시리스트 폴더 이름 업데이트 서비스 로직 테스트")
+    class UpdateWishListFolder {
+
+        String beforeTitle;
+        Long beforeFolderId;
+
+        @BeforeEach
+        void setup() {
+            beforeTitle = faker.book()
+                .title();
+            if (beforeTitle.length() > 12) {
+                beforeTitle = beforeTitle.substring(0, 12);
+            }
+            Long memberId = member.getId();
+            FolderRequestDto folderUpdateDto = new FolderRequestDto(beforeTitle);
+            beforeFolderId = wishListFolderService.create(memberId, folderUpdateDto);
+        }
+
+        @Test
+        @DisplayName("정상적으로 폴더 이름 변경에 성공한다")
+        public void updateFolderName() throws Exception {
+            //given
+            String newFolderName = faker.name()
+                .name();
+            if (newFolderName.length() > 12) {
+                newFolderName = newFolderName.substring(0, 12);
+            }
+            FolderUpdateDto folderUpdateDto = new FolderUpdateDto(newFolderName);
+
+            //when
+            wishListFolderService.update(member.getId(), beforeFolderId, folderUpdateDto);
+
+            //then
+            WishlistFolder changedFolder = wishListFolderRepository.findById(beforeFolderId)
+                .get();
+            assertThat(changedFolder.getFolderName()).isEqualTo(newFolderName);
+        }
+
+        @ParameterizedTest
+        @DisplayName("비정상적인 제목의 폴더로 변경할 수 없다")
+        @ValueSource(strings = {" ", "aaaaaaaaaaaaaaaaaaaaa"})
+        @NullAndEmptySource
+        public void cannotUpdateFolderNameWithInvalidTitle(String invalidTitle) throws Exception {
+            //given, when, then
+            assertThatThrownBy(() -> new FolderUpdateDto(invalidTitle))
+                .isInstanceOf(BbangleException.class)
+                .hasMessage(BbangleErrorCode.INVALID_FOLDER_TITLE.getMessage());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 memberId로 조회할 수 없다")
+        public void cannotFindFolderWithAnonymousUser() throws Exception {
+            //given
+            String newFolderName = faker.name()
+                .name();
+            if (newFolderName.length() > 12) {
+                newFolderName = newFolderName.substring(0, 12);
+            }
+            FolderUpdateDto folderUpdateDto = new FolderUpdateDto(newFolderName);
+
+            //when, then
+            assertThatThrownBy(
+                () -> wishListFolderService.update(-1L, beforeFolderId, folderUpdateDto))
+                .isInstanceOf(BbangleException.class)
+                .hasMessage(BbangleErrorCode.NOTFOUND_MEMBER.getMessage());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 folderId로 조회할 수 없다")
+        public void cannotFindFolderWithInvalidFolderId() throws Exception {
+            //given
+            String newFolderName = faker.name()
+                .name();
+            if (newFolderName.length() > 12) {
+                newFolderName = newFolderName.substring(0, 12);
+            }
+            FolderUpdateDto folderUpdateDto = new FolderUpdateDto(newFolderName);
+
+            //when, then
+            assertThatThrownBy(
+                () -> wishListFolderService.update(member.getId(), -1L, folderUpdateDto))
+                .isInstanceOf(BbangleException.class)
+                .hasMessage(BbangleErrorCode.FOLDER_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("기본 폴더 이름은 변경할 수 없다.")
+        public void cannotChangeDefaultFolder() throws Exception {
+            //given
+            String newFolderName = faker.name()
+                .name();
+            if (newFolderName.length() > 12) {
+                newFolderName = newFolderName.substring(0, 12);
+            }
+            FolderUpdateDto folderUpdateDto = new FolderUpdateDto(newFolderName);
+
+            //when, then
+            FolderResponseDto folderResponseDto = wishListFolderService.getList(member.getId())
+                .get(0);
+
+            assertThatThrownBy(
+                () -> wishListFolderService.update(member.getId(), folderResponseDto.folderId(), folderUpdateDto))
+                .isInstanceOf(BbangleException.class)
+                .hasMessage(BbangleErrorCode.DEFAULT_FOLDER_NAME_CANNOT_CHNAGE.getMessage());
         }
 
     }
