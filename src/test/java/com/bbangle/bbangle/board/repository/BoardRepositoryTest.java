@@ -13,12 +13,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishList.domain.WishlistFolder;
-import com.bbangle.bbangle.wishList.domain.WishlistProduct;
-import com.bbangle.bbangle.wishList.domain.WishlistStore;
-import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishList.repository.WishListProductRepository;
-import com.bbangle.bbangle.wishList.repository.WishListStoreRepository;
+
+import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
+import com.bbangle.bbangle.wishlist.domain.WishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.WishlistStore;
+import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListProductRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import static org.hamcrest.Matchers.*;
