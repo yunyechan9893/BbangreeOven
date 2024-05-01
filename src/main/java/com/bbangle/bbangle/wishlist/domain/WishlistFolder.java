@@ -54,6 +54,7 @@ public class WishlistFolder extends BaseEntity {
     }
 
     public void updateTitle(String title) {
+        WishListFolderValidator.validateTitle(folderName);
         this.folderName = title;
     }
 
