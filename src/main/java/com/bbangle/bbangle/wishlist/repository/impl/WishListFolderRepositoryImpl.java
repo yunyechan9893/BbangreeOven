@@ -25,14 +25,16 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepository {
 
+    private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
+    private static final QWishlistFolder folder = wishlistFolder;
+    private static final QWishlistProduct wishedBoard = QWishlistProduct.wishlistProduct;
+    private static final QBoard board = QBoard.board;
+
     private final JPAQueryFactory queryFactory;
+
 
     @Override
     public List<FolderResponseDto> findMemberFolderList(Member member) {
-        QWishlistFolder folder = wishlistFolder;
-        QWishlistProduct wishedBoard = QWishlistProduct.wishlistProduct;
-        QBoard board = QBoard.board;
-
         List<Tuple> fetch = queryFactory.select(
                 folder.id,
                 folder.folderName,
@@ -77,7 +79,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
             .collect(Collectors.toList());
 
         FolderResponseDto defaultFolder = response.stream()
-            .filter(folderResponse -> "기본 폴더".equals(folderResponse.title()))
+            .filter(folderResponse -> DEFAULT_FOLDER_NAME.equals(folderResponse.title()))
             .findFirst()
             .orElse(null);
 
