@@ -2,6 +2,7 @@ package com.bbangle.bbangle.wishlist.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
@@ -20,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WishListFolderService {
 
-    private static final String OVER_MAX_FOLDER = "10개를 초과한 폴더를 생성하실 수 없습니다.";
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListFolderRepositoryImpl wishListFolderRepositoryImpl;
@@ -29,10 +29,7 @@ public class WishListFolderService {
     public void create(Long memberId, FolderRequestDto requestDto) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
-        int folderCount = wishListFolderRepository.getFolderCount(member);
-        if (folderCount >= 10) {
-            throw new BbangleException(OVER_MAX_FOLDER);
-        }
+        validateMakingFolder(requestDto, member);
 
         WishlistFolder folder = WishlistFolder.builder()
             .member(member)
@@ -78,6 +75,16 @@ public class WishListFolderService {
         List<WishlistFolder> wishListFolders = wishListFolderRepositoryImpl.findByMemberId(memberId);
         for (WishlistFolder wishListFolder : wishListFolders) {
             wishListFolder.delete();
+        }
+    }
+
+    private void validateMakingFolder(FolderRequestDto requestDto, Member member) {
+        int folderCount = wishListFolderRepository.getFolderCount(member);
+        if(wishListFolderRepository.existsByFolderNameAndMember(requestDto.title(), member)){
+            throw new BbangleException(BbangleErrorCode.FOLDER_NAME_ALREADY_EXIST);
+        }
+        if (folderCount >= 10) {
+            throw new BbangleException(BbangleErrorCode.OVER_MAX_FOLDER);
         }
     }
 }
