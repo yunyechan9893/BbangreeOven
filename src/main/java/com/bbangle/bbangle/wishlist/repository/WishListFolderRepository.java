@@ -17,4 +17,6 @@ public interface WishListFolderRepository extends JpaRepository<WishlistFolder, 
 
     Optional<WishlistFolder> findByMemberAndId(Member member, Long folderId);
 
+    Optional<WishlistFolder> findByMemberAndFolderName(Member member, String FolderName);
+
 }
