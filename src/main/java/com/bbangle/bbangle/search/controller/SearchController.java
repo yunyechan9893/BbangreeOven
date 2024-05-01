@@ -92,11 +92,9 @@ public class SearchController {
     }
 
     @GetMapping(GET_BEST_KEYWORD_SEARCH_API)
-    public ResponseEntity<Map<String, List<String>>> getBestKeyword() {
-        return ResponseEntity.ok()
-            .body(
-                Map.of("content", searchService.getBestKeyword())
-            );
+    public CommonResult getBestKeyword() {
+        return responseService.getSingleResult(
+                Map.of("content", searchService.getBestKeyword()));
     }
 
     @GetMapping(GET_AUTO_KEYWORD_SEARCH_API)
