@@ -21,12 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WishListFolderService {
 
+    private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
+
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
     private final WishListFolderRepositoryImpl wishListFolderRepositoryImpl;
 
     @Transactional
-    public void create(Long memberId, FolderRequestDto requestDto) {
+    public Long create(Long memberId, FolderRequestDto requestDto) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
         validateMakingFolder(requestDto, member);
@@ -37,7 +39,7 @@ public class WishListFolderService {
             .isDeleted(false)
             .build();
 
-        wishListFolderRepository.save(folder);
+        return wishListFolderRepository.save(folder).getId();
     }
 
     @Transactional(readOnly = true)
@@ -65,7 +67,9 @@ public class WishListFolderService {
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
         WishlistFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member, folderId)
-            .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
+
+        validateWishListFolder(wishlistFolder);
 
         wishlistFolder.updateTitle(updateDto.title());
     }
@@ -75,6 +79,12 @@ public class WishListFolderService {
         List<WishlistFolder> wishListFolders = wishListFolderRepositoryImpl.findByMemberId(memberId);
         for (WishlistFolder wishListFolder : wishListFolders) {
             wishListFolder.delete();
+        }
+    }
+
+    private void validateWishListFolder(WishlistFolder wishlistFolder) {
+        if (wishlistFolder.getFolderName().equals(DEFAULT_FOLDER_NAME)){
+            throw new BbangleException(BbangleErrorCode.DEFAULT_FOLDER_NAME_CANNOT_CHNAGE);
         }
     }
 
