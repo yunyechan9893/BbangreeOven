@@ -7,6 +7,7 @@ import com.bbangle.bbangle.wishlist.dto.WishProductRequestDto;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,12 +25,13 @@ public class WishListBoardController {
 
     @PostMapping
     public CommonResult wish(
+        @AuthenticationPrincipal
+        Long memberId,
         @PathVariable
         Long boardId,
         @RequestBody @Valid
         WishProductRequestDto wishRequest
     ) {
-        Long memberId = SecurityUtils.getMemberId();
         wishListBoardService.wish(memberId, boardId, wishRequest);
 
         return responseService.getSuccessResult();
@@ -37,10 +39,11 @@ public class WishListBoardController {
 
     @PutMapping
     public CommonResult cancel(
+        @AuthenticationPrincipal
+        Long memberId,
         @PathVariable
         Long boardId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
         wishListBoardService.cancel(memberId, boardId);
 
         return responseService.getSuccessResult();
