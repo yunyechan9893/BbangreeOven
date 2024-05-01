@@ -13,13 +13,12 @@ import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.wishlist.domain.WishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.WishlistBoard;
 import com.bbangle.bbangle.wishlist.repository.WishListProductRepository;
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.domain.WishlistStore;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,8 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -347,7 +344,7 @@ public class StoreRepositoryImplTest {
                         member(member).
                         build());
         wishListProductRepository.save(
-                WishlistProduct.builder().board(board)
+                WishlistBoard.builder().board(board)
                 .memberId(member.getId())
                 .wishlistFolder(wishlistFolder)
                 .build());

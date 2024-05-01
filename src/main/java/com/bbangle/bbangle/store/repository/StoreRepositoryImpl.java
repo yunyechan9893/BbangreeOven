@@ -12,7 +12,7 @@ import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.QWishlistBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
@@ -39,7 +39,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
     private final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
-    private final QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+    private final QWishlistBoard wishlistProduct = QWishlistBoard.wishlistBoard;
 
     private final JPAQueryFactory queryFactory;
 

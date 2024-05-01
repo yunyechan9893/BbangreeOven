@@ -11,7 +11,7 @@ import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.QWishlistBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishlistFolder;
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
@@ -37,8 +37,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
-import static com.bbangle.bbangle.wishlist.domain.QWishlistProduct.wishlistProduct;
-
 @Repository
 @Slf4j
 @RequiredArgsConstructor
@@ -53,8 +51,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
+    private final QWishlistBoard wishlistBoard = QWishlistBoard.wishlistBoard;
     private final QStore store = QStore.store;
-    private final QWishlistProduct products = QWishlistProduct.wishlistProduct;
+    private final QWishlistBoard products = QWishlistBoard.wishlistBoard;
     private final QWishlistFolder folder = QWishlistFolder.wishlistFolder;
     private final QProductImg productImg = QProductImg.productImg;
     private final QBoardDetail boardDetail = QBoardDetail.boardDetail;
@@ -214,7 +213,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private Boolean setWishlistBoard(List<Expression<?>> columns){
-        columns.add(wishlistProduct.id);
+        columns.add(wishlistBoard.id);
         return true;
     }
 
@@ -254,10 +253,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private Boolean setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId){
-        return jpaQuery.leftJoin(wishlistProduct)
-                .on(wishlistProduct.board.id.eq(board.id),
-                        wishlistProduct.memberId.eq(memberId),
-                        wishlistProduct.isDeleted.eq(false))
+        return jpaQuery.leftJoin(wishlistBoard)
+                .on(wishlistBoard.board.id.eq(board.id),
+                    wishlistBoard.memberId.eq(memberId),
+                    wishlistBoard.isDeleted.eq(false))
                 .leftJoin(wishlistStore)
                 .on(wishlistStore.store.id.eq(store.id),
                         wishlistStore.member.id.eq(memberId),
@@ -329,7 +328,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .images(boardImgDtos.stream()
                         .toList())
                 .tags(duplicatedTags)
-                .isWished(tupleReleteBoard.get(wishlistProduct.id) != null ? true : false)
+                .isWished(tupleReleteBoard.get(wishlistBoard.id) != null ? true : false)
                 .isBundled(isBundled)
                 .build();
 
@@ -389,11 +388,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private List<Long> getLikedContentsIds(List<Long> responseList, Long memberId) {
         return queryFactory.select(board.id)
             .from(board)
-            .leftJoin(wishlistProduct)
-            .on(board.eq(wishlistProduct.board))
+            .leftJoin(wishlistBoard)
+            .on(board.eq(wishlistBoard.board))
             .where(board.id.in(responseList)
-                .and(wishlistProduct.memberId.eq(memberId))
-                .and(wishlistProduct.isDeleted.eq(false)))
+                .and(wishlistBoard.memberId.eq(memberId))
+                .and(wishlistBoard.isDeleted.eq(false)))
             .fetch();
     }
 
@@ -515,16 +514,16 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static OrderSpecifier<?> sortTypeFolder(
         String sort,
         QBoard board,
-        QWishlistProduct products
+        QWishlistBoard wishlistBoard
     ) {
         OrderSpecifier<?> orderSpecifier;
         if (sort == null) {
-            orderSpecifier = products.createdAt.desc();
+            orderSpecifier = wishlistBoard.createdAt.desc();
             return orderSpecifier;
         }
         switch (SortType.fromString(sort)) {
             case RECENT:
-                orderSpecifier = products.createdAt.desc();
+                orderSpecifier = wishlistBoard.createdAt.desc();
                 break;
             case LOW_PRICE:
                 orderSpecifier = board.price.asc();

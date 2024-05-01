@@ -1,19 +1,20 @@
 package com.bbangle.bbangle.wishlist.repository;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
-import com.bbangle.bbangle.wishlist.domain.WishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.WishlistBoard;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface WishListProductRepository extends JpaRepository<WishlistProduct, Long> {
+public interface WishListProductRepository extends JpaRepository<WishlistBoard, Long> {
 
     @Query(
-        value = "select wish from WishlistProduct wish where wish.board.id = :boardId and wish.wishlistFolder = :folder"
+        value = "select wish from WishlistBoard wish where wish.board.id = :boardId and wish.wishlistFolder = :folder"
     )
-    Optional<WishlistProduct> findByBoardAndFolderId(
+    Optional<WishlistBoard> findByBoardAndFolderId(
         @Param("boardId")
         Long boardId,
         @Param("folder")
@@ -21,11 +22,13 @@ public interface WishListProductRepository extends JpaRepository<WishlistProduct
     );
 
     @Query(
-        value = "select wish from WishlistProduct wish where wish.memberId = :memberId and wish.isDeleted = false"
+        value = "select wish from WishlistBoard wish where wish.memberId = :memberId and wish.isDeleted = false"
     )
-    Optional<List<WishlistProduct>> findByMemberId(@Param("memberId") Long memberId);
+    Optional<List<WishlistBoard>> findByMemberId(@Param("memberId") Long memberId);
 
-    @Query(value = "select wish from WishlistProduct wish where wish.board.id = :boardId and wish.memberId = :memberId")
-    Optional<WishlistProduct> findByBoardId(Long boardId, Long memberId);
+    @Query(value = "select wish from WishlistBoard wish where wish.board.id = :boardId and wish.memberId = :memberId")
+    Optional<WishlistBoard> findByBoardId(Long boardId, Long memberId);
+
+    boolean existsByBoardAndMemberId(Board board, Long memberId);
 
 }

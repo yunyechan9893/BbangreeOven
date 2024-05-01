@@ -16,7 +16,7 @@ import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.QWishlistBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
@@ -50,7 +50,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
     private static final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
-    private static final QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
+    private static final QWishlistBoard wishlistProduct = QWishlistBoard.wishlistBoard;
     private static final QSearch search = QSearch.search;
     private final int ONEDAY = 24;
     private final int DEFAULT_ITEM_SIZE = 10;

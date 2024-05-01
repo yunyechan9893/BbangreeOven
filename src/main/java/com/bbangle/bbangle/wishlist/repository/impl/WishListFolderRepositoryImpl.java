@@ -4,8 +4,8 @@ package com.bbangle.bbangle.wishlist.repository.impl;
 import static com.bbangle.bbangle.wishlist.domain.QWishlistFolder.wishlistFolder;
 
 import com.bbangle.bbangle.board.domain.QBoard;
+import com.bbangle.bbangle.wishlist.domain.QWishlistBoard;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderQueryDSLRepository;
-import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
 import com.bbangle.bbangle.wishlist.domain.QWishlistFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
@@ -27,7 +27,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
     private static final QWishlistFolder folder = wishlistFolder;
-    private static final QWishlistProduct wishedBoard = QWishlistProduct.wishlistProduct;
+    private static final QWishlistBoard wishedBoard = QWishlistBoard.wishlistBoard;
     private static final QBoard board = QBoard.board;
 
     private final JPAQueryFactory queryFactory;

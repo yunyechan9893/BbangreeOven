@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
-import com.bbangle.bbangle.wishlist.domain.WishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.WishlistBoard;
 import com.bbangle.bbangle.wishlist.domain.WishlistStore;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListProductRepository;
@@ -223,7 +223,7 @@ public class BoardRepositoryTest {
                         .isDeleted(false)
                         .build());
 
-        wishListProductRepository.save(WishlistProduct.builder()
+        wishListProductRepository.save(WishlistBoard.builder()
                 .memberId(member.getId())
                 .wishlistFolder(wishlistFolder)
                 .board(board)
