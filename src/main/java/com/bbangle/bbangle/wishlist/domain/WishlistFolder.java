@@ -2,6 +2,7 @@ package com.bbangle.bbangle.wishlist.domain;
 
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.wishlist.validator.WishListFolderValidator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,8 +20,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "Wishlist_folder")
 @Entity
 @Getter
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WishlistFolder extends BaseEntity {
 
@@ -38,6 +36,22 @@ public class WishlistFolder extends BaseEntity {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
+
+    @Builder
+    private WishlistFolder(
+        Long id,
+        Member member,
+        String folderName,
+        boolean isDeleted
+    ){
+        WishListFolderValidator.validateMember(member);
+        WishListFolderValidator.validateTitle(folderName);
+
+        this.id = id;
+        this.member = member;
+        this.folderName = folderName;
+        this.isDeleted = isDeleted;
+    }
 
     public void updateTitle(String title) {
         this.folderName = title;
