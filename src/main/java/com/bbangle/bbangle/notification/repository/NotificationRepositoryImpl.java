@@ -2,7 +2,6 @@ package com.bbangle.bbangle.notification.repository;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTIFICATION_NOT_FOUND;
 
-import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.notification.domain.QNotice;
@@ -23,6 +22,7 @@ public class NotificationRepositoryImpl implements NotificationQueryDSLRepositor
     private static final Long PAGE_SIZE = 20L;
     private final JPAQueryFactory queryFactory;
     private final QNotice notice = QNotice.notice;
+
     @Override
     public NotificationCustomPage<List<NotificationResponse>> findNextCursorPage(Long cursorId) {
         BooleanBuilder cursorCondition = getCursorCondition(cursorId);
@@ -36,10 +36,11 @@ public class NotificationRepositoryImpl implements NotificationQueryDSLRepositor
             .collect(Collectors.toList());
 
         boolean hasNext = checkingHasNext(responseDtos);
-        Long requestCursor = responseDtos.get(responseDtos.size()-1).id();
+        int size = responseDtos.size();
+        Long requestCursor = size != 0 ? responseDtos.get(size -1).id(): 0L;
 
         if (hasNext) {
-            responseDtos.remove(responseDtos.get(responseDtos.size()-1));
+            responseDtos.remove(responseDtos.get(size -1));
         }
 
         return NotificationCustomPage.from(responseDtos, requestCursor, hasNext);
@@ -70,6 +71,6 @@ public class NotificationRepositoryImpl implements NotificationQueryDSLRepositor
             throw new BbangleException(NOTIFICATION_NOT_FOUND);
         }
 
-        return cursorId+1;
+        return cursorId;
     }
 }
