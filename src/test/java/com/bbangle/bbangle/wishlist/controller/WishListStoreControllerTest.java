@@ -2,14 +2,27 @@ package com.bbangle.bbangle.wishlist.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.mock.WithCustomMockUser;
+import com.bbangle.bbangle.notification.domain.Notice;
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
+import com.bbangle.bbangle.wishlist.domain.WishlistStore;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import com.bbangle.bbangle.wishlist.repository.impl.WishListStoreRepositoryImpl;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,8 +36,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @SpringBootTest
 @AutoConfigureMockMvc
 public class WishListStoreControllerTest {
-    //BeforeEach로 데이터 넣기
-
     @Autowired
     MockMvc mockMvc;
 
@@ -32,7 +43,10 @@ public class WishListStoreControllerTest {
     WishListStoreService wishListStoreService;
 
     @Autowired
-    WishListStoreRepositoryImpl wishListStoreRepository;
+    WishListStoreRepository wishListStoreRepository;
+
+    @Autowired
+    WishListStoreRepositoryImpl wishListStoreRepositoryImpl;
 
     @MockBean
     BoardWishListConfig boardWishListConfig;
@@ -40,34 +54,76 @@ public class WishListStoreControllerTest {
     @Autowired
     ResponseService responseService;
 
+    @Autowired
+    MemberRepository memberRepository;
+
+    @Autowired
+    StoreRepository storeRepository;
+
     @BeforeEach
     public void setUpMockMvc() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(new WishListStoreController(wishListStoreService, responseService)).build();
     }
 
-    private final String BEARER = "Bearer";
-    private final String AUTHORIZATION = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiYmFuZ2xlYmJhbmdsZSIsImlhdCI6MTcxMDU5NDgzMSwiZXhwIjoxNzEwNjA1NjMxLCJzdWIiOiJkc3lvb24xOTk0QGdtYWlsLmNvbSIsImlkIjoxMn0.EdRBBy5Orzlv_oZm4hGRZQZZ79_H-1JJHjzXZxlM_YU";
+    @BeforeEach
+    public void createData(){
+        memberRepository.deleteAll();
+        storeRepository.deleteAll();
+        wishListStoreRepository.deleteAll();
+        Member member = Member.builder()
+            .email("test@email.com")
+            .name("testUser")
+            .provider(OauthServerType.KAKAO)
+            .isDeleted(false)
+            .build();
+        memberRepository.save(member);
+        createWishListStore(member);
+
+    }
+
+    private void createWishListStore(Member member) {
+        for(int i = 1; i <= 25; i++){
+            Store store= Store.builder()
+                .name("test"+i)
+                .introduce("introduce"+i)
+                .isDeleted(false)
+                .build();
+            storeRepository.save(store);
+            if(i != 25){
+                WishlistStore wishlistStore = WishlistStore.builder()
+                    .member(member)
+                    .store(store)
+                    .build();
+                wishListStoreRepository.save(wishlistStore);
+            }
+        }
+    }
 
     @DisplayName("위시리스트 스토어 전체 조회를 시행한다")
     @Test
+    @WithCustomMockUser
     public void getWishListStores() throws Exception{
-
-        mockMvc.perform(get("/api/v1/likes/stores")
-                .header("Authorization", String.format("%s %s",BEARER, AUTHORIZATION))
-                .param("page", "0")
-                .param("size", "1")
-                .param("sort", "createdAt,DESC"))
-                .andExpect(jsonPath("$.contents[0].wished").value(true))
-                .andExpect(jsonPath("$.contents[0].profile").value("https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e"))
+        mockMvc.perform(get("/api/v1/likes/stores"))
+                .andExpect(jsonPath("$.result.hasNext").value(true))
+                .andExpect(jsonPath("$.result.nextCursor").value(3))
+                .andExpect(status().isOk())
                 .andDo(print());
-
     }
 
     @DisplayName("위시리스트 삭제를 시행한다")
     @Test
+    @WithCustomMockUser
     public void deleteWishListStore() throws Exception{
-        mockMvc.perform(patch("/api/v1/likes/store/1")
-            .header("Authorization", String.format("%s %s",BEARER, AUTHORIZATION)))
+        mockMvc.perform(patch("/api/v1/likes/store/1"))
+            .andExpect(status().isOk())
+            .andDo(print());
+    }
+
+    @DisplayName("위시리스트 추가를 시행한다")
+    @Test
+    @WithCustomMockUser
+    public void addWishListStore() throws Exception{
+        mockMvc.perform(post("/api/v1/likes/store/25"))
             .andExpect(status().isOk())
             .andDo(print());
     }
