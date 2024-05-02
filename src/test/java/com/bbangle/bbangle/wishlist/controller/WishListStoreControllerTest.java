@@ -105,7 +105,7 @@ public class WishListStoreControllerTest {
     public void getWishListStores() throws Exception{
         mockMvc.perform(get("/api/v1/likes/stores"))
                 .andExpect(jsonPath("$.result.hasNext").value(true))
-                .andExpect(jsonPath("$.result.nextCursor").value(3))
+                .andExpect(jsonPath("$.result.nextCursor").value(4))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
