@@ -29,6 +29,4 @@ public interface WishListBoardRepository extends JpaRepository<WishListBoard, Lo
     @Query(value = "select wish from WishListBoard wish where wish.board.id = :boardId and wish.memberId = :memberId")
     Optional<WishListBoard> findByBoardId(Long boardId, Long memberId);
 
-    boolean existsByBoardAndMemberId(Board board, Long memberId);
-
 }
