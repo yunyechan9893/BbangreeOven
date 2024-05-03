@@ -53,12 +53,11 @@ public class WishListBoardService {
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        if (wishlistBoardRepository.existsByBoardAndMemberId(board, memberId)) {
-            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
-        }
+        validateIsWishAvailable(memberId, board);
 
         makeNewWish(board, wishlistFolder, member);
     }
+
 
     @Transactional
     public void cancel(Long memberId, Long boardId) {
@@ -86,6 +85,13 @@ public class WishListBoardService {
             for (WishListBoard wishlistBoard : wishlistProducts.get()) {
                 wishlistBoard.delete();
             }
+        }
+    }
+    private void validateIsWishAvailable(Long memberId, Board board) {
+        Optional<WishListBoard> wishListBoard = wishlistBoardRepository.findByBoardId(board.getId(), memberId);
+
+        if (wishListBoard.isPresent() && !wishListBoard.get().isDeleted()) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
         }
     }
 
