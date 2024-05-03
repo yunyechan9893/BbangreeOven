@@ -384,4 +384,52 @@ class WishListFolderServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("위시리스트 폴더 삭제 서비스 로직 테스트")
+    class DeleteFolder{
+        WishListFolder wishListFolder;
+        @BeforeEach
+        void setup(){
+            wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
+            wishListFolder = wishListFolderRepository.save(wishListFolder);
+        }
+
+        @Test
+        @DisplayName("정상적으로 위시리스트 폴더를 삭제한다")
+        public void deleteWishListFolder() throws Exception {
+            //given, when
+            wishListFolderService.delete(wishListFolder.getId(), member.getId());
+
+            //then
+            List<FolderResponseDto> wishListFolderList = wishListFolderService.getList(member.getId());
+            assertThat(wishListFolderList).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("이미 삭제된 위시리스트 폴더는 다시 삭제할 수 없다.")
+        public void cannotDeleteAlreadyDeletedFolder() throws Exception {
+            //given, when
+            wishListFolderService.delete(wishListFolder.getId(), member.getId());
+
+            //then
+            assertThatThrownBy(() ->wishListFolderService.delete(wishListFolder.getId(), member.getId()))
+                .isInstanceOf(BbangleException.class)
+                .hasMessage(BbangleErrorCode.FOLDER_ALREADY_DELETED.getMessage());
+        }
+
+        @Test
+        @DisplayName("기볼 폴더는 삭제할 수 없다.")
+        public void cannotDeleteDefaultFolder() throws Exception {
+            //given, when
+            FolderResponseDto DefaultFolder = wishListFolderService.getList(member.getId()).stream().filter(folder -> folder.title().equals(DEFAULT_FOLDER_NAME))
+                .findFirst()
+                .get();
+
+            //then
+            assertThatThrownBy(() ->wishListFolderService.delete(DefaultFolder.folderId(), member.getId()))
+                .isInstanceOf(BbangleException.class)
+                .hasMessage(BbangleErrorCode.CANNOT_DELETE_DEFAULT_FOLDER.getMessage());
+        }
+    }
+
 }
