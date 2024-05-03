@@ -2,20 +2,30 @@ package com.bbangle.bbangle.wishlist.service;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.fixture.BoardFixture;
 import com.bbangle.bbangle.fixture.MemberFixture;
+import com.bbangle.bbangle.fixture.StoreFixture;
+import com.bbangle.bbangle.fixture.WishlistFolderFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
+import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
+import com.bbangle.bbangle.wishlist.dto.WishProductRequestDto;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishlist.repository.WishlistBoardRepository;
 import java.util.List;
 
-import java.util.Optional;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +42,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class WishListFolderServiceTest {
 
     private static final Faker faker = new Faker();
+    private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 
     @Autowired
     MemberRepository memberRepository;
@@ -45,10 +56,26 @@ class WishListFolderServiceTest {
     @Autowired
     WishListFolderService wishListFolderService;
 
+    @Autowired
+    WishListBoardService wishListBoardService;
+
+    @Autowired
+    StoreRepository storeRepository;
+
+    @Autowired
+    BoardRepository boardRepository;
+
+    @Autowired
+    RankingRepository rankingRepository;
+
+    @Autowired
+    WishlistBoardRepository wishlistBoardRepository;
+
     Member member;
 
     @BeforeEach
     public void setup() {
+        wishlistBoardRepository.deleteAll();
         wishListFolderRepository.deleteAll();
         memberRepository.deleteAll();
 
@@ -269,11 +296,92 @@ class WishListFolderServiceTest {
                 .get(0);
 
             assertThatThrownBy(
-                () -> wishListFolderService.update(member.getId(), folderResponseDto.folderId(), folderUpdateDto))
+                () -> wishListFolderService.update(member.getId(), folderResponseDto.folderId(),
+                    folderUpdateDto))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.DEFAULT_FOLDER_NAME_CANNOT_CHNAGE.getMessage());
         }
 
+    }
+
+    @Nested
+    @DisplayName("위시리스트 폴더 조회 서비스 로직 테스트")
+    class FolderList {
+
+        WishlistFolder wishlistFolder;
+        @BeforeEach
+        void setup(){
+            wishlistFolder = WishlistFolderFixture.createWishlistFolder(member);
+            wishlistFolder = wishListFolderRepository.save(wishlistFolder);
+        }
+
+        @Test
+        @DisplayName("위시리스트 폴더를 정상적으로 조회한다.")
+        public void getWishlistFolder() throws Exception {
+            //given, when
+            List<FolderResponseDto> folderResponseDtoList = wishListFolderService.getList(member.getId());
+            List<String> folderTitleList = folderResponseDtoList.stream()
+                .map(FolderResponseDto::title)
+                .toList();
+
+            //then
+            assertThat(folderTitleList).contains(wishlistFolder.getFolderName(), DEFAULT_FOLDER_NAME);
+            assertThat(folderTitleList.get(0)).isEqualTo(DEFAULT_FOLDER_NAME);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 멤버의 아이디로 조회하는 경우 예외가 발생한다")
+        public void getWishlistFolderWithAnonymousMember() throws Exception {
+            //given, when, then
+            assertThatThrownBy(() -> wishListFolderService.getList(member.getId() + 1L))
+                .isInstanceOf(BbangleException.class)
+                .hasMessage(BbangleErrorCode.NOTFOUND_MEMBER.getMessage());
+        }
+
+        @Test
+        @DisplayName("저장된 게시글의 개수만큼 이미지 썸네일을 보여주지만 네 개 이상인 경우 네 개만 보여준다.")
+        public void listContainsThumbnailWithFourMaxCount() throws Exception {
+            //given, when
+            List<FolderResponseDto> folderResponseDtoList = wishListFolderService.getList(member.getId());
+            FolderResponseDto defaultFolder = folderResponseDtoList.stream()
+                .filter(folder -> folder.title()
+                    .equals(DEFAULT_FOLDER_NAME))
+                .findFirst()
+                .get();
+            Store store = StoreFixture.storeGenerator();
+            storeRepository.save(store);
+            for(int i = 0; i < 10; i++){
+                Board board = BoardFixture.randomBoard(store);
+                board = boardRepository.save(board);
+                Ranking ranking = Ranking.builder().board(board).popularScore(0.0).recommendScore(0.0).build();
+                rankingRepository.save(ranking);
+
+                if(i < 3) {
+                    wishListBoardService.wish(member.getId(), board.getId(),
+                        new WishProductRequestDto(defaultFolder.folderId()));
+                }
+                if(i >= 3) {
+                    wishListBoardService.wish(member.getId(), board.getId(),
+                        new WishProductRequestDto(wishlistFolder.getId()));
+                }
+            }
+
+            // then
+            List<FolderResponseDto> afterWishFolderList = wishListFolderService.getList(member.getId());
+            FolderResponseDto afterWishDefaultFolder = afterWishFolderList.stream()
+                .filter(folderResponseDto -> folderResponseDto.title()
+                    .equals(DEFAULT_FOLDER_NAME))
+                .findFirst()
+                .get();
+            FolderResponseDto afterWishCreatedFolder = afterWishFolderList.stream()
+                .filter(folderResponseDto -> !folderResponseDto.title()
+                    .equals(DEFAULT_FOLDER_NAME))
+                .findFirst()
+                .get();
+
+            assertThat(afterWishDefaultFolder.productImages()).hasSize(3);
+            assertThat(afterWishCreatedFolder.productImages()).hasSize(4);
+        }
     }
 
 }
