@@ -13,12 +13,12 @@ import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
-import com.bbangle.bbangle.wishlist.domain.WishlistBoard;
-import com.bbangle.bbangle.wishlist.repository.WishlistBoardRepository;
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishlist.domain.WishlistStore;
-import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishList.domain.WishListBoard;
+import com.bbangle.bbangle.wishList.domain.WishListFolder;
+import com.bbangle.bbangle.wishList.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishList.domain.WishListStore;
+import com.bbangle.bbangle.wishList.repository.WishListStoreRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +56,7 @@ public class StoreRepositoryImplTest {
     private WishListFolderRepository wishListFolderRepository;
 
     @Autowired
-    private WishlistBoardRepository wishlistBoardRepository;
+    private WishListBoardRepository wishlistBoardRepository;
 
     @Autowired
     private WishListStoreRepository wishListStoreRepository;
@@ -338,18 +338,18 @@ public class StoreRepositoryImplTest {
                         .birth("99999")
                         .phone("01023299893")
                         .build());
-        WishlistFolder wishlistFolder = wishListFolderRepository.save(
-                WishlistFolder.builder().
+        WishListFolder wishlistFolder = wishListFolderRepository.save(
+                WishListFolder.builder().
                         folderName("Test").
                         member(member).
                         build());
         wishlistBoardRepository.save(
-                WishlistBoard.builder().board(board)
+                WishListBoard.builder().board(board)
                 .memberId(member.getId())
                 .wishlistFolder(wishlistFolder)
                 .build());
         wishListStoreRepository.save(
-                WishlistStore.builder()
+                WishListStore.builder()
                         .store(store)
                         .member(member)
                         .build());

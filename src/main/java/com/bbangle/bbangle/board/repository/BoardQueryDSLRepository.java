@@ -7,7 +7,7 @@ import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
+import com.bbangle.bbangle.wishList.domain.WishListFolder;
 import java.util.HashMap;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +32,7 @@ public interface BoardQueryDSLRepository {
         String sort,
         Pageable pageable,
         Long wishListFolderId,
-        WishlistFolder wishlistFolder
+        WishListFolder wishlistFolder
     );
 
     BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId);

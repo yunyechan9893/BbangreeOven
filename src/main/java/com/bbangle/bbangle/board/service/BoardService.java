@@ -18,8 +18,8 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishList.domain.WishListFolder;
+import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -92,7 +92,7 @@ public class BoardService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
-        WishlistFolder folder = folderRepository.findByMemberAndId(member, folderId)
+        WishListFolder folder = folderRepository.findByMemberAndId(member, folderId)
             .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
 
         return boardRepository.getAllByFolder(sort, pageable, folderId, folder);

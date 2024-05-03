@@ -14,12 +14,12 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.bbangle.bbangle.store.repository.StoreRepository;
 
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
-import com.bbangle.bbangle.wishlist.domain.WishlistBoard;
-import com.bbangle.bbangle.wishlist.domain.WishlistStore;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishlist.repository.WishlistBoardRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishList.domain.WishListFolder;
+import com.bbangle.bbangle.wishList.domain.WishListBoard;
+import com.bbangle.bbangle.wishList.domain.WishListStore;
+import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishList.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishList.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import static org.hamcrest.Matchers.*;
@@ -46,7 +46,7 @@ public class BoardRepositoryTest {
     @Autowired
     WishListFolderRepository wishListFolderRepository;
     @Autowired
-    WishlistBoardRepository wishlistBoardRepository;
+    WishListBoardRepository wishlistBoardRepository;
     @Autowired
     WishListStoreRepository wishListStoreRepository;
     Store store;
@@ -211,19 +211,19 @@ public class BoardRepositoryTest {
     }
 
     private void createWishlist(){
-        wishListStoreRepository.save(WishlistStore.builder()
+        wishListStoreRepository.save(WishListStore.builder()
                         .member(member)
                         .store(store)
                         .isDeleted(false)
                         .build());
 
         var wishlistFolder = wishListFolderRepository.save(
-                WishlistFolder.builder()
+                WishListFolder.builder()
                         .member(member)
                         .isDeleted(false)
                         .build());
 
-        wishlistBoardRepository.save(WishlistBoard.builder()
+        wishlistBoardRepository.save(WishListBoard.builder()
                 .memberId(member.getId())
                 .wishlistFolder(wishlistFolder)
                 .board(board)

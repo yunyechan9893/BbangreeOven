@@ -16,8 +16,8 @@ import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.dto.response.SearchBoardResponse;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishlist.domain.QWishlistBoard;
-import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
+import com.bbangle.bbangle.wishList.domain.QWishListBoard;
+import com.bbangle.bbangle.wishList.domain.QWishListStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
@@ -49,8 +49,8 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
-    private static final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
-    private static final QWishlistBoard wishlistProduct = QWishlistBoard.wishlistBoard;
+    private static final QWishListStore wishListStore = QWishListStore.wishListStore;
+    private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private static final QSearch search = QSearch.search;
     private final int ONEDAY = 24;
     private final int DEFAULT_ITEM_SIZE = 10;
@@ -128,7 +128,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
         columns.add(product.ketogenicTag);
 
         if (memberId != null && memberId > 0) {
-            columns.add(wishlistProduct.id);
+            columns.add(wishListBoard.id);
         }
 
         return columns;
@@ -147,7 +147,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
         // 회원이라면 위시리스트 조인
         if (memberId != null && memberId > 0) {
-            boards = boards.leftJoin(wishlistProduct).on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId), wishlistProduct.isDeleted.eq(false));
+            boards = boards.leftJoin(wishListBoard).on(wishListBoard.board.eq(board), wishListBoard.memberId.eq(memberId), wishListBoard.isDeleted.eq(false));
         }
 
         return boards.fetch();
@@ -253,7 +253,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
         // 회원이라면 위시리스트 유무 확인
         if (memberId > 1L){
-            columns.add(wishlistStore.id);
+            columns.add(wishListStore.id);
         }
 
         var stores = queryFactory
@@ -266,7 +266,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
         // 회원이라면 위시리스트 테이블 Join
         if (memberId > 1L){
-            stores.leftJoin(wishlistStore).on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId), wishlistStore.isDeleted.eq(false));
+            stores.leftJoin(wishListStore).on(wishListStore.store.eq(store), wishListStore.member.id.eq(memberId), wishListStore.isDeleted.eq(false));
         }
 
         return stores.fetch().stream().map(
@@ -275,7 +275,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
                         .storeName(tuple.get(store.name))
                         .introduce(tuple.get(store.introduce))
                         .profile(tuple.get(store.profile))
-                        .isWished(tuple.get(wishlistStore.id)!=null?true:false)
+                        .isWished(tuple.get(wishListStore.id)!=null?true:false)
                         .build()).toList();
     }
 

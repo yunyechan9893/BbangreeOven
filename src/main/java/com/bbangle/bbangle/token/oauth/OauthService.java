@@ -9,8 +9,6 @@ import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.token.oauth.domain.client.OauthMemberClientComposite;
 import com.bbangle.bbangle.token.oauth.infra.kakao.dto.LoginTokenResponse;
-import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
-import com.bbangle.bbangle.wishlist.service.WishListFolderService;
 import java.time.Duration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

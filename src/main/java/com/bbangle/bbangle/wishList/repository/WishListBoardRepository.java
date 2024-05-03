@@ -1,0 +1,34 @@
+package com.bbangle.bbangle.wishList.repository;
+
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.wishList.domain.WishListBoard;
+import com.bbangle.bbangle.wishList.domain.WishListFolder;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface WishListBoardRepository extends JpaRepository<WishListBoard, Long> {
+
+    @Query(
+        value = "select wish from WishListBoard wish where wish.board.id = :boardId and wish.wishlistFolder = :folder"
+    )
+    Optional<WishListBoard> findByBoardAndFolderId(
+        @Param("boardId")
+        Long boardId,
+        @Param("folder")
+        WishListFolder folder
+    );
+
+    @Query(
+        value = "select wish from WishListBoard wish where wish.memberId = :memberId and wish.isDeleted = false"
+    )
+    Optional<List<WishListBoard>> findByMemberId(@Param("memberId") Long memberId);
+
+    @Query(value = "select wish from WishListBoard wish where wish.board.id = :boardId and wish.memberId = :memberId")
+    Optional<WishListBoard> findByBoardId(Long boardId, Long memberId);
+
+    boolean existsByBoardAndMemberId(Board board, Long memberId);
+
+}

@@ -5,8 +5,8 @@ import com.bbangle.bbangle.member.dto.MemberInfoRequest;
 import com.bbangle.bbangle.member.exception.UserValidator;
 import com.bbangle.bbangle.common.domain.BaseEntity;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
-import com.bbangle.bbangle.wishlist.domain.WishlistStore;
+import com.bbangle.bbangle.wishList.domain.WishListFolder;
+import com.bbangle.bbangle.wishList.domain.WishListStore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -62,10 +62,10 @@ public class Member extends BaseEntity implements UserDetails {
     List<Withdrawal> withdrawals = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
-    List<WishlistFolder> wishlistFolders = new ArrayList<>();
+    List<WishListFolder> wishListFolders = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
-    List<WishlistStore> wishlistStores = new ArrayList<>();
+    List<WishListStore> wishListStores = new ArrayList<>();
 
     @Builder
     public Member(
