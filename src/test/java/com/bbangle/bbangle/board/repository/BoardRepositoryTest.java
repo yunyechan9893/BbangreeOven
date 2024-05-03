@@ -18,7 +18,7 @@ import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.bbangle.bbangle.wishlist.domain.WishlistBoard;
 import com.bbangle.bbangle.wishlist.domain.WishlistStore;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListProductRepository;
+import com.bbangle.bbangle.wishlist.repository.WishlistBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
@@ -46,7 +46,7 @@ public class BoardRepositoryTest {
     @Autowired
     WishListFolderRepository wishListFolderRepository;
     @Autowired
-    WishListProductRepository wishListProductRepository;
+    WishlistBoardRepository wishlistBoardRepository;
     @Autowired
     WishListStoreRepository wishListStoreRepository;
     Store store;
@@ -223,7 +223,7 @@ public class BoardRepositoryTest {
                         .isDeleted(false)
                         .build());
 
-        wishListProductRepository.save(WishlistBoard.builder()
+        wishlistBoardRepository.save(WishlistBoard.builder()
                 .memberId(member.getId())
                 .wishlistFolder(wishlistFolder)
                 .board(board)

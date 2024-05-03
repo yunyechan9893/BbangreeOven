@@ -11,7 +11,7 @@ import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.wishlist.domain.WishlistBoard;
-import com.bbangle.bbangle.wishlist.repository.WishListProductRepository;
+import com.bbangle.bbangle.wishlist.repository.WishlistBoardRepository;
 import com.bbangle.bbangle.wishlist.dto.WishProductRequestDto;
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
@@ -36,7 +36,7 @@ public class WishListBoardService {
 
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
-    private final WishListProductRepository wishListProductRepository;
+    private final WishlistBoardRepository wishlistBoardRepository;
     private final BoardRepository boardRepository;
     private final RankingRepository rankingRepository;
     @Qualifier("boardLikeInfoRedisTemplate")
@@ -53,7 +53,7 @@ public class WishListBoardService {
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        if (wishListProductRepository.existsByBoardAndMemberId(board, memberId)) {
+        if (wishlistBoardRepository.existsByBoardAndMemberId(board, memberId)) {
             throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
         }
 
@@ -65,7 +65,7 @@ public class WishListBoardService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
-        WishlistBoard product = wishListProductRepository.findByBoardId(boardId, member.getId())
+        WishlistBoard product = wishlistBoardRepository.findByBoardId(boardId, member.getId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         if (product.isDeleted()) {
@@ -79,7 +79,7 @@ public class WishListBoardService {
 
     @Transactional
     public void deletedByDeletedMember(Long memberId) {
-        Optional<List<WishlistBoard>> wishlistProducts = wishListProductRepository.findByMemberId(
+        Optional<List<WishlistBoard>> wishlistProducts = wishlistBoardRepository.findByMemberId(
             memberId);
 
         if (wishlistProducts.isPresent()) {
@@ -115,7 +115,7 @@ public class WishListBoardService {
             .isDeleted(false)
             .build();
 
-        WishlistBoard save = wishListProductRepository.save(wishlistBoard);
+        WishlistBoard save = wishlistBoardRepository.save(wishlistBoard);
         save.getBoard()
             .updateWishCnt(true);
     }

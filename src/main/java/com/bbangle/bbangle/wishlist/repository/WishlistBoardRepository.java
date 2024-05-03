@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface WishListProductRepository extends JpaRepository<WishlistBoard, Long> {
+public interface WishlistBoardRepository extends JpaRepository<WishlistBoard, Long> {
 
     @Query(
         value = "select wish from WishlistBoard wish where wish.board.id = :boardId and wish.wishlistFolder = :folder"
