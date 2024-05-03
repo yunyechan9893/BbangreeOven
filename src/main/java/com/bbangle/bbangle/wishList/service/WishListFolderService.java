@@ -39,7 +39,8 @@ public class WishListFolderService {
             .isDeleted(false)
             .build();
 
-        return wishListFolderRepository.save(folder).getId();
+        return wishListFolderRepository.save(folder)
+            .getId();
     }
 
     @Transactional(readOnly = true)
@@ -56,7 +57,9 @@ public class WishListFolderService {
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
         WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member, folderId)
-            .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
+
+        validateIsDeleteAvailable(wishlistFolder);
 
         wishlistFolder.delete();
     }
@@ -76,25 +79,43 @@ public class WishListFolderService {
 
     @Transactional
     public void deletedByDeletedMember(Long memberId) {
-        List<WishListFolder> wishListFolders = wishListFolderRepositoryImpl.findByMemberId(memberId);
+        List<WishListFolder> wishListFolders = wishListFolderRepositoryImpl.findByMemberId(
+            memberId);
         for (WishListFolder wishListFolder : wishListFolders) {
             wishListFolder.delete();
         }
     }
 
     private void validateWishListFolder(WishListFolder wishlistFolder) {
-        if (wishlistFolder.getFolderName().equals(DEFAULT_FOLDER_NAME)){
+        if(wishlistFolder.isDeleted()){
+           throw new BbangleException(BbangleErrorCode.CANNOT_UPDATE_ALREADY_DELETED_FOLDER);
+        }
+
+        if (wishlistFolder.getFolderName()
+            .equals(DEFAULT_FOLDER_NAME)) {
             throw new BbangleException(BbangleErrorCode.DEFAULT_FOLDER_NAME_CANNOT_CHNAGE);
+        }
+    }
+
+    private static void validateIsDeleteAvailable(WishListFolder wishlistFolder) {
+        if (wishlistFolder.getFolderName()
+            .equals(DEFAULT_FOLDER_NAME)) {
+            throw new BbangleException(BbangleErrorCode.CANNOT_DELETE_DEFAULT_FOLDER);
+        }
+
+        if (wishlistFolder.isDeleted()) {
+            throw new BbangleException(BbangleErrorCode.FOLDER_ALREADY_DELETED);
         }
     }
 
     private void validateMakingFolder(FolderRequestDto requestDto, Member member) {
         int folderCount = wishListFolderRepository.getFolderCount(member);
-        if(wishListFolderRepository.existsByFolderNameAndMember(requestDto.title(), member)){
+        if (wishListFolderRepository.existsByFolderNameAndMember(requestDto.title(), member)) {
             throw new BbangleException(BbangleErrorCode.FOLDER_NAME_ALREADY_EXIST);
         }
         if (folderCount >= 10) {
             throw new BbangleException(BbangleErrorCode.OVER_MAX_FOLDER);
         }
     }
+
 }
