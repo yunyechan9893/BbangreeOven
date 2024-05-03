@@ -22,7 +22,7 @@ public class WishListBoardController {
     private final WishListBoardService wishListBoardService;
     private final ResponseService responseService;
 
-    @PostMapping("/cancel")
+    @PostMapping("/wish")
     public CommonResult wish(
         @AuthenticationPrincipal
         Long memberId,
@@ -36,7 +36,7 @@ public class WishListBoardController {
         return responseService.getSuccessResult();
     }
 
-    @PutMapping("/wish")
+    @PutMapping("/cancel")
     public CommonResult cancel(
         @AuthenticationPrincipal
         Long memberId,
