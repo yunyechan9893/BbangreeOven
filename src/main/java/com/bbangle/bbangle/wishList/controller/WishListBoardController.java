@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/boards/{boardId}/wish")
+@RequestMapping("/api/v1/boards/{boardId}")
 @RequiredArgsConstructor
 public class WishListBoardController {
 
     private final WishListBoardService wishListBoardService;
     private final ResponseService responseService;
 
-    @PostMapping
+    @PostMapping("/cancel")
     public CommonResult wish(
         @AuthenticationPrincipal
         Long memberId,
@@ -36,7 +36,7 @@ public class WishListBoardController {
         return responseService.getSuccessResult();
     }
 
-    @PutMapping
+    @PutMapping("/wish")
     public CommonResult cancel(
         @AuthenticationPrincipal
         Long memberId,
