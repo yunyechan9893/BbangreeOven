@@ -14,7 +14,7 @@ import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
 import com.bbangle.bbangle.wishlist.domain.QWishlistFolder;
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
-import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
+import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.querydsl.jpa.impl.JPAQuery;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -58,7 +58,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final QWishlistFolder folder = QWishlistFolder.wishlistFolder;
     private final QProductImg productImg = QProductImg.productImg;
     private final QBoardDetail boardDetail = QBoardDetail.boardDetail;
-    private final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
+    private final QWishListStore wishlistStore = QWishListStore.wishListStore;
     private final QRanking ranking = QRanking.ranking;
 
     @Override
