@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WishlistStore extends BaseEntity {
+public class WishListStore extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,6 +43,10 @@ public class WishlistStore extends BaseEntity {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void changeDeletedFalse(){
+        this.isDeleted = false;
     }
 
 }
