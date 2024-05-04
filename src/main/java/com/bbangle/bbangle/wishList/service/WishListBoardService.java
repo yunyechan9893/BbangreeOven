@@ -13,7 +13,7 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.wishList.domain.WishListBoard;
 import com.bbangle.bbangle.wishList.domain.WishListFolder;
 import com.bbangle.bbangle.wishList.repository.WishListBoardRepository;
-import com.bbangle.bbangle.wishList.dto.WishProductRequestDto;
+import com.bbangle.bbangle.wishList.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
@@ -43,7 +43,7 @@ public class WishListBoardService {
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @Transactional
-    public void wish(Long memberId, Long boardId, WishProductRequestDto wishRequest) {
+    public void wish(Long memberId, Long boardId, WishListBoardRequest wishRequest) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
@@ -97,7 +97,7 @@ public class WishListBoardService {
 
     private WishListFolder getWishlistFolder(
         Long boardId,
-        WishProductRequestDto wishRequest,
+        WishListBoardRequest wishRequest,
         Member member
     ) {
         if (boardId.equals(0L)) {

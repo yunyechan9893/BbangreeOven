@@ -2,7 +2,7 @@ package com.bbangle.bbangle.wishList.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.wishList.dto.WishProductRequestDto;
+import com.bbangle.bbangle.wishList.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishList.service.WishListBoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,8 @@ public class WishListBoardController {
         Long memberId,
         @PathVariable
         Long boardId,
-        @RequestBody @Valid
-        WishProductRequestDto wishRequest
+        @RequestBody
+        WishListBoardRequest wishRequest
     ) {
         wishListBoardService.wish(memberId, boardId, wishRequest);
 

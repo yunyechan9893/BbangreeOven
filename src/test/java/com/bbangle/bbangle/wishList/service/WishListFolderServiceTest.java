@@ -21,7 +21,7 @@ import com.bbangle.bbangle.wishList.domain.WishListFolder;
 import com.bbangle.bbangle.wishList.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishList.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishList.dto.FolderUpdateDto;
-import com.bbangle.bbangle.wishList.dto.WishProductRequestDto;
+import com.bbangle.bbangle.wishList.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishList.repository.WishListBoardRepository;
 import java.util.List;
@@ -358,11 +358,11 @@ class WishListFolderServiceTest {
 
                 if(i < 3) {
                     wishListBoardService.wish(member.getId(), board.getId(),
-                        new WishProductRequestDto(defaultFolder.folderId()));
+                        new WishListBoardRequest(defaultFolder.folderId()));
                 }
                 if(i >= 3) {
                     wishListBoardService.wish(member.getId(), board.getId(),
-                        new WishProductRequestDto(wishlistFolder.getId()));
+                        new WishListBoardRequest(wishlistFolder.getId()));
                 }
             }
 

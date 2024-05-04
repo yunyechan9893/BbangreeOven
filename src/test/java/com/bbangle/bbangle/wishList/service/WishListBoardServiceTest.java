@@ -20,7 +20,7 @@ import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishList.domain.WishListFolder;
 import com.bbangle.bbangle.wishList.dto.FolderResponseDto;
-import com.bbangle.bbangle.wishList.dto.WishProductRequestDto;
+import com.bbangle.bbangle.wishList.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishList.repository.WishListBoardRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -116,7 +116,7 @@ class WishListBoardServiceTest {
 
             //when
             wishListBoardService.wish(member.getId(), board.getId(),
-                new WishProductRequestDto(defaultFolder.folderId()));
+                new WishListBoardRequest(defaultFolder.folderId()));
 
             //then
             FolderResponseDto afterWishDefaultFolder = wishListFolderService.getList(member.getId())
@@ -149,13 +149,13 @@ class WishListBoardServiceTest {
 
             //when, then
             wishListBoardService.wish(member.getId(), board.getId(),
-                new WishProductRequestDto(defaultFolder.folderId()));
+                new WishListBoardRequest(defaultFolder.folderId()));
             assertThatThrownBy(() -> wishListBoardService.wish(member.getId(), board.getId(),
-                new WishProductRequestDto(defaultFolder.folderId())))
+                new WishListBoardRequest(defaultFolder.folderId())))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.ALREADY_ON_WISHLIST.getMessage());
             assertThatThrownBy(() -> wishListBoardService.wish(member.getId(), board.getId(),
-                new WishProductRequestDto(wishListFolder.getId())))
+                new WishListBoardRequest(wishListFolder.getId())))
                 .isInstanceOf(BbangleException.class)
                 .hasMessage(BbangleErrorCode.ALREADY_ON_WISHLIST.getMessage());
 
@@ -180,7 +180,7 @@ class WishListBoardServiceTest {
 
             //when
             wishListBoardService.wish(member.getId(), board.getId(),
-                new WishProductRequestDto(defaultFolder.folderId()));
+                new WishListBoardRequest(defaultFolder.folderId()));
             wishListBoardService.cancel(member.getId(), board.getId());
 
             //then
@@ -214,7 +214,7 @@ class WishListBoardServiceTest {
 
             //when, then
             wishListBoardService.wish(member.getId(), board.getId(),
-                new WishProductRequestDto(defaultFolder.folderId()));
+                new WishListBoardRequest(defaultFolder.folderId()));
             wishListBoardService.cancel(member.getId(), board.getId());
             assertThatThrownBy(() -> wishListBoardService.cancel(member.getId(), board.getId()))
                 .isInstanceOf(BbangleException.class)
