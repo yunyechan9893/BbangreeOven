@@ -2,7 +2,7 @@ package com.bbangle.bbangle.wishlist.repository.impl;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 import static com.bbangle.bbangle.store.domain.QStore.store;
-import static com.bbangle.bbangle.wishlist.domain.QWishlistStore.wishlistStore;
+import static com.bbangle.bbangle.wishlist.domain.QWishListStore.wishListStore;
 
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
@@ -27,9 +27,9 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     @Override
     public List<WishListStore> findWishListStores(Long memberId) {
         return queryFactory
-                .selectFrom(wishlistStore)
-                .where(wishlistStore.member.id.eq(memberId)
-                        .and(wishlistStore.isDeleted.eq(false)))
+                .selectFrom(wishListStore)
+                .where(wishListStore.member.id.eq(memberId)
+                        .and(wishListStore.isDeleted.eq(false)))
                 .fetch();
     }
 
@@ -44,11 +44,11 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
                     store.id.as("storeId"),
                     store.profile
                 ))
-            .from(wishlistStore)
-            .leftJoin(wishlistStore.store, store)
+            .from(wishListStore)
+            .leftJoin(wishListStore.store, store)
             .where(cursorCondition)
             .limit(PAGE_SIZE + 1)
-            .orderBy(wishlistStore.createdAt.desc())
+            .orderBy(wishListStore.createdAt.desc())
             .fetch();
         boolean hasNext = checkingHasNext(responseDtos);
         int size = responseDtos.size();
@@ -64,9 +64,9 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     @Override
     public Optional<WishListStore> findWishListStore(Long memberId, Long storeId) {
         return Optional.ofNullable(queryFactory
-                .selectFrom(wishlistStore)
-                .where(wishlistStore.member.id.eq(memberId)
-                        .and(wishlistStore.store.id.eq(storeId)))
+                .selectFrom(wishListStore)
+                .where(wishListStore.member.id.eq(memberId)
+                        .and(wishListStore.store.id.eq(storeId)))
                 .fetchOne());
     }
 
@@ -76,7 +76,8 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
 
     private BooleanBuilder getCursorCondition(Long cursorId, Long memberId) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
-        booleanBuilder.and(wishlistStore.member.id.eq(memberId));
+        booleanBuilder.and(wishListStore.member.id.eq(memberId))
+            .and(wishListStore.isDeleted.eq(false));
         if (Objects.isNull(cursorId)) {
             return booleanBuilder;
         }
