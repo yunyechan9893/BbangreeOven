@@ -40,7 +40,6 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private final QProduct product = QProduct.product;
     private final QWishListStore wishListStore = QWishListStore.wishListStore;
     private final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
-
     private final JPAQueryFactory queryFactory;
 
     @Override

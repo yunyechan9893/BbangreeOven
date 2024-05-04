@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -31,8 +32,6 @@ public class NotificationControllerTest {
     NotificationRepository notificationRepository;
     @Autowired
     MockMvc mockMvc;
-    private final String BEARER = "Bearer";
-    private final String AUTHORIZATION = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiYmFuZ2xlYmJhbmdsZSIsImlhdCI6MTcxNDMxNTE5NCwiZXhwIjoxNzE1NTI0Nzk0LCJzdWIiOiItIiwiaWQiOjM3fQ.Lqwty1cqA0yhYEonSQzbMOHRW1y0oHLkw6IILckzih4";
 
 
     @BeforeEach
@@ -57,9 +56,9 @@ public class NotificationControllerTest {
 
     @Test
     @DisplayName("커서 기반 페이지네이션 : 다음 페이지가 있는 경우 hasNext는 true")
+    @WithMockUser
     void hasNextPage() throws Exception{
-        mockMvc.perform(get("/api/v1/notification")
-            .header("Authorization", String.format("%s %s",BEARER, AUTHORIZATION)))
+        mockMvc.perform(get("/api/v1/notification"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.result.hasNext").value(true))
             .andDo(print());
@@ -67,9 +66,9 @@ public class NotificationControllerTest {
 
     @Test
     @DisplayName("커서 기반 페이지네이션 : 다음 페이지가 없는 경우 hasNext는 false")
+    @WithMockUser
     void notHasNextPage() throws Exception{
         mockMvc.perform(get("/api/v1/notification")
-            .header("Authorization", String.format("%s %s",BEARER, AUTHORIZATION))
             .param("cursorId", "3"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.result.hasNext").value(false))
