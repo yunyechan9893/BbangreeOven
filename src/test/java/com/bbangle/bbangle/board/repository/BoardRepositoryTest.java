@@ -17,9 +17,9 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.bbangle.bbangle.wishlist.domain.WishlistProduct;
-import com.bbangle.bbangle.wishlist.domain.WishlistStore;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListProductRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
@@ -215,7 +215,7 @@ public class BoardRepositoryTest {
     }
 
     private void createWishlist(){
-        wishListStoreRepository.save(WishlistStore.builder()
+        wishListStoreRepository.save(WishListStore.builder()
                         .member(member)
                         .store(store)
                         .isDeleted(false)

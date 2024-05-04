@@ -12,17 +12,13 @@ import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.mock.WithCustomMockUser;
-import com.bbangle.bbangle.notification.domain.Notice;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
-import com.bbangle.bbangle.wishlist.domain.WishlistStore;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import com.bbangle.bbangle.wishlist.repository.impl.WishListStoreRepositoryImpl;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -90,7 +86,7 @@ public class WishListStoreControllerTest {
                 .build();
             storeRepository.save(store);
             if(i != 25){
-                WishlistStore wishlistStore = WishlistStore.builder()
+                WishListStore wishlistStore = WishListStore.builder()
                     .member(member)
                     .store(store)
                     .build();

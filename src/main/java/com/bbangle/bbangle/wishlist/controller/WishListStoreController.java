@@ -29,8 +29,7 @@ public class WishListStoreController {
     private static final String REMOVE_WISHLIST_STORE = "스토어 찜을 해제했습니다";
     @GetMapping("/stores")
     public CommonResult getWishListStores(
-        @RequestParam(required = false) Long cursorId,
-        @AuthenticationPrincipal Long memberId1){
+        @RequestParam(required = false) Long cursorId){
         Long memberId = SecurityUtils.getMemberId();
         return responseService.getSingleResult(
             wishlistStoreService.getWishListStoresResponse(memberId, cursorId));

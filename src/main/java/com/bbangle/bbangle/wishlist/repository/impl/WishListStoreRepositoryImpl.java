@@ -5,15 +5,12 @@ import static com.bbangle.bbangle.store.domain.QStore.store;
 import static com.bbangle.bbangle.wishlist.domain.QWishlistStore.wishlistStore;
 
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.page.StoreCustomPage;
-import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishlist.domain.WishlistStore;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreResponseDto;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreQueryDSLRepository;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +25,7 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     private static final Long PAGE_SIZE = 20L;
 
     @Override
-    public List<WishlistStore> findWishListStores(Long memberId) {
+    public List<WishListStore> findWishListStores(Long memberId) {
         return queryFactory
                 .selectFrom(wishlistStore)
                 .where(wishlistStore.member.id.eq(memberId)
@@ -65,7 +62,7 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     }
 
     @Override
-    public Optional<WishlistStore> findWishListStore(Long memberId, Long storeId) {
+    public Optional<WishListStore> findWishListStore(Long memberId, Long storeId) {
         return Optional.ofNullable(queryFactory
                 .selectFrom(wishlistStore)
                 .where(wishlistStore.member.id.eq(memberId)
