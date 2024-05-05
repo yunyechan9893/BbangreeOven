@@ -3,6 +3,7 @@ package com.bbangle.bbangle.wishlist.repository;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreResponseDto;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
 
 import java.util.List;
 import java.util.Optional;

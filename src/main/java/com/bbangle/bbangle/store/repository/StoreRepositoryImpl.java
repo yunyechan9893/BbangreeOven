@@ -12,7 +12,7 @@ import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
-import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
+import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
@@ -39,9 +39,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private final QStore store = QStore.store;
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
-    private final QWishListStore wishlistStore = QWishListStore.wishListStore;
-    private final QWishlistProduct wishlistProduct = QWishlistProduct.wishlistProduct;
-
+    private final QWishListStore wishListStore = QWishListStore.wishListStore;
+    private final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -51,7 +50,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 store.profile,
                 store.name,
                 store.introduce,
-                wishlistStore.id,
+                wishListStore.id,
                 board.id,
                 board.profile,
                 board.title,
@@ -61,9 +60,9 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .from(board)
             .where(board.store.id.eq(storeId))
             .join(board.store, store)
-            .leftJoin(wishlistStore)
-            .on(wishlistStore.store.eq(store), wishlistStore.member.id.eq(memberId),
-                wishlistStore.isDeleted.eq(false))
+            .leftJoin(wishListStore)
+            .on(wishListStore.store.eq(store), wishListStore.member.id.eq(memberId),
+                wishListStore.isDeleted.eq(false))
             .orderBy(board.view.desc())
             .limit(3)
             .fetch();
@@ -111,7 +110,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                 .profile(tuple.get(store.profile))
                 .introduce(tuple.get(store.introduce))
                 .storeId(tuple.get(store.id))
-                .isWished(tuple.get(wishlistStore.id) != null ? true : false);
+                .isWished(tuple.get(wishListStore.id) != null ? true : false);
         }
 
         return StoreDetailResponseDto.builder()
@@ -225,9 +224,9 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             )
             .from(product)
             .join(product.board, board)
-            .leftJoin(wishlistProduct)
-            .on(wishlistProduct.board.eq(board), wishlistProduct.memberId.eq(memberId),
-                wishlistProduct.isDeleted.eq(false))
+            .leftJoin(wishListBoard)
+            .on(wishListBoard.board.eq(board), wishListBoard.memberId.eq(memberId),
+                wishListBoard.isDeleted.eq(false))
             .where(board.id.in(boardSubQuery))
             .fetch();
 
@@ -274,7 +273,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
                         .thumbnail(tuple.get(board.profile))
                         .title(tuple.get(board.title))
                         .price(tuple.get(board.price))
-                        .isWished(tuple.get(wishlistProduct.id) != null ? true : false)
+                        .isWished(tuple.get(wishListBoard.id) != null ? true : false)
                         .isBundled(categories.size() > 1)
                         .tags(allTag.stream()
                             .toList())
@@ -439,11 +438,11 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         List<Long> pageIds = getContentsIds(cursorPage);
 
         List<Long> wishedStore = queryFactory.select(
-                    wishlistStore.store.id)
-            .from(wishlistStore)
-            .where(wishlistStore.member.eq(member)
-                .and(wishlistStore.isDeleted.eq(false))
-                .and(wishlistStore.store.id.in(pageIds)))
+                    wishListStore.store.id)
+            .from(wishListStore)
+            .where(wishListStore.member.eq(member)
+                .and(wishListStore.isDeleted.eq(false))
+                .and(wishListStore.store.id.in(pageIds)))
             .fetch();
 
         updateLikeStatus(wishedStore, cursorPage);

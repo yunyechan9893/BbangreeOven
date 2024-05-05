@@ -2,8 +2,10 @@ package com.bbangle.bbangle.wishlist.repository.impl;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 import static com.bbangle.bbangle.store.domain.QStore.store;
+import com.bbangle.bbangle.wishlist.domain.QWishListStore;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreQueryDSLRepository;
 import static com.bbangle.bbangle.wishlist.domain.QWishListStore.wishListStore;
-
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.dto.QWishListStoreResponseDto;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
+    private static final QWishListStore wishListStore = QWishListStore.wishListStore;
     private static final Long PAGE_SIZE = 20L;
 
     @Override

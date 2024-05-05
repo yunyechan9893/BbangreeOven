@@ -17,11 +17,11 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
-import com.bbangle.bbangle.wishlist.domain.WishlistProduct;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListProductRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class BoardRepositoryTest {
     @Autowired
     WishListFolderRepository wishListFolderRepository;
     @Autowired
-    WishListProductRepository wishListProductRepository;
+    WishListBoardRepository wishlistBoardRepository;
     @Autowired
     WishListStoreRepository wishListStoreRepository;
     Store store;
@@ -222,12 +222,12 @@ public class BoardRepositoryTest {
                         .build());
 
         var wishlistFolder = wishListFolderRepository.save(
-                WishlistFolder.builder()
+                WishListFolder.builder()
                         .member(member)
                         .isDeleted(false)
                         .build());
 
-        wishListProductRepository.save(WishlistProduct.builder()
+        wishlistBoardRepository.save(WishListBoard.builder()
                 .memberId(member.getId())
                 .wishlistFolder(wishlistFolder)
                 .board(board)
