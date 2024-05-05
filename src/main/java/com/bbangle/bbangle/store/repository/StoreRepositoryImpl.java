@@ -34,7 +34,8 @@ import java.util.*;
 public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
     private static final Long PAGE_SIZE = 20L;
-
+    private static final Long EMPTY_PAGE_CURSOR = -1L;
+    private static final Boolean EMPTY_PAGE_HAS_NEXT = false;
     private final QStore store = QStore.store;
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
@@ -415,13 +416,17 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .where(cursorCondition)
             .limit(PAGE_SIZE + 1)
             .fetch();
-        boolean hasNext = checkingHasNext(responseDtos);
+        if (responseDtos.isEmpty()){
+            return StoreCustomPage.from(responseDtos, EMPTY_PAGE_CURSOR, EMPTY_PAGE_HAS_NEXT);
+        }
 
+        boolean hasNext = checkingHasNext(responseDtos);
         if (hasNext) {
             responseDtos.remove(responseDtos.get(responseDtos.size() - 1));
         }
+        Long nextCursor = responseDtos.get(responseDtos.size() -1).getStoreId();
 
-        return StoreCustomPage.from(responseDtos, cursorId, hasNext);
+        return StoreCustomPage.from(responseDtos, nextCursor, hasNext);
     }
 
     @Override
