@@ -1,7 +1,7 @@
 package com.bbangle.bbangle.wishlist.domain;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import com.bbangle.bbangle.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,34 +17,38 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Table(name = "Wishlist_folder")
+@Table(name = "wishlist_product")
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WishlistFolder extends BaseEntity {
+public class WishListBoard extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @JoinColumn(name = "wishlist_folder_id")
+    private WishListFolder wishlistFolder;
 
-    @Column(name = "folder_name")
-    private String folderName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_board_id")
+    private Board board;
+
+    @Column(name = "member_id")
+    private Long memberId;
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    public void updateTitle(String title) {
-        this.folderName = title;
+    public boolean updateWishStatus() {
+        isDeleted = !isDeleted;
+        return isDeleted;
     }
 
     public void delete() {
         this.isDeleted = true;
     }
-
 }

@@ -48,5 +48,4 @@ public class WishListStore extends BaseEntity {
     public void changeDeletedFalse(){
         this.isDeleted = false;
     }
-
 }

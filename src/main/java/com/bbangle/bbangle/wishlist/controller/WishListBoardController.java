@@ -2,11 +2,10 @@ package com.bbangle.bbangle.wishlist.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.util.SecurityUtils;
-import com.bbangle.bbangle.wishlist.dto.WishProductRequestDto;
+import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.service.WishListBoardService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,32 +14,34 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/boards/{boardId}/wish")
+@RequestMapping("/api/v1/boards/{boardId}")
 @RequiredArgsConstructor
 public class WishListBoardController {
 
     private final WishListBoardService wishListBoardService;
     private final ResponseService responseService;
 
-    @PostMapping
+    @PostMapping("/wish")
     public CommonResult wish(
+        @AuthenticationPrincipal
+        Long memberId,
         @PathVariable
         Long boardId,
-        @RequestBody @Valid
-        WishProductRequestDto wishRequest
+        @RequestBody
+        WishListBoardRequest wishRequest
     ) {
-        Long memberId = SecurityUtils.getMemberId();
         wishListBoardService.wish(memberId, boardId, wishRequest);
 
         return responseService.getSuccessResult();
     }
 
-    @PutMapping
+    @PutMapping("/cancel")
     public CommonResult cancel(
+        @AuthenticationPrincipal
+        Long memberId,
         @PathVariable
         Long boardId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
         wishListBoardService.cancel(memberId, boardId);
 
         return responseService.getSuccessResult();
