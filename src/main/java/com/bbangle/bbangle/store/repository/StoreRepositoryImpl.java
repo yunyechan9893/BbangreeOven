@@ -6,9 +6,13 @@ import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.board.dto.StoreBestBoardDto;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.domain.QStore;
+import com.bbangle.bbangle.store.dto.QStoreResponseDto;
 import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
@@ -16,7 +20,6 @@ import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +30,6 @@ import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Pageable;
 import java.util.*;
-
 
 @Repository
 @RequiredArgsConstructor
@@ -42,6 +44,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     private final QWishListStore wishListStore = QWishListStore.wishListStore;
     private final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private final JPAQueryFactory queryFactory;
+    private final MemberRepository memberRepository;
 
     @Override
     public StoreDetailResponseDto getStoreDetailResponseDtoWithLike(Long memberId, Long storeId) {
@@ -401,14 +404,14 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     }
 
     @Override
-    public StoreCustomPage<List<StoreResponseDto>> findNextCursorPageWithoutLogin(Long cursorId) {
+    public StoreCustomPage<List<StoreResponseDto>> getStoreList(Long cursorId, Long memberId) {
         BooleanBuilder cursorCondition = getCursorCondition(cursorId);
-        List<StoreResponseDto> responseDtos = queryFactory.select(Projections.constructor(
-                    StoreResponseDto.class,
-                    store.id.as("storeId"),
-                    store.name.as("storeName"),
-                    store.introduce.as("introduce"),
-                    store.profile.as("profile")
+        List<StoreResponseDto> responseDtos = queryFactory.select(
+            new QStoreResponseDto(
+                    store.id,
+                    store.name,
+                    store.introduce,
+                    store.profile
                 )
             )
             .from(store)
@@ -425,17 +428,21 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         }
         Long nextCursor = responseDtos.get(responseDtos.size() -1).getStoreId();
 
+        if(Objects.nonNull(memberId)){
+            findNextCursorPageWithLogin(responseDtos, memberId);
+        }
+
         return StoreCustomPage.from(responseDtos, nextCursor, hasNext);
     }
 
-    @Override
-    public StoreCustomPage<List<StoreResponseDto>> findNextCursorPageWithLogin(
-        Long cursorId,
-        Member member
+    public List<StoreResponseDto> findNextCursorPageWithLogin(
+        List<StoreResponseDto> cursorPage,
+        Long memberId
     ) {
-        StoreCustomPage<List<StoreResponseDto>> cursorPage = findNextCursorPageWithoutLogin(
-            cursorId);
         List<Long> pageIds = getContentsIds(cursorPage);
+
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
 
         List<Long> wishedStore = queryFactory.select(
                     wishListStore.store.id)
@@ -450,8 +457,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         return cursorPage;
     }
 
-    private static List<Long> getContentsIds(StoreCustomPage<List<StoreResponseDto>> cursorPage) {
-        return cursorPage.getContent()
+    private static List<Long> getContentsIds(List<StoreResponseDto> cursorPage) {
+        return cursorPage
             .stream()
             .map(StoreResponseDto::getStoreId)
             .toList();
@@ -459,10 +466,10 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
     private static void updateLikeStatus(
         List<Long> wishedIds,
-        StoreCustomPage<List<StoreResponseDto>> cursorPage
+        List<StoreResponseDto> cursorPage
     ) {
         for(Long id: wishedIds){
-            for(StoreResponseDto response : cursorPage.getContent()){
+            for(StoreResponseDto response : cursorPage){
                 if (id.equals(response.getStoreId())){
                     response.isWishStore();
                 }
