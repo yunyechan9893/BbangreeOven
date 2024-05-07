@@ -6,8 +6,8 @@ import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
 import com.bbangle.bbangle.util.SecurityUtils;
 import com.bbangle.bbangle.wishlist.service.WishListFolderService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,26 +28,31 @@ public class WishListFolderController {
     @PostMapping
     public CommonResult make(
         @RequestBody
-        @Valid FolderRequestDto requestDto
+        FolderRequestDto requestDto,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
         folderService.create(memberId, requestDto);
         return responseService.getSuccessResult();
     }
 
     @GetMapping
-    public CommonResult getList() {
-        Long memberId = SecurityUtils.getMemberId();
+    public CommonResult getList(
+        @AuthenticationPrincipal
+        Long memberId
+    ) {
         return responseService.getListResult(folderService.getList(memberId));
     }
+
     @PatchMapping("/{folderId}")
     public CommonResult update(
         @PathVariable
         Long folderId,
         @RequestBody
-        @Valid FolderUpdateDto updateDto
+        FolderUpdateDto updateDto,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
         folderService.update(memberId, folderId, updateDto);
         return responseService.getSuccessResult();
     }

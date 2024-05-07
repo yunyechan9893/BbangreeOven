@@ -1,16 +1,16 @@
 package com.bbangle.bbangle.wishlist.repository.impl;
 
 
-import static com.bbangle.bbangle.wishlist.domain.QWishlistFolder.wishlistFolder;
+
 
 import com.bbangle.bbangle.board.domain.QBoard;
+import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
+import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderQueryDSLRepository;
-import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishlist.domain.QWishlistFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
 
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Comparator;
@@ -25,30 +25,32 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepository {
 
+    private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
+    private static final QWishListFolder wishListFolder = QWishListFolder.wishListFolder;
+    private static final QWishListBoard wishedBoard = QWishListBoard.wishListBoard;
+    private static final QBoard board = QBoard.board;
+
     private final JPAQueryFactory queryFactory;
+
 
     @Override
     public List<FolderResponseDto> findMemberFolderList(Member member) {
-        QWishlistFolder folder = wishlistFolder;
-        QWishlistProduct wishedBoard = QWishlistProduct.wishlistProduct;
-        QBoard board = QBoard.board;
-
         List<Tuple> fetch = queryFactory.select(
-                folder.id,
-                folder.folderName,
+                wishListFolder.id,
+                wishListFolder.folderName,
                 board.profile)
-            .from(folder)
+            .from(wishListFolder)
             .leftJoin(wishedBoard)
-            .on(wishedBoard.wishlistFolder.eq(folder))
+            .on(wishedBoard.wishlistFolder.eq(wishListFolder))
             .leftJoin(board)
             .on(wishedBoard.board.eq(board)
                 .and(wishedBoard.isDeleted.eq(false)))
-            .where(folder.member.eq(member)
-                .and(folder.isDeleted.eq(false)))
+            .where(wishListFolder.member.eq(member)
+                .and(wishListFolder.isDeleted.eq(false)))
             .fetch();
 
         Map<Long, List<Tuple>> groupedByFolderId = fetch.stream()
-            .collect(Collectors.groupingBy(tuple -> tuple.get(folder.id)));
+            .collect(Collectors.groupingBy(tuple -> tuple.get(wishListFolder.id)));
 
         List<FolderResponseDto> response = groupedByFolderId.entrySet()
             .stream()
@@ -57,7 +59,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
                 List<Tuple> tuples = entry.getValue();
 
                 String title = tuples.get(0)
-                    .get(folder.folderName);
+                    .get(wishListFolder.folderName);
 
                 List<String> productImages = tuples.stream()
                     .map(tuple -> tuple.get(board.profile))
@@ -77,7 +79,7 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
             .collect(Collectors.toList());
 
         FolderResponseDto defaultFolder = response.stream()
-            .filter(folderResponse -> "기본 폴더".equals(folderResponse.title()))
+            .filter(folderResponse -> DEFAULT_FOLDER_NAME.equals(folderResponse.title()))
             .findFirst()
             .orElse(null);
 
@@ -90,11 +92,11 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
     }
 
     @Override
-    public List<WishlistFolder> findByMemberId(Long memberId) {
-        QWishlistFolder wishlistFolder = QWishlistFolder.wishlistFolder;
-        return queryFactory.selectFrom(wishlistFolder)
-            .where(wishlistFolder.member.id.eq(memberId)
-                .and(wishlistFolder.isDeleted.eq(false)))
+    public List<WishListFolder> findByMemberId(Long memberId) {
+
+        return queryFactory.selectFrom(wishListFolder)
+            .where(wishListFolder.member.id.eq(memberId)
+                .and(wishListFolder.isDeleted.eq(false)))
             .fetch();
     }
 
