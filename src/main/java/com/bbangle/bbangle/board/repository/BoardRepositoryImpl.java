@@ -447,7 +447,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         Long nextCursor = cursorRanking.getBoard()
             .getId();
 
-        if (Objects.isNull(cursorInfo.targetId())) {
+        if (Objects.isNull(cursorInfo) || Objects.isNull(cursorInfo.targetId())) {
             Long boardCnt = queryFactory
                 .select(board.countDistinct())
                 .from(store)

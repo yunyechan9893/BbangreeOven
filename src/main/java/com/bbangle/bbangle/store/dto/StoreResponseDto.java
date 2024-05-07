@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.store.dto;
 
+import com.querydsl.core.annotations.QueryProjection;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +15,8 @@ public final class StoreResponseDto {
     private final String introduce;
     private final String profile;
     private Boolean isWished;
-    
+
+    @QueryProjection
     public StoreResponseDto(Long storeId, String storeName, String introduce, String profile) {
         this.storeId = storeId;
         this.storeName = storeName;
