@@ -47,8 +47,7 @@ public class WishListBoardService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
-        WishListFolder wishlistFolder = getWishlistFolder(boardId,
-            wishRequest, member);
+        WishListFolder wishlistFolder = getWishlistFolder(wishRequest, member);
 
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
@@ -96,11 +95,10 @@ public class WishListBoardService {
     }
 
     private WishListFolder getWishlistFolder(
-        Long boardId,
         WishListBoardRequest wishRequest,
         Member member
     ) {
-        if (boardId.equals(0L)) {
+        if (wishRequest.folderId().equals(0L)) {
             return wishListFolderRepository.findByMemberAndFolderName(
                     member, DEFAULT_FOLDER_NAME)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
