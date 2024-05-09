@@ -82,7 +82,7 @@ public class WebOAuthSecurityConfig implements WebMvcConfigurer {
             .permitAll()
             .requestMatchers(HttpMethod.GET, "/api/v1/boards/**")
             .permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/v1/notice/**")
+            .requestMatchers(HttpMethod.GET, "/api/v1/notification/**")
             .permitAll()
             .requestMatchers(HttpMethod.PATCH, "/api/v1/boards/**")
             .permitAll()
