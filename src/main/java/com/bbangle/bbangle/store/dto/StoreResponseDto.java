@@ -14,7 +14,7 @@ public final class StoreResponseDto {
     private final String introduce;
     private final String profile;
     private Boolean isWished;
-    
+
     public StoreResponseDto(Long storeId, String storeName, String introduce, String profile) {
         this.storeId = storeId;
         this.storeName = storeName;

@@ -47,7 +47,7 @@ public class Store extends BaseEntity {
     @OneToMany(mappedBy = "store")
     private List<WishlistStore> wishlistStores;
 
-    public Store updateProfile(String profile){
+    public Store updateProfile(String profile) {
         this.profile = profile;
         return this;
     }
