@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.wishlist.domain;
 
-import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.common.domain.BaseEntity;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.store.domain.Store;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -19,38 +20,34 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Table(name = "wishlist_product")
+@Table(name = "Wishlist_store")
 @Entity
-@Getter
 @Builder
+@Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WishlistProduct extends BaseEntity {
+public class WishListStore extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wishlist_folder_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private WishlistFolder wishlistFolder;
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Board board;
-
-    @Column(name = "member_id")
-    private Long memberId;
+    @JoinColumn(name = "store_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private Store store;
 
     @Column(name = "is_deleted", columnDefinition = "tinyint")
     private boolean isDeleted;
 
-    public boolean updateWishStatus() {
-        isDeleted = !isDeleted;
-        return isDeleted;
-    }
-
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void changeDeletedFalse(){
+        this.isDeleted = false;
     }
 }

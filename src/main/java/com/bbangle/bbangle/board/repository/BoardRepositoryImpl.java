@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
+import static com.bbangle.bbangle.search.repository.SearchRepositoryImpl.wishListBoard;
 import static com.bbangle.bbangle.wishlist.domain.QWishlistProduct.wishlistProduct;
 
 import com.bbangle.bbangle.board.domain.Board;
@@ -29,7 +30,7 @@ import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.wishlist.domain.QWishlistFolder;
 import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
 import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
@@ -92,7 +93,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     @Override
     public Slice<BoardResponseDto> getAllByFolder(
         String sort, Pageable pageable, Long wishListFolderId,
-        WishlistFolder selectedFolder
+        WishListFolder selectedFolder
     ) {
         OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort);
 
@@ -103,11 +104,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(board.store, store)
             .fetchJoin()
             .join(board)
-            .on(board.id.eq(products.board.id))
-            .join(products)
-            .on(products.wishlistFolder.eq(folder))
-            .where(products.wishlistFolder.eq(selectedFolder)
-                .and(products.isDeleted.eq(false)))
+            .on(board.id.eq(wishListBoard.board.id))
+            .join(wishListBoard)
+            .on(wishListBoard.wishlistFolder.eq(folder))
+            .where(wishListBoard.wishlistFolder.eq(selectedFolder)
+                .and(wishListBoard.isDeleted.eq(false)))
             .offset(pageable.getOffset())
             .orderBy(orderSpecifier)
             .limit(pageable.getPageSize() + 1)
@@ -344,11 +345,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public List<Long> getLikedContentsIds(List<Long> responseList, Long memberId) {
         return queryFactory.select(board.id)
             .from(board)
-            .leftJoin(wishlistProduct)
-            .on(board.eq(wishlistProduct.board))
+            .leftJoin(wishListBoard)
+            .on(board.eq(wishListBoard.board))
             .where(board.id.in(responseList)
-                .and(wishlistProduct.memberId.eq(memberId))
-                .and(wishlistProduct.isDeleted.eq(false)))
+                .and(wishListBoard.memberId.eq(memberId))
+                .and(wishListBoard.isDeleted.eq(false)))
             .fetch();
     }
 
@@ -373,7 +374,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(ranking.board.id.eq(boardCursor))
             .fetchFirst();
 
-        if (Objects.isNull(cursorInfo.targetId())) {
+        if (Objects.isNull(cursorInfo) || Objects.isNull(cursorInfo.targetId())) {
             // FIXME: count 쿼리 분리 필요
             Long boardCnt = queryFactory
                 .select(board.countDistinct())

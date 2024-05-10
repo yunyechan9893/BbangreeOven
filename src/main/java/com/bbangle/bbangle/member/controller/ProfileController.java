@@ -2,16 +2,19 @@ package com.bbangle.bbangle.member.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.dto.MessageDto;
-import com.bbangle.bbangle.common.message.MessageResDto;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
+import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.member.service.ProfileServiceImpl;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController

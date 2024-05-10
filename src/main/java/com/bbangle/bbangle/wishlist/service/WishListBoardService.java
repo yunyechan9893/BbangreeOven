@@ -10,10 +10,10 @@ import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-import com.bbangle.bbangle.wishlist.repository.WishListProductRepository;
-import com.bbangle.bbangle.wishlist.domain.WishlistProduct;
-import com.bbangle.bbangle.wishlist.dto.WishProductRequestDto;
-import com.bbangle.bbangle.wishlist.domain.WishlistFolder;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
@@ -32,58 +32,96 @@ import org.springframework.transaction.annotation.Transactional;
 public class WishListBoardService {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
+    private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 
     private final MemberRepository memberRepository;
     private final WishListFolderRepository wishListFolderRepository;
-    private final WishListProductRepository wishListProductRepository;
+    private final WishListBoardRepository wishlistBoardRepository;
     private final BoardRepository boardRepository;
     private final RankingRepository rankingRepository;
-    @Qualifier("defaultRedisTemplate")
-    private final RedisTemplate<String, Object> redisTemplate;
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
 
     @Transactional
-    public void wish(Long memberId, Long boardId, WishProductRequestDto wishRequest) {
+    public void wish(Long memberId, Long boardId, WishListBoardRequest wishRequest) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
 
-        WishlistFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member,
-                wishRequest.folderId())
-            .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
+        WishListFolder wishlistFolder = getWishlistFolder(wishRequest, member);
 
-        wishListProductRepository.findByBoardAndFolderId(boardId, wishlistFolder)
-            .ifPresentOrElse(
-                product -> {
-                    if (!product.isDeleted()) {
-                        throw new BbangleException("이미 위시리스트 폴더에 있는 게시물입니다.");
-                    }
-                    boolean status = product.updateWishStatus();
-                    product.getBoard()
-                        .updateWishCnt(status);
-                    if (status) {
-                        updateRankingScore(boardId, 1.0);
-                    }
-                },
-                makeNewWish(boardId, wishlistFolder, member)
-            );
+        Board board = boardRepository.findById(boardId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+
+        validateIsWishAvailable(memberId, board);
+
+        makeNewWish(board, wishlistFolder, member);
     }
 
-    private Runnable makeNewWish(Long boardId, WishlistFolder wishlistFolder, Member member) {
-        return () -> {
-            updateRankingScore(boardId, 1.0);
-            Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BbangleException("존재하지 않는 게시글입니다."));
-            WishlistProduct wishlistProduct = WishlistProduct.builder()
-                .wishlistFolder(wishlistFolder)
-                .board(board)
-                .memberId(member.getId())
-                .isDeleted(false)
-                .build();
-            WishlistProduct save = wishListProductRepository.save(wishlistProduct);
-            save.getBoard()
-                .updateWishCnt(true);
-        };
+
+    @Transactional
+    public void cancel(Long memberId, Long boardId) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+
+        WishListBoard product = wishlistBoardRepository.findByBoardId(boardId, member.getId())
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
+
+        if (product.isDeleted()) {
+            throw new BbangleException(BbangleErrorCode.WISHLIST_BOARD_ALREADY_CANCELED);
+        }
+
+        product.updateWishStatus();
+
+        updateRankingScore(boardId, -1.0);
+    }
+
+    @Transactional
+    public void deletedByDeletedMember(Long memberId) {
+        Optional<List<WishListBoard>> wishlistProducts = wishlistBoardRepository.findByMemberId(
+            memberId);
+
+        if (wishlistProducts.isPresent()) {
+            for (WishListBoard wishlistBoard : wishlistProducts.get()) {
+                wishlistBoard.delete();
+            }
+        }
+    }
+    private void validateIsWishAvailable(Long memberId, Board board) {
+        Optional<WishListBoard> wishListBoard = wishlistBoardRepository.findByBoardId(board.getId(), memberId);
+
+        if (wishListBoard.isPresent() && !wishListBoard.get().isDeleted()) {
+            throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
+        }
+    }
+
+    private WishListFolder getWishlistFolder(
+        WishListBoardRequest wishRequest,
+        Member member
+    ) {
+        if (wishRequest.folderId().equals(0L)) {
+            return wishListFolderRepository.findByMemberAndFolderName(
+                    member, DEFAULT_FOLDER_NAME)
+                .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
+        }
+
+        return wishListFolderRepository.findByMemberAndId(member,
+                wishRequest.folderId())
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
+    }
+
+    private void makeNewWish(Board board, WishListFolder wishlistFolder, Member member) {
+        updateRankingScore(board.getId(), 1.0);
+
+        WishListBoard wishlistBoard = WishListBoard.builder()
+            .wishlistFolder(wishlistFolder)
+            .board(board)
+            .memberId(member.getId())
+            .isDeleted(false)
+            .build();
+
+        WishListBoard save = wishlistBoardRepository.save(wishlistBoard);
+        save.getBoard()
+            .updateWishCnt(true);
     }
 
     private void updateRankingScore(Long boardId, Double updatingScore) {
@@ -92,38 +130,11 @@ public class WishListBoardService {
                 () -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
         ranking.updateRecommendScore(updatingScore);
         ranking.updatePopularScore(updatingScore);
+
         boardLikeInfoRedisTemplate.opsForList()
             .rightPush(LocalDateTime.now()
                     .format(formatter),
                 new BoardLikeInfo(boardId, updatingScore, LocalDateTime.now(), ScoreType.WISH));
-    }
-
-    @Transactional
-    public void deletedByDeletedMember(Long memberId) {
-        Optional<List<WishlistProduct>> wishlistProducts = wishListProductRepository.findByMemberId(
-            memberId);
-        if (wishlistProducts.isPresent()) {
-            for (WishlistProduct wishlistProduct : wishlistProducts.get()) {
-                wishlistProduct.delete();
-            }
-        }
-    }
-
-    @Transactional
-    public void cancel(Long memberId, Long boardId) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
-
-        WishlistProduct product = wishListProductRepository.findByBoardId(boardId, memberId)
-            .orElseThrow(() -> new BbangleException("사용자의 위시리스트 항목에 존재하지 않는 게시글입니다."));
-
-        if (product.isDeleted()) {
-            throw new BbangleException("이미 위시리스트 항목에서 삭제된 게시글입니다.");
-        }
-
-        product.updateWishStatus();
-
-        updateRankingScore(boardId, -1.0);
     }
 
 }
