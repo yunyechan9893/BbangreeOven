@@ -20,16 +20,22 @@ public record StoreDetailProductDto(
 
     public List<String> toTags() {
         List<String> tags = new ArrayList<>(5);
-        if (this.glutenFreeTag && tags.add(TagEnum.GLUTEN_FREE.label()))
-            ;
-        if (this.highProteinTag && tags.add(TagEnum.HIGH_PROTEIN.label()))
-            ;
-        if (this.sugarFreeTag && tags.add(TagEnum.SUGAR_FREE.label()))
-            ;
-        if (this.veganTag && tags.add(TagEnum.VEGAN.label()))
-            ;
-        if (this.ketogenicTag && tags.add(TagEnum.KETOGENIC.label()))
-            ;
+        if (this.glutenFreeTag) {
+            tags.add(TagEnum.GLUTEN_FREE.label());
+        }
+        if (this.highProteinTag) {
+            tags.add(TagEnum.HIGH_PROTEIN.label());
+        }
+        if (this.sugarFreeTag) {
+            tags.add(TagEnum.SUGAR_FREE.label());
+        }
+        if (this.veganTag) {
+            tags.add(TagEnum.VEGAN.label());
+        }
+        if (this.ketogenicTag) {
+            tags.add(TagEnum.KETOGENIC.label());
+        }
+
         return tags;
     }
 }
