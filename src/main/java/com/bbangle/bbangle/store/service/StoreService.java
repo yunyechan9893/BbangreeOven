@@ -12,7 +12,6 @@ import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.dto.StoreResponse;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.util.SecurityUtils;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 public class StoreService {
 
     private final StoreRepository storeRepository;
-    private final MemberRepository memberRepository;
 
     public StoreResponse getStoreResponse(Long memberId, Long storeId){
         return storeRepository.getStoreResponse(memberId, storeId);
@@ -37,15 +35,7 @@ public class StoreService {
         return storeRepository.getStoreBoardsResponse(memberId, storeId, boardIdAsCursorId);
     }
 
-    public StoreCustomPage<List<StoreResponseDto>> getList(Long cursorId) {
-        if (!SecurityUtils.isLogin()) {
-            return storeRepository.findNextCursorPageWithoutLogin(cursorId);
-        }
-
-        Long memberId = SecurityUtils.getMemberId();
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(BbangleException::new);
-        return storeRepository.findNextCursorPageWithLogin(cursorId, member);
+    public StoreCustomPage<List<StoreResponseDto>> getList(Long cursorId, Long memberId) {
+        return storeRepository.getStoreList(cursorId, memberId);
     }
-
 }

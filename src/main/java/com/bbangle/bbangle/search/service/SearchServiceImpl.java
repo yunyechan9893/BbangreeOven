@@ -42,17 +42,19 @@ public class SearchServiceImpl implements SearchService {
     private final String BEST_KEYWORD_KEY = "keyword";
     private final String[] DEFAULT_SEARCH_KEYWORDS = {"글루텐프리", "비건", "저당", "키토제닉"};
     private final int DEFAULT_PAGE = 10;
+    private final int LIMIT_KEYWORD_COUNT = 10;
 
     private final SearchRepository searchRepository;
     private final RedisRepository redisRepository;
     private final StoreRepository storeRepository;
     private final BoardRepository boardRepository;
 
-    private void updateRedisWithTokenizedStoreTitles(){
+    private void updateRedisWithTokenizedStoreTitles() {
         Map<String, List<Long>> storeTitleTokenToIdMapping;
 
         HashMap<Long, String> storeTitles = storeRepository.getAllStoreTitle();
-        storeTitleTokenToIdMapping = createTitleTokenToIdMapping(storeTitles, RedisEnum.STORE.name());
+        storeTitleTokenToIdMapping = createTitleTokenToIdMapping(storeTitles,
+            RedisEnum.STORE.name());
         try {
             synchronizeRedis(storeTitleTokenToIdMapping, STORE_MIGRATION);
         } catch (Exception e) {
@@ -68,13 +70,14 @@ public class SearchServiceImpl implements SearchService {
     private List<String> getAllTokenizer(String title) {
         // 토큰화된 단어를 전부 반환
         return getTokenizer(title).getTokenList()
-                .stream()
-                .map(token -> token.getMorph())
-                .toList();
+            .stream()
+            .map(token -> token.getMorph())
+            .toList();
     }
 
     private List<String> tokenizeTitle(String title, String targetType) {
-        return targetType.equals(RedisEnum.STORE.name()) ? getAllTokenizer(title) : getNTokenizer(title);
+        return targetType.equals(RedisEnum.STORE.name()) ? getAllTokenizer(title)
+            : getNTokenizer(title);
     }
 
 
@@ -92,7 +95,8 @@ public class SearchServiceImpl implements SearchService {
         mapping.computeIfAbsent(token, k -> new ArrayList<>()).add(id);
     }
 
-    private Map<String, List<Long>> createTitleTokenToIdMapping(HashMap<Long, String> targetTitles, String targetType) {
+    private Map<String, List<Long>> createTitleTokenToIdMapping(HashMap<Long, String> targetTitles,
+        String targetType) {
         Map<String, List<Long>> titleTokenToIdMapping = new HashMap<>();
 
         for (Map.Entry<Long, String> entry : targetTitles.entrySet()) {
@@ -119,10 +123,10 @@ public class SearchServiceImpl implements SearchService {
         // resultMap을 토큰 : [BoardId,...] 로 변경하여 저장
         for (Map.Entry<String, List<Long>> entry : resultMap.entrySet()) {
             redisRepository.set(targetType, entry.getKey(),
-                    entry.getValue()
-                            .stream()
-                            .map(id -> id.toString())
-                            .toArray(String[]::new));
+                entry.getValue()
+                    .stream()
+                    .map(id -> id.toString())
+                    .toArray(String[]::new));
         }
     }
 
@@ -132,26 +136,27 @@ public class SearchServiceImpl implements SearchService {
 
         String migrationInfo = redisRepository.getString(RedisEnum.MIGRATION.name(), migrationType);
         String redisNamespace = migrationType == BOARD_MIGRATION ? RedisEnum.BOARD.name()
-                : RedisEnum.STORE.name();
+            : RedisEnum.STORE.name();
 
         if (
-                migrationInfo.equals("") ||
-                        LocalDateTime.parse(migrationInfo)
-                                .isBefore(oneHourAgo)
+            migrationInfo.equals("") ||
+                LocalDateTime.parse(migrationInfo)
+                    .isBefore(oneHourAgo)
         ) {
             redisRepository.setFromString(RedisEnum.MIGRATION.name(), migrationType,
-                    LocalDateTime.now()
-                            .toString());
+                LocalDateTime.now()
+                    .toString());
             uploadRedis(resultMap, redisNamespace);
             log.info("[완료] 보드 동기화");
         }
     }
 
-    private void updateRedisWithTokenizedBoardTitles(){
+    private void updateRedisWithTokenizedBoardTitles() {
         Map<String, List<Long>> boardTitleTokenToIdMapping;
 
         HashMap<Long, String> titlesAtBoard = boardRepository.getAllBoardTitle();
-        boardTitleTokenToIdMapping = createTitleTokenToIdMapping(titlesAtBoard, RedisEnum.BOARD.name());
+        boardTitleTokenToIdMapping = createTitleTokenToIdMapping(titlesAtBoard,
+            RedisEnum.BOARD.name());
         try {
             synchronizeRedis(boardTitleTokenToIdMapping, BOARD_MIGRATION);
         } catch (Exception e) {
@@ -211,14 +216,14 @@ public class SearchServiceImpl implements SearchService {
     @Transactional
     public void saveKeyword(Long memberId, String keyword) {
         var member = Member.builder()
-                .id(memberId)
-                .build();
+            .id(memberId)
+            .build();
 
         var search = Search.builder()
-                .member(member)
-                .keyword(keyword)
-                .createdAt(LocalDateTime.now())
-                .build();
+            .member(member)
+            .keyword(keyword)
+            .createdAt(LocalDateTime.now())
+            .build();
 
         searchRepository.save(search);
     }
@@ -229,7 +234,7 @@ public class SearchServiceImpl implements SearchService {
 
         Pageable pageable = PageRequest.of(boardRequest.page(), DEFAULT_PAGE);
 
-        if (boardRequest.keyword().isBlank()){
+        if (boardRequest.keyword().isBlank()) {
             return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE, 0L);
         }
 
@@ -242,84 +247,84 @@ public class SearchServiceImpl implements SearchService {
             .distinct()
             .collect(Collectors.toList());
 
-        if (searchedBoardIndexs.isEmpty()){
+        if (searchedBoardIndexs.isEmpty()) {
             return SearchBoardResponse.getEmpty(pageable.getPageNumber(), DEFAULT_PAGE, 0L);
         }
 
-        Long searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(boardRequest, searchedBoardIndexs);
-        return searchRepository.getSearchedBoard(memberId, searchedBoardIndexs, boardRequest, pageable, searchedBoardAllCount);
+        Long searchedBoardAllCount = searchRepository.getSearchedBoardAllCount(boardRequest,
+            searchedBoardIndexs);
+        return searchRepository.getSearchedBoard(memberId, searchedBoardIndexs, boardRequest,
+            pageable, searchedBoardAllCount);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public SearchStoreResponse getSearchStoreDtos(Long memberId, int page, String keyword){
-        if (keyword.isBlank()){
+    public SearchStoreResponse getSearchStoreDtos(Long memberId, int page, String keyword) {
+        if (keyword.isBlank()) {
             return SearchStoreResponse.getEmpty(page, DEFAULT_PAGE);
         }
 
         List<String> keywordTokens = getAllTokenizer(keyword);
 
         List<Long> storeIndexs = keywordTokens.stream()
-                .map(key -> redisRepository.get(RedisEnum.STORE.name(), key))
-                .filter(list -> list != null)
-                .flatMap(List::stream)
-                .distinct()
-                .collect(Collectors.toList());
+            .map(key -> redisRepository.get(RedisEnum.STORE.name(), key))
+            .filter(list -> list != null)
+            .flatMap(List::stream)
+            .distinct()
+            .collect(Collectors.toList());
 
         if (storeIndexs.isEmpty()) {
             return SearchStoreResponse.getEmpty(page, DEFAULT_PAGE);
         }
 
-        List<StoreResponseDto> storeResponseDtos = searchRepository.getSearchedStore(memberId, storeIndexs, PageRequest.of(page, DEFAULT_PAGE));
+        List<StoreResponseDto> storeResponseDtos = searchRepository.getSearchedStore(memberId,
+            storeIndexs, PageRequest.of(page, DEFAULT_PAGE));
         //스토어 및 보드 검색 결과 가져오기
         return SearchStoreResponse.builder()
-                .content(storeResponseDtos)
-                .itemAllCount(storeIndexs.size())
-                .pageNumber(page)
-                .limitItemCount(DEFAULT_PAGE)
-                .currentItemCount(storeResponseDtos.size())
-                .existNextPage(storeIndexs.size() - ((page + 1) * DEFAULT_PAGE) > 0)
-                .build();
+            .content(storeResponseDtos)
+            .itemAllCount(storeIndexs.size())
+            .pageNumber(page)
+            .limitItemCount(DEFAULT_PAGE)
+            .currentItemCount(storeResponseDtos.size())
+            .existNextPage(storeIndexs.size() - ((page + 1) * DEFAULT_PAGE) > 0)
+            .build();
     }
 
     @Override
     @Transactional(readOnly = true)
     public RecencySearchResponse getRecencyKeyword(Long memberId) {
         Member member = Member.builder()
-                .id(memberId)
-                .build();
+            .id(memberId)
+            .build();
 
-        return memberId==1L ?
-                RecencySearchResponse.getEmpty():
-                RecencySearchResponse.builder()
-                        .content(searchRepository.getRecencyKeyword(member))
-                        .build();
+        return memberId == 1L ?
+            RecencySearchResponse.getEmpty() :
+            RecencySearchResponse.builder()
+                .content(searchRepository.getRecencyKeyword(member))
+                .build();
     }
 
     @Override
     @Transactional
     public Boolean deleteRecencyKeyword(String keyword, Long memberId) {
         Member member = Member.builder()
-                .id(memberId)
-                .build();
+            .id(memberId)
+            .build();
 
-        searchRepository.markAsDeleted(keyword,member);
+        searchRepository.markAsDeleted(keyword, member);
         return true;
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<String> getBestKeyword() {
         return redisRepository.getStringList(
-                RedisEnum.BEST_KEYWORD.name(),
-                BEST_KEYWORD_KEY
+            RedisEnum.BEST_KEYWORD.name(),
+            BEST_KEYWORD_KEY
         );
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<String> getAutoKeyword(String keyword) {
-        // 초기에 등록된 트리 데이터를 이용해, 자동완성 데이터를 반환
-        return autoCompleteEngine.autoComplete(keyword, 7);
+        return autoCompleteEngine.autoComplete(keyword, LIMIT_KEYWORD_COUNT);
     }
 }

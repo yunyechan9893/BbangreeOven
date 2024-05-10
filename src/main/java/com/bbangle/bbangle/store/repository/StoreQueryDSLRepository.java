@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.store.repository;
 
+import com.bbangle.bbangle.board.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
@@ -23,9 +24,5 @@ public interface StoreQueryDSLRepository {
 
     HashMap<Long, String> getAllStoreTitle();
 
-    StoreCustomPage<List<StoreResponseDto>> findNextCursorPageWithoutLogin(Long cursorId);
-
-    StoreCustomPage<List<StoreResponseDto>> findNextCursorPageWithLogin(Long cursorId,
-        Member member);
-
+    StoreCustomPage<List<StoreResponseDto>> getStoreList(Long cursorId, Long memberId);
 }

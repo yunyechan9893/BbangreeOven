@@ -2,6 +2,7 @@ package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.*;
 import com.bbangle.bbangle.board.dto.*;
+import com.bbangle.bbangle.board.dto.QBoardDetailDto;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
@@ -10,14 +11,13 @@ import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.wishList.domain.QWishlistFolder;
-import com.bbangle.bbangle.wishList.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishList.domain.QWishlistStore;
-import com.bbangle.bbangle.wishList.domain.WishlistFolder;
+import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
+import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
+import com.bbangle.bbangle.wishlist.domain.QWishListStore;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.jpa.impl.JPAQuery;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
@@ -37,8 +37,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
-import static com.bbangle.bbangle.wishList.domain.QWishlistProduct.wishlistProduct;
-
 @Repository
 @Slf4j
 @RequiredArgsConstructor
@@ -53,12 +51,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final JPAQueryFactory queryFactory;
     private final QBoard board = QBoard.board;
     private final QProduct product = QProduct.product;
+    private final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private final QStore store = QStore.store;
-    private final QWishlistProduct products = QWishlistProduct.wishlistProduct;
-    private final QWishlistFolder folder = QWishlistFolder.wishlistFolder;
+    private final QWishListFolder folder = QWishListFolder.wishListFolder;
     private final QProductImg productImg = QProductImg.productImg;
     private final QBoardDetail boardDetail = QBoardDetail.boardDetail;
-    private final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
+    private final QWishListStore wishlistStore = QWishListStore.wishListStore;
     private final QRanking ranking = QRanking.ranking;
 
     @Override
@@ -122,9 +120,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     @Override
     public Slice<BoardResponseDto> getAllByFolder(
         String sort, Pageable pageable, Long wishListFolderId,
-        WishlistFolder selectedFolder
+        WishListFolder selectedFolder
     ) {
-        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort, board, products);
+        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort);
 
         List<Board> boards = queryFactory
             .selectFrom(board)
@@ -133,11 +131,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(board.store, store)
             .fetchJoin()
             .join(board)
-            .on(board.id.eq(products.board.id))
-            .join(products)
-            .on(products.wishlistFolder.eq(folder))
-            .where(products.wishlistFolder.eq(selectedFolder)
-                .and(products.isDeleted.eq(false)))
+            .on(board.id.eq(wishListBoard.board.id))
+            .join(wishListBoard)
+            .on(wishListBoard.wishlistFolder.eq(folder))
+            .where(wishListBoard.wishlistFolder.eq(selectedFolder)
+                .and(wishListBoard.isDeleted.eq(false)))
             .offset(pageable.getOffset())
             .orderBy(orderSpecifier)
             .limit(pageable.getPageSize() + 1)
@@ -213,8 +211,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .count() > 1;
     }
 
-    private Boolean setWishlistBoard(List<Expression<?>> columns){
-        columns.add(wishlistProduct.id);
+    private Boolean setWishListBoard(List<Expression<?>> columns){
+        columns.add(wishListBoard.id);
         return true;
     }
 
@@ -243,7 +241,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         columns.add(productImg.id);
         columns.add(productImg.url);
 
-        if (memberId != null && memberId > 0 && setWishlistBoard(columns));
+        if (memberId != null && memberId > 0 && setWishListBoard(columns));
         if (memberId != null && memberId > 0 && setWishlistStore(columns));
 
         return columns.toArray(new Expression[0]);
@@ -254,10 +252,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private Boolean setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId){
-        return jpaQuery.leftJoin(wishlistProduct)
-                .on(wishlistProduct.board.id.eq(board.id),
-                        wishlistProduct.memberId.eq(memberId),
-                        wishlistProduct.isDeleted.eq(false))
+        return jpaQuery.leftJoin(wishListBoard)
+                .on(wishListBoard.board.id.eq(board.id),
+                    wishListBoard.memberId.eq(memberId),
+                    wishListBoard.isDeleted.eq(false))
                 .leftJoin(wishlistStore)
                 .on(wishlistStore.store.id.eq(store.id),
                         wishlistStore.member.id.eq(memberId),
@@ -329,7 +327,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .images(boardImgDtos.stream()
                         .toList())
                 .tags(duplicatedTags)
-                .isWished(tupleReleteBoard.get(wishlistProduct.id) != null ? true : false)
+                .isWished(tupleReleteBoard.get(wishListBoard.id) != null ? true : false)
                 .isBundled(isBundled)
                 .build();
 
@@ -389,11 +387,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private List<Long> getLikedContentsIds(List<Long> responseList, Long memberId) {
         return queryFactory.select(board.id)
             .from(board)
-            .leftJoin(wishlistProduct)
-            .on(board.eq(wishlistProduct.board))
+            .leftJoin(wishListBoard)
+            .on(board.eq(wishListBoard.board))
             .where(board.id.in(responseList)
-                .and(wishlistProduct.memberId.eq(memberId))
-                .and(wishlistProduct.isDeleted.eq(false)))
+                .and(wishListBoard.memberId.eq(memberId))
+                .and(wishListBoard.isDeleted.eq(false)))
             .fetch();
     }
 
@@ -449,7 +447,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         Long nextCursor = cursorRanking.getBoard()
             .getId();
 
-        if (Objects.isNull(cursorInfo.targetId())) {
+        if (Objects.isNull(cursorInfo) || Objects.isNull(cursorInfo.targetId())) {
             Long boardCnt = queryFactory
                 .select(board.countDistinct())
                 .from(store)
@@ -512,19 +510,17 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return boards.size() >= PAGE_SIZE + 1;
     }
 
-    private static OrderSpecifier<?> sortTypeFolder(
-        String sort,
-        QBoard board,
-        QWishlistProduct products
+    private OrderSpecifier<?> sortTypeFolder(
+        String sort
     ) {
         OrderSpecifier<?> orderSpecifier;
         if (sort == null) {
-            orderSpecifier = products.createdAt.desc();
+            orderSpecifier = wishListBoard.createdAt.desc();
             return orderSpecifier;
         }
         switch (SortType.fromString(sort)) {
             case RECENT:
-                orderSpecifier = products.createdAt.desc();
+                orderSpecifier = wishListBoard.createdAt.desc();
                 break;
             case LOW_PRICE:
                 orderSpecifier = board.price.asc();

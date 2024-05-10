@@ -1,14 +1,12 @@
 name: Measure coverage
+
 on:
   pull_request:
-  push:
-    branches:
-      - dev
-
+  
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
+    steps:  
       - name: 체크 아웃
         uses: actions/checkout@v4
       - name: 테스트 커버리지를 PR에 코멘트로 등록합니다
@@ -19,6 +17,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 10
           min-coverage-changed-files: 10
-          skip-if-no-changes: true
-          update-comment: true
           title: Code Coverage

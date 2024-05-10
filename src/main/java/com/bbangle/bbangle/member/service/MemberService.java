@@ -14,13 +14,14 @@ import com.bbangle.bbangle.member.dto.WithdrawalRequestDto;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.repository.SignatureAgreementRepository;
 import com.bbangle.bbangle.member.repository.WithdrawalRepository;
-import com.bbangle.bbangle.wishList.service.WishListBoardService;
-import com.bbangle.bbangle.wishList.service.WishListFolderService;
+import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
+import com.bbangle.bbangle.wishlist.service.WishListBoardService;
+import com.bbangle.bbangle.wishlist.service.WishListFolderService;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import com.bbangle.bbangle.wishList.service.WishListStoreService;
+import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class MemberService {
     private static final String DEFAULT_MEMBER_NAME = "비회원";
     private static final String DEFAULT_MEMBER_NICKNAME = "비회원";
     private static final String DEFAULT_MEMBER_EMAIL = "example@xxxxx.com";
+    private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 
     private final S3Service imageService;
     private final MemberRepository memberRepository;
@@ -47,8 +49,6 @@ public class MemberService {
 
     @PostConstruct
     public void initSetting() {
-        // 1L MemberId에 멤버는 무조건 비회원
-        // 만약 1L 멤버가 없다면 비회원 멤버 생성
         memberRepository.findById(DEFAULT_MEMBER_ID)
             .ifPresentOrElse(
                 member -> log.info("Default member already exists"),
@@ -143,4 +143,24 @@ public class MemberService {
           .build());
     }
   }
+
+    public Member getFirstJoinedMember(Member oauthMember) {
+        Member newMember = saveNewJoinedOauthMember(oauthMember);
+        Long newMemberId = newMember.getId();
+        wishListFolderService.create(newMemberId, new FolderRequestDto(DEFAULT_FOLDER_NAME));
+
+        return newMember;
+    }
+
+    private Member saveNewJoinedOauthMember(Member oauthMember) {
+        Member newMember = Member.builder()
+            .nickname(oauthMember.getNickname())
+            .provider(oauthMember.getProvider())
+            .providerId(oauthMember.getProviderId())
+            .build();
+        memberRepository.save(newMember);
+
+        return newMember;
+    }
+
 }

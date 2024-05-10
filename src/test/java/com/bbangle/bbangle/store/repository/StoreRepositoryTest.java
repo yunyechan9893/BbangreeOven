@@ -16,12 +16,13 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.dto.StoreResponse;
-import com.bbangle.bbangle.wishList.domain.WishlistProduct;
-import com.bbangle.bbangle.wishList.repository.WishListProductRepository;
-import com.bbangle.bbangle.wishList.domain.WishlistFolder;
-import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishList.domain.WishlistStore;
-import com.bbangle.bbangle.wishList.repository.WishListStoreRepository;
+
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.Arrays;
 import java.util.Collection;
 import org.junit.jupiter.api.AfterEach;
@@ -33,8 +34,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
 
 @SpringBootTest
@@ -59,7 +58,7 @@ public class StoreRepositoryTest {
     private WishListFolderRepository wishListFolderRepository;
 
     @Autowired
-    private WishListProductRepository wishListProductRepository;
+    private WishListBoardRepository wishListProductRepository;
 
     @Autowired
     private WishListStoreRepository wishListStoreRepository;
@@ -289,15 +288,15 @@ public class StoreRepositoryTest {
                 .build());
     }
 
-    private WishlistProduct createWishlistProduct(Member member, Board board) {
-        WishlistFolder wishlistFolder = wishListFolderRepository.save(
-            WishlistFolder.builder().
+    private WishListBoard createWishlistProduct(Member member, Board board) {
+        WishListFolder wishlistFolder = wishListFolderRepository.save(
+            WishListFolder.builder().
                 folderName("Test").
                 member(member).
                 build());
 
         return wishListProductRepository.save(
-            WishlistProduct.builder().board(board)
+            WishListBoard.builder().board(board)
                 .memberId(member.getId())
                 .wishlistFolder(wishlistFolder)
                 .build());
@@ -305,7 +304,7 @@ public class StoreRepositoryTest {
 
     private void createWishlistStore(Store store, Member member) {
         wishListStoreRepository.save(
-            WishlistStore.builder()
+            WishListStore.builder()
                 .store(store)
                 .member(member)
                 .build());

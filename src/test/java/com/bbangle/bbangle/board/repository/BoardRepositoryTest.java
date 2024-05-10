@@ -1,34 +1,40 @@
 package com.bbangle.bbangle.board.repository;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.arrayWithSize;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.member.repository.MemberRepository;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
-import com.bbangle.bbangle.wishList.domain.WishlistFolder;
-import com.bbangle.bbangle.wishList.domain.WishlistProduct;
-import com.bbangle.bbangle.wishList.domain.WishlistStore;
-import com.bbangle.bbangle.wishList.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishList.repository.WishListProductRepository;
-import com.bbangle.bbangle.wishList.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishlist.domain.WishListBoard;
+import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
+import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.*;
 
 import static org.hamcrest.Matchers.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 public class BoardRepositoryTest {
@@ -48,7 +54,7 @@ public class BoardRepositoryTest {
     @Autowired
     WishListFolderRepository wishListFolderRepository;
     @Autowired
-    WishListProductRepository wishListProductRepository;
+    WishListBoardRepository wishlistBoardRepository;
     @Autowired
     WishListStoreRepository wishListStoreRepository;
     Store store;
@@ -223,19 +229,19 @@ public class BoardRepositoryTest {
     }
 
     private void createWishlist() {
-        wishListStoreRepository.save(WishlistStore.builder()
+        wishListStoreRepository.save(WishListStore.builder()
             .member(member)
             .store(store)
             .isDeleted(false)
             .build());
 
         var wishlistFolder = wishListFolderRepository.save(
-            WishlistFolder.builder()
+            WishListFolder.builder()
                 .member(member)
                 .isDeleted(false)
                 .build());
 
-        wishListProductRepository.save(WishlistProduct.builder()
+        wishlistBoardRepository.save(WishListBoard.builder()
             .memberId(member.getId())
             .wishlistFolder(wishlistFolder)
             .board(board)

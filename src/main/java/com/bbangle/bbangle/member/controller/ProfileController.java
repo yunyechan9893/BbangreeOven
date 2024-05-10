@@ -1,16 +1,20 @@
 package com.bbangle.bbangle.member.controller;
 
 import com.bbangle.bbangle.common.dto.CommonResult;
-import com.bbangle.bbangle.common.message.MessageResDto;
+import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
+import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.member.service.ProfileServiceImpl;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -20,6 +24,10 @@ public class ProfileController {
 
     private final ProfileServiceImpl profileService;
     private final ResponseService responseService;
+    private static final String TYPING_NICKNAME = "닉네임을 입력해주세요!";
+    private static final String RESTRICT_NICKNAME_20 = "닉네임은 20자 제한이에요!";
+    private static final String DUPLICATE_NICKNAME = "중복된 닉네임이에요";
+    private static final String AVAILABLE_NICKNAME = "사용가능한 닉네임이에요!";
 
     /**
      * 프로필 조회
@@ -45,16 +53,16 @@ public class ProfileController {
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
         if(nickname.isEmpty() || nickname == null){
-            return responseService.getSuccessResult("닉네임을 입력해주세요!", 0);
+            return responseService.getSingleResult(new MessageDto(TYPING_NICKNAME, false));
         }
         if(nickname.length() > 20){
-            return responseService.getSuccessResult("닉네임은 20자 제한이에요!", 0);
+            return responseService.getSingleResult(new MessageDto(RESTRICT_NICKNAME_20, false));
         }
         String existedNickname = profileService.doubleCheckNickname(nickname);
         if (!existedNickname.isEmpty()){
-            return responseService.getSuccessResult("중복된 닉네임이에요", 0);
+            return responseService.getSingleResult(new MessageDto(DUPLICATE_NICKNAME, false));
         }
-        return responseService.getSuccessResult("사용가능한 닉네임이에요!", 0);
+        return responseService.getSingleResult(new MessageDto(AVAILABLE_NICKNAME, true));
     }
 
     @PutMapping
