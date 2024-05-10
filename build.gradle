@@ -9,6 +9,7 @@ plugins {
 	id 'org.springframework.boot' version '3.2.1'
 	id 'io.spring.dependency-management' version '1.1.4'
 	id 'jacoco'
+//	id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
 }
 
 group = 'com.bbangle'
@@ -24,9 +25,9 @@ jacoco {
 }
 
 configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
 }
 
 test {
@@ -60,7 +61,7 @@ jacocoTestReport {
 			classDirectories.setFrom(files(classDirectories.files.collect {
 				fileTree(dir: it,
 						exclude: [
-						        '**/*Application*',
+								'**/*Application*',
 								'**/*Exception*',
 								'**/dto/**',
 								'**/repository/**',
@@ -151,7 +152,7 @@ dependencies {
 	// 아마존 S3 API
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.11.238'
 
-    // faker
-    implementation 'net.datafaker:datafaker:2.1.0'
+	// faker
+	implementation 'net.datafaker:datafaker:2.1.0'
 }
 
