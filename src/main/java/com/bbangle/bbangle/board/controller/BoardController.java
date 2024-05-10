@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,22 +38,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/boards")
 @Tag(name = "Boards", description = "게시판 API")
+@RequiredArgsConstructor
 public class BoardController {
 
-    public BoardController(
-        BoardService boardService,
-        @Qualifier("defaultRedisTemplate")
-        RedisTemplate<String, Object> redisTemplate,
-        ResponseService responseService
-        ) {
-        this.boardService = boardService;
-        this.redisTemplate = redisTemplate;
-        this.responseService = responseService;
-    }
-
+    @Qualifier("defaultRedisTemplate")
+    private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
     private final BoardService boardService;
-    private final RedisTemplate<String, Object> redisTemplate;
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(
@@ -66,7 +58,7 @@ public class BoardController {
     public CommonResult getList(
         @ParameterObject
         FilterRequest filterRequest,
-        @RequestParam(required = false)
+        @RequestParam(required = false, name = "sort")
         SortType sort,
         @ParameterObject
         CursorInfo cursorInfo,
@@ -114,13 +106,13 @@ public class BoardController {
 
     @GetMapping("/{id}")
     public CommonResult getBoardDetailResponse(
-            @PathVariable("id")
-            Long boardId,
-            @AuthenticationPrincipal
-            Long memberId
+        @PathVariable("id")
+        Long boardId,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
         BoardDetailResponse boardDetailResponse =
-                boardService.getBoardDetailResponse(memberId, boardId);
+            boardService.getBoardDetailResponse(memberId, boardId);
         return responseService.getSingleResult(boardDetailResponse);
     }
 

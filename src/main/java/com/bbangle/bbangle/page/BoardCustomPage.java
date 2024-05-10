@@ -2,6 +2,7 @@ package com.bbangle.bbangle.page;
 
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 
@@ -31,6 +32,19 @@ public class BoardCustomPage<T> extends CustomPage<T> {
         this.cursorScore = cursorScore;
         this.boardCount = boardCount;
         this.storeCount = storeCount;
+    }
+
+    public static BoardCustomPage<List<BoardResponseDto>> emptyPage() {
+        long emptyResultNextCursor = -1L;
+        double emptyResultScore = -1.0;
+        boolean emptyResultHasNext = false;
+
+        return from(
+            Collections.emptyList(),
+            emptyResultNextCursor,
+            emptyResultScore,
+            emptyResultHasNext
+        );
     }
 
     public static BoardCustomPage<List<BoardResponseDto>> from(
