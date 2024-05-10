@@ -315,7 +315,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     }
 
     @Override
-    public StoreDetailCustomPage<List<StoreBoardsResponse>> getStoreBoardList(
+    public StoreDetailCustomPage<List<StoreBoardsResponse>> getStoreBoardsResponse(
         Long memberId,
         Long storeId,
         Long boardIdAsCursorId

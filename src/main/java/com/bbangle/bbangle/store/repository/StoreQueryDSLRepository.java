@@ -18,7 +18,7 @@ public interface StoreQueryDSLRepository {
 
     List<PopularBoardResponse> getPopularBoardResponses(Long memberId, Long storeId);
 
-    StoreDetailCustomPage<List<StoreBoardsResponse>> getStoreBoardList(Long memberId, Long storeId,
+    StoreDetailCustomPage<List<StoreBoardsResponse>> getStoreBoardsResponse(Long memberId, Long storeId,
         Long boardIdAsCursorId);
 
     HashMap<Long, String> getAllStoreTitle();

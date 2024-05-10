@@ -151,7 +151,7 @@ public class StoreRepositoryTest {
 
         Long memberId = member.getId();
         Long cursorId = null;
-        StoreDetailCustomPage<List<StoreBoardsResponse>> storeDetailCustomPage = storeRepository.getStoreBoardList(
+        StoreDetailCustomPage<List<StoreBoardsResponse>> storeDetailCustomPage = storeRepository.getStoreBoardsResponse(
             memberId, store.getId(), cursorId);
 
         int storeBoardListDtoSize = storeDetailCustomPage.getContent().size();
@@ -176,7 +176,7 @@ public class StoreRepositoryTest {
         Long storeId = store.getId();
         Long cursorId = null;
 
-        StoreDetailCustomPage<List<StoreBoardsResponse>> storeDetailCustomPage = storeRepository.getStoreBoardList(
+        StoreDetailCustomPage<List<StoreBoardsResponse>> storeDetailCustomPage = storeRepository.getStoreBoardsResponse(
             memberId, storeId, cursorId);
         int storeBoardListDtoSize = storeDetailCustomPage.getContent().size();
 
@@ -200,7 +200,7 @@ public class StoreRepositoryTest {
         Long cursorId = null;
         Long memberId = null;
         Long storeId = store.getId();
-        StoreDetailCustomPage<List<StoreBoardsResponse>> storeDetailCustomPage = storeRepository.getStoreBoardList(
+        StoreDetailCustomPage<List<StoreBoardsResponse>> storeDetailCustomPage = storeRepository.getStoreBoardsResponse(
             memberId, storeId, cursorId);
         int storeBoardListDtoSize = storeDetailCustomPage.getContent().size();
 
@@ -227,7 +227,7 @@ public class StoreRepositoryTest {
         Long memberId = null;
         Long cursorId = lastBoardId - pageCount;
 
-        StoreDetailCustomPage<List<StoreBoardsResponse>> storeDetailCustomPage = storeRepository.getStoreBoardList(
+        StoreDetailCustomPage<List<StoreBoardsResponse>> storeDetailCustomPage = storeRepository.getStoreBoardsResponse(
             memberId, store.getId(), cursorId);
         int storeBoardListDtoSize = storeDetailCustomPage.getContent().size();
 

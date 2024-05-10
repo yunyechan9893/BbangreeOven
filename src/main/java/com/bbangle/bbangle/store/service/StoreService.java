@@ -28,13 +28,13 @@ public class StoreService {
         return storeRepository.getStoreResponse(memberId, storeId);
     }
 
-    public List<PopularBoardResponse> getPopularBoardResponse(Long memberId, Long storeId) {
+    public List<PopularBoardResponse> getPopularBoardResponses(Long memberId, Long storeId) {
         return storeRepository.getPopularBoardResponses(memberId, storeId);
     }
 
     public StoreDetailCustomPage<List<StoreBoardsResponse>> getStoreAllBoard(Long memberId, Long storeId,
         Long boardIdAsCursorId) {
-        return storeRepository.getStoreBoardList(memberId, storeId, boardIdAsCursorId);
+        return storeRepository.getStoreBoardsResponse(memberId, storeId, boardIdAsCursorId);
     }
 
     public StoreCustomPage<List<StoreResponseDto>> getList(Long cursorId) {

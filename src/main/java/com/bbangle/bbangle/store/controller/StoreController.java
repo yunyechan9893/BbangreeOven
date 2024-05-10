@@ -35,8 +35,8 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        StoreResponse storeDetailResponse = storeService.getStoreResponse(memberId, storeId);
-        return responseService.getSingleResult(storeDetailResponse);
+        StoreResponse getStoreResponse = storeService.getStoreResponse(memberId, storeId);
+        return responseService.getSingleResult(getStoreResponse);
     }
 
     @GetMapping("/{storeId}/boards/best")
@@ -46,7 +46,7 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        List<PopularBoardResponse> popularBoardResponses = storeService.getPopularBoardResponse(
+        List<PopularBoardResponse> popularBoardResponses = storeService.getPopularBoardResponses(
             memberId, storeId);
         return responseService.getSingleResult(popularBoardResponses);
     }
@@ -60,8 +60,8 @@ public class StoreController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        StoreDetailCustomPage<List<StoreBoardsResponse>> storeAllBoardDtos = storeService.getStoreAllBoard(
+        StoreDetailCustomPage<List<StoreBoardsResponse>> StoreBoardsResponses = storeService.getStoreAllBoard(
             memberId, storeId, boardIdAsCursorId);
-        return responseService.getSingleResult(storeAllBoardDtos);
+        return responseService.getSingleResult(StoreBoardsResponses);
     }
 }
