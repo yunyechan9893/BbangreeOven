@@ -2,6 +2,7 @@ package com.bbangle.bbangle.store.dto;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.querydsl.core.annotations.QueryProjection;
+import java.util.Objects;
 import lombok.Builder;
 
 @Builder
@@ -25,12 +26,12 @@ public record PopularBoardDto(
             .boardProfile(boarProfile)
             .boardTitle(boardTitle)
             .boardPrice(boardPrice)
-            .isWished(isEmptyWishlist(wishlistBoardId))
+            .isWished(isNonEmptyWishlist(wishlistBoardId))
             .isBundled(false)
             .build();
     }
 
-    private Boolean isEmptyWishlist(Long wishlistId) {
-        return wishlistId != null && wishlistId > 0;
+    private Boolean isNonEmptyWishlist(Long wishlistId) {
+        return Objects.nonNull(wishlistId) && wishlistId > 0;
     }
 }

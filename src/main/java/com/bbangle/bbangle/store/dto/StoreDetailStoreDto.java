@@ -2,6 +2,7 @@ package com.bbangle.bbangle.store.dto;
 
 import com.bbangle.bbangle.board.domain.Category;
 import com.querydsl.core.annotations.QueryProjection;
+import java.util.Objects;
 import lombok.Builder;
 
 @Builder
@@ -23,11 +24,11 @@ public record StoreDetailStoreDto(
             .storeProfile(storeProfile)
             .storeTitle(storeTitle)
             .storeIntroduce(storeIntroduce)
-            .isWished(isEmptyWishlist(storeWishlistId))
+            .isWished(isNonEmptyWishlist(storeWishlistId))
             .build();
     }
 
-    private Boolean isEmptyWishlist(Long wishlistId) {
-        return wishlistId > 0;
+    private Boolean isNonEmptyWishlist(Long wishlistId) {
+        return Objects.nonNull(wishlistId) && wishlistId > 0;
     }
 }
