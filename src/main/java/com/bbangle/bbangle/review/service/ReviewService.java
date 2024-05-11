@@ -13,7 +13,6 @@ import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +39,7 @@ public class ReviewService {
             .boardId(reviewRequest.boardId())
             .build();
         List<Badge> badges = reviewRequest.badges();
-        for (Badge badge : badges) {
-            review.insertBadge(badge);
-        }
+        badges.forEach(review::insertBadge);
         reviewRepository.save(review);
         if(Objects.isNull(reviewRequest.photos())){
             return;
@@ -56,11 +53,9 @@ public class ReviewService {
         List<MultipartFile> photos = reviewRequest.photos();
         photos.stream()
             .map(photo -> s3Service.saveImage(photo, BOARD_FOLDER + boardId + REVIEW_FOLDER + reviewId))
-            .map(reviewImgPath -> reviewImgRepository.save(ReviewImg.builder()
+            .forEach(reviewImgPath -> reviewImgRepository.save(ReviewImg.builder()
                                         .reviewId(reviewId)
                                         .url(reviewImgPath)
-                                        .build())
-            )
-            .collect(Collectors.toList());
+                                        .build()));
     }
 }
