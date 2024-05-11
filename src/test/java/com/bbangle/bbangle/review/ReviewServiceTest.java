@@ -87,9 +87,9 @@ public class ReviewServiceTest {
 
         //then
         assertThat(reviewList).hasSize(1);
-        assertThat(reviewList.get(0).getBadge1()).isEqualTo("GOOD");
-        assertThat(reviewList.get(0).getBadge2()).isEqualTo("PLAIN");
-        assertThat(reviewList.get(0).getBadge3()).isEqualTo("SOFT");
+        assertThat(reviewList.get(0).getBadgeTaste()).isEqualTo("GOOD");
+        assertThat(reviewList.get(0).getBadgeBrix()).isEqualTo("PLAIN");
+        assertThat(reviewList.get(0).getBadgeTexture()).isEqualTo("SOFT");
         assertThat(reviewImg).hasSize(1);
     }
 
