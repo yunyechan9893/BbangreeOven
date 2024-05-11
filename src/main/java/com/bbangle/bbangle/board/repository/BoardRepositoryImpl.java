@@ -1,8 +1,5 @@
 package com.bbangle.bbangle.board.repository;
 
-import static com.bbangle.bbangle.search.repository.SearchRepositoryImpl.wishListBoard;
-import static com.bbangle.bbangle.wishlist.domain.QWishlistProduct.wishlistProduct;
-
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
@@ -27,9 +24,9 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.StoreDto;
-import com.bbangle.bbangle.wishlist.domain.QWishlistFolder;
-import com.bbangle.bbangle.wishlist.domain.QWishlistProduct;
-import com.bbangle.bbangle.wishlist.domain.QWishlistStore;
+import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
+import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
+import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
@@ -64,11 +61,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
-    private static final QWishlistProduct products = wishlistProduct;
-    private static final QWishlistFolder folder = QWishlistFolder.wishlistFolder;
+    private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
+    private static final QWishListFolder folder = QWishListFolder.wishListFolder;
     private static final QProductImg productImg = QProductImg.productImg;
     private static final QBoardDetail boardDetail = QBoardDetail.boardDetail;
-    private static final QWishlistStore wishlistStore = QWishlistStore.wishlistStore;
+    private static final QWishListStore wishlistStore = QWishListStore.wishListStore;
     private static final QRanking ranking = QRanking.ranking;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
@@ -188,7 +185,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private void setWishlistBoard(List<Expression<?>> columns) {
-        columns.add(wishlistProduct.id);
+        columns.add(wishListBoard.id);
     }
 
     private void setWishlistStore(List<Expression<?>> columns) {
@@ -231,10 +228,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     private void setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId) {
-        jpaQuery.leftJoin(wishlistProduct)
-            .on(wishlistProduct.board.id.eq(board.id),
-                wishlistProduct.memberId.eq(memberId),
-                wishlistProduct.isDeleted.eq(false))
+        jpaQuery.leftJoin(wishListBoard)
+            .on(wishListBoard.board.id.eq(board.id),
+                wishListBoard.memberId.eq(memberId),
+                wishListBoard.isDeleted.eq(false))
             .leftJoin(wishlistStore)
             .on(wishlistStore.store.id.eq(store.id),
                 wishlistStore.member.id.eq(memberId),
@@ -308,7 +305,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .images(boardImgDtos.stream()
                 .toList())
             .tags(duplicatedTags)
-            .isWished(tupleReleteBoard.get(wishlistProduct.id) != null)
+            .isWished(tupleReleteBoard.get(wishListBoard.id) != null)
             .isBundled(isBundled)
             .build();
 
@@ -421,11 +418,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private OrderSpecifier<?> sortTypeFolder(String sort) {
         OrderSpecifier<?> orderSpecifier;
         if (sort == null) {
-            orderSpecifier = wishlistProduct.createdAt.desc();
+            orderSpecifier = wishListBoard.createdAt.desc();
             return orderSpecifier;
         }
         orderSpecifier = switch (SortType.fromString(sort)) {
-            case RECENT -> wishlistProduct.createdAt.desc();
+            case RECENT -> wishListBoard.createdAt.desc();
             case LOW_PRICE -> BoardRepositoryImpl.board.price.asc();
             case POPULAR -> BoardRepositoryImpl.board.wishCnt.desc();
             default -> throw new BbangleException("Invalid SortType");
