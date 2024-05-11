@@ -305,12 +305,12 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             storeBoardsResponses.add(
                 StoreBoardsResponse.builder()
                     .boardId(storeDetailBoardDto.boardId())
-                    .thumbnail(storeDetailBoardDto.boardProfile())
-                    .title(storeDetailBoardDto.boardTitle())
+                    .boardThumbnail(storeDetailBoardDto.boardProfile())
+                    .boardTitle(storeDetailBoardDto.boardTitle())
                     .view(storeDetailBoardDto.boardView())
                     .tags(tags)
                     .isBundled(isBundled)
-                    .price(storeDetailBoardDto.boardPrice())
+                    .boardPrice(storeDetailBoardDto.boardPrice())
                     .isWished(storeDetailBoardDto.isWished())
                     .build());
         });
