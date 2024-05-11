@@ -38,11 +38,14 @@ public class Review extends BaseEntity {
     private Long boardId;
 
     @NotNull
-    private String badge1;
+    @Column(name = "badge_taste")
+    private String badgeTaste;
     @NotNull
-    private String badge2;
+    @Column(name = "badge_brix")
+    private String badgeBrix;
     @NotNull
-    private String badge3;
+    @Column(name = "badge_texture")
+    private String badgeTexture;
     @NotNull
     private BigDecimal rate;
 
@@ -54,9 +57,9 @@ public class Review extends BaseEntity {
 
     public void insertBadge(Badge badge){
         switch(badge){
-            case GOOD, BAD -> this.badge1 = badge.name();
-            case SWEET,PLAIN -> this.badge2 = badge.name();
-            case SOFT,HARD -> this.badge3 = badge.name();
+            case GOOD, BAD -> this.badgeTaste = badge.name();
+            case SWEET,PLAIN -> this.badgeBrix = badge.name();
+            case SOFT,HARD -> this.badgeTexture = badge.name();
         }
     }
 }
