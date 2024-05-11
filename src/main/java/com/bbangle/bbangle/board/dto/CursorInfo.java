@@ -10,4 +10,7 @@ public record CursorInfo(
     Double targetScore
 ) {
 
+    public boolean isEmpty() {
+        return targetId == null || targetScore == null;
+    }
 }
