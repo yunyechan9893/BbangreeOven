@@ -6,6 +6,7 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.preference.domain.MemberPreference;
 import com.bbangle.bbangle.preference.domain.Preference;
+import com.bbangle.bbangle.preference.domain.PreferenceType;
 import com.bbangle.bbangle.preference.dto.MemberPreferenceResponse;
 import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
 import com.bbangle.bbangle.preference.dto.PreferenceUpdateRequest;
@@ -61,7 +62,13 @@ public class PreferenceService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
 
-        return null;
+        MemberPreference memberPreference = memberPreferenceRepository.findByMember(member)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
+
+        Preference preference =preferenceRepository.findPreferenceTypeWithMemberPreference(memberPreference)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.PREFERENCE_NOT_FOUND));
+
+        return new MemberPreferenceResponse(preference.getPreferenceType());
     }
 
 }
