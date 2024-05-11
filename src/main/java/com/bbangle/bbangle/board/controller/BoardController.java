@@ -58,7 +58,7 @@ public class BoardController {
     public CommonResult getList(
         @ParameterObject
         FilterRequest filterRequest,
-        @RequestParam(required = false, name = "sort")
+        @RequestParam(required = false, value = "sort")
         SortType sort,
         @ParameterObject
         CursorInfo cursorInfo,
@@ -75,7 +75,7 @@ public class BoardController {
 
     @GetMapping("/folders/{folderId}")
     public CommonResult getPostInFolder(
-        @RequestParam(required = false)
+        @RequestParam(required = false, value = "sort")
         String sort,
         @PathVariable
         Long folderId,

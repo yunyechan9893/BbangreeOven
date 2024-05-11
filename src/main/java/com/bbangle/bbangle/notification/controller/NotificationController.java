@@ -23,7 +23,7 @@ public class NotificationController {
 
     @GetMapping
     public CommonResult getList(
-       @RequestParam(required = false)
+        @RequestParam(required = false, value = "cursorId")
         Long cursorId
     ) {
         return responseService.getSingleResult(notificationService.getList(cursorId));
