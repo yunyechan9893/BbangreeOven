@@ -51,7 +51,7 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
             .leftJoin(wishListStore.store, store)
             .where(cursorCondition)
             .limit(PAGE_SIZE + 1)
-            .orderBy(wishListStore.createdAt.desc())
+            .orderBy(wishListStore.modifiedAt.desc(),wishListStore.createdAt.desc())
             .fetch();
         boolean hasNext = checkingHasNext(responseDtos);
         int size = responseDtos.size();
