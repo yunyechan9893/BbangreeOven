@@ -12,6 +12,7 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
 import com.bbangle.bbangle.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -75,16 +76,16 @@ public class BoardController {
 
     @GetMapping("/folders/{folderId}")
     public CommonResult getPostInFolder(
-        @RequestParam(required = false)
-        String sort,
-        @PathVariable
+        @RequestParam(required = false, name = "sort")
+        SortType sort,
+        @PathVariable(name = "folderId")
         Long folderId,
-        @PageableDefault
-        Pageable pageable
+        @RequestParam(name = "cursorId", required = false)
+        Long cursorId,
+        @AuthenticationPrincipal
+        Long memberId
     ) {
-        Long memberId = SecurityUtils.getMemberId();
-        Slice<BoardResponseDto> boardResponseDto =
-            boardService.getPostInFolder(memberId, sort, folderId, pageable);
+        BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardService.getPostInFolder(memberId, sort, folderId, cursorId);
         return responseService.getSingleResult(boardResponseDto);
     }
 
