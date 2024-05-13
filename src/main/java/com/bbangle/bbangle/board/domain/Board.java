@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Table(name = "product_board")
 @Entity
@@ -84,6 +85,7 @@ public class Board extends BaseEntity {
     private boolean isDeleted;
 
     @Builder.Default
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "board")
     private List<Product> productList = new ArrayList<>();
 
