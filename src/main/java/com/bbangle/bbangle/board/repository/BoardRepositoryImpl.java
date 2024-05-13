@@ -19,7 +19,6 @@ import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardDetailDto;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.SortType;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
@@ -46,9 +45,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -88,36 +84,105 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public Slice<BoardResponseDto> getAllByFolder(
-        String sort, Pageable pageable, Long wishListFolderId,
-        WishListFolder selectedFolder
+    public List<Board> getAllByFolder(
+        SortType sort,
+        Long cursorId,
+        WishListFolder folder,
+        Long memberId
     ) {
-        OrderSpecifier<?> orderSpecifier = sortTypeFolder(sort);
+        BooleanBuilder cursorBuilder = getCursor(cursorId, sort, memberId);
+        OrderSpecifier<?> sortBuilder = getSortBuilder(sort);
 
-        List<Board> boards = queryFactory
+        return getBoards(folder, cursorBuilder, sortBuilder, sort);
+    }
+
+    private List<Board> getBoards(
+        WishListFolder folder,
+        BooleanBuilder cursorBuilder,
+        OrderSpecifier<?> sortBuilder,
+        SortType sort
+    ) {
+        if(sort == SortType.POPULAR){
+            return queryFactory
+                .selectFrom(board)
+                .leftJoin(board.productList, product)
+                .fetchJoin()
+                .leftJoin(board.store, store)
+                .fetchJoin()
+                .leftJoin(ranking)
+                .on(ranking.board.eq(board))
+                .join(wishListBoard)
+                .on(board.id.eq(wishListBoard.board.id))
+                .join(wishListBoard)
+                .on(wishListBoard.wishlistFolder.eq(folder))
+                .where(wishListBoard.wishlistFolder.eq(folder)
+                    .and(wishListBoard.isDeleted.eq(false))
+                    .and(cursorBuilder))
+                .orderBy(sortBuilder)
+                .limit(BOARD_PAGE_SIZE + 1)
+                .fetch();
+        }
+
+        return queryFactory
             .selectFrom(board)
             .leftJoin(board.productList, product)
             .fetchJoin()
             .leftJoin(board.store, store)
             .fetchJoin()
-            .join(board)
+            .join(wishListBoard)
             .on(board.id.eq(wishListBoard.board.id))
             .join(wishListBoard)
             .on(wishListBoard.wishlistFolder.eq(folder))
-            .where(wishListBoard.wishlistFolder.eq(selectedFolder)
-                .and(wishListBoard.isDeleted.eq(false)))
-            .offset(pageable.getOffset())
-            .orderBy(orderSpecifier)
-            .limit(pageable.getPageSize() + 1)
+            .where(wishListBoard.wishlistFolder.eq(folder)
+                .and(wishListBoard.isDeleted.eq(false))
+                .and(cursorBuilder))
+            .orderBy(sortBuilder)
+            .limit(BOARD_PAGE_SIZE + 1)
             .fetch();
+    }
 
-        boolean hasNext = boards.size() > pageable.getPageSize();
-        List<BoardResponseDto> content = boards.stream()
-            .limit(pageable.getPageSize())
-            .map(board -> BoardResponseDto.inFolder(board, extractTags(board.getProductList())))
-            .toList();
+    private OrderSpecifier<?> getSortBuilder(SortType sort) {
+        if (Objects.isNull(sort)) {
+            return SortType.WISHLIST_RECENT.getOrderSpecifier();
+        }
 
-        return new SliceImpl<>(content, pageable, hasNext);
+        return sort.getOrderSpecifier();
+    }
+
+    private BooleanBuilder getCursor(Long cursorId, SortType sort, Long memberId) {
+        BooleanBuilder cursorBuilder = new BooleanBuilder();
+        if (Objects.isNull(cursorId)) {
+            return cursorBuilder;
+        }
+
+        if (sort == SortType.POPULAR) {
+            Double score = queryFactory
+                .select(ranking.popularScore)
+                .from(ranking)
+                .where(ranking.board.id.eq(cursorId))
+                .fetchOne();
+            cursorBuilder.and(ranking.popularScore.loe(score)
+                .and(board.id.lt(cursorId)));
+            return cursorBuilder;
+        }
+
+        if(sort == SortType.LOW_PRICE){
+            Integer price = queryFactory
+                .select(board.price)
+                .from(board)
+                .where(board.id.eq(cursorId))
+                .fetchOne();
+            cursorBuilder.and(board.price.goe(price)
+                .and(board.id.lt(cursorId)));
+            return cursorBuilder;
+        }
+
+        Long wishListBoardId = queryFactory
+            .select(wishListBoard.id)
+            .from(wishListBoard)
+            .where(wishListBoard.board.id.eq(cursorId).and(wishListBoard.memberId.eq(memberId)))
+            .fetchOne();
+        return cursorBuilder.and(wishListBoard.id.lt(wishListBoardId));
     }
 
     private List<BoardDetailDto> fetchBoardDetails(Long boardId) {
@@ -158,7 +223,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(board.id.eq(boardId))
             .fetch();
 
-        return products.stream().map(product1 ->
+        return products.stream()
+            .map(product1 ->
                 ProductDto.builder()
                     .id(product1.getId())
                     .title(product1.getTitle())
@@ -242,7 +308,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         JPAQuery<Tuple> jpaQuery = getBoardDetailSelect(memberId).from(board)
             .where(board.id.eq(boardId))
             .join(board.store, store)
-            .leftJoin(productImg).on(board.id.eq(productImg.board.id));
+            .leftJoin(productImg)
+            .on(board.id.eq(productImg.board.id));
 
         if (memberId != null && memberId > 0) {
             setWishlistJoin(jpaQuery, memberId);
@@ -361,7 +428,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             return BoardCustomPage.emptyPage();
         }
 
-        Long boardCursor = content.get(content.size() - 1).getBoardId();
+        Long boardCursor = content.get(content.size() - 1)
+            .getBoardId();
         Double cursorScore = queryFactory
             .select(getScoreColumnBySortType(sort))
             .from(ranking)
@@ -415,21 +483,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return boards.size() >= BOARD_PAGE_SIZE + 1;
     }
 
-    private OrderSpecifier<?> sortTypeFolder(String sort) {
-        OrderSpecifier<?> orderSpecifier;
-        if (sort == null) {
-            orderSpecifier = wishListBoard.createdAt.desc();
-            return orderSpecifier;
-        }
-        orderSpecifier = switch (SortType.fromString(sort)) {
-            case RECENT -> wishListBoard.createdAt.desc();
-            case LOW_PRICE -> BoardRepositoryImpl.board.price.asc();
-            case POPULAR -> BoardRepositoryImpl.board.wishCnt.desc();
-            default -> throw new BbangleException("Invalid SortType");
-        };
-        return orderSpecifier;
-    }
-
     private List<BoardResponseDto> convertToBoardResponse(List<Board> boards) {
         Map<Long, List<String>> tagMapByBoardId = boards.stream()
             .collect(Collectors.toMap(
@@ -464,4 +517,5 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             tags.add(tag);
         }
     }
+
 }

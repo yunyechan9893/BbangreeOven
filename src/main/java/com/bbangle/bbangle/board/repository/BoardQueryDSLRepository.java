@@ -21,11 +21,11 @@ public interface BoardQueryDSLRepository {
         CursorInfo cursorInfo
     );
 
-    Slice<BoardResponseDto> getAllByFolder(
-        String sort,
-        Pageable pageable,
-        Long wishListFolderId,
-        WishListFolder wishlistFolder
+    List<Board> getAllByFolder(
+        SortType sort,
+        Long cursorId,
+        WishListFolder folder,
+        Long memberId
     );
 
     BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId);
