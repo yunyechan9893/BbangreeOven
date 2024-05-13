@@ -11,6 +11,6 @@ public interface PreferenceRepository extends JpaRepository<Preference, Long>, P
 
     Optional<Preference> findByPreferenceType(PreferenceType preferenceType);
 
-    @Query("select p from Preference p join MemberPreference mp on mp.preference = p where mp = :memberPreference")
+    @Query("select p from Preference p join MemberPreference mp on mp.preferenceId = p.id where mp = :memberPreference")
     Optional<Preference> findPreferenceTypeWithMemberPreference(MemberPreference memberPreference);
 }

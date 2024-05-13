@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.preference.domain;
 
 import com.bbangle.bbangle.member.domain.Member;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -26,16 +27,14 @@ public class MemberPreference {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @Column(name = "member_id")
+    private Long memberId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "preference_id")
-    private Preference preference;
+    @Column(name = "preference_id")
+    private Long preferenceId;
 
-    public void updatePreference(Preference preference) {
-        this.preference = preference;
+    public void updatePreference(Long preferenceId) {
+        this.preferenceId = preferenceId;
     }
 
 }
