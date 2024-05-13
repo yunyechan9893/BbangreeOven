@@ -6,7 +6,6 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.preference.domain.MemberPreference;
 import com.bbangle.bbangle.preference.domain.Preference;
-import com.bbangle.bbangle.preference.domain.PreferenceType;
 import com.bbangle.bbangle.preference.dto.MemberPreferenceResponse;
 import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
 import com.bbangle.bbangle.preference.dto.PreferenceUpdateRequest;
@@ -29,16 +28,15 @@ public class PreferenceService {
         Preference preference = preferenceRepository.findByPreferenceType(request.preferenceType())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.PREFERENCE_NOT_FOUND));
 
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
 
-        if (memberPreferenceRepository.existsByMember(member)) {
+        if (memberPreferenceRepository.existsByMemberId(member.getId())) {
             throw new BbangleException(BbangleErrorCode.PREFERENCE_ALREADY_ASSIGNED);
         }
 
         MemberPreference memberPreference = MemberPreference.builder()
-            .member(member)
-            .preference(preference)
+            .memberId(member.getId())
+            .preferenceId(preference.getId())
             .build();
 
         memberPreferenceRepository.save(memberPreference);
@@ -49,20 +47,14 @@ public class PreferenceService {
         Preference preference = preferenceRepository.findByPreferenceType(request.preferenceType())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.PREFERENCE_NOT_FOUND));
 
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
-
-        MemberPreference memberPreference = memberPreferenceRepository.findByMember(member)
+        MemberPreference memberPreference = memberPreferenceRepository.findByMemberId(memberId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
 
-        memberPreference.updatePreference(preference);
+        memberPreference.updatePreference(preference.getId());
     }
 
     public MemberPreferenceResponse getPreference(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
-
-        MemberPreference memberPreference = memberPreferenceRepository.findByMember(member)
+       MemberPreference memberPreference = memberPreferenceRepository.findByMemberId(memberId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.MEMBER_PREFERENCE_NOT_FOUND));
 
         Preference preference =preferenceRepository.findPreferenceTypeWithMemberPreference(memberPreference)
