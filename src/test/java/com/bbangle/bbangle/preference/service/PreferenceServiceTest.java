@@ -3,6 +3,7 @@ package com.bbangle.bbangle.preference.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.fixture.MemberFixture;
@@ -16,6 +17,7 @@ import com.bbangle.bbangle.preference.dto.PreferenceSelectRequest;
 import com.bbangle.bbangle.preference.dto.PreferenceUpdateRequest;
 import com.bbangle.bbangle.preference.repository.MemberPreferenceRepository;
 import com.bbangle.bbangle.preference.repository.PreferenceRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
@@ -27,9 +29,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-class PreferenceServiceTest {
+class PreferenceServiceTest extends AbstractIntegrationTest {
 
     @Autowired
     MemberService memberService;
@@ -50,9 +53,12 @@ class PreferenceServiceTest {
     private WishListFolderRepository wishListFolderRepository;
 
     Member member;
+    @Autowired
+    private WishListBoardRepository wishListBoardRepository;
 
     @BeforeEach
     public void setup() {
+        wishListBoardRepository.deleteAll();
         wishListFolderRepository.deleteAll();
         memberPreferenceRepository.deleteAll();
         memberRepository.deleteAll();
