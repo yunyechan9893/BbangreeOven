@@ -1,30 +1,26 @@
 package com.bbangle.bbangle.common.sort;
 
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.board.domain.QBoard;
+import com.bbangle.bbangle.ranking.domain.QRanking;
+import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
+import com.querydsl.core.types.OrderSpecifier;
+import java.util.function.Supplier;
 import lombok.Getter;
 
 @Getter
 public enum SortType {
-    RECENT("recent"),
-    LOW_PRICE("low-price"),
-    POPULAR("popular"),
-    RECOMMEND("recommend");
+    RECENT(QBoard.board.createdAt::desc),
+    LOW_PRICE(QBoard.board.price::asc),
+    POPULAR(QRanking.ranking.popularScore::desc),
+    WISHLIST_RECENT(QWishListBoard.wishListBoard.id::desc),
+    RECOMMEND(QRanking.ranking.recommendScore::desc);
 
-    private static final String ERROR_WORD = "올바르지 않은 분류 값입니다. 다시 선택해주세요";
-    private final String value;
-
-    SortType(String value) {
-        this.value = value;
+    SortType(Supplier<OrderSpecifier<?>> setOrder) {
+        this.setOrder = setOrder;
     }
+    private final Supplier<OrderSpecifier<?>> setOrder;
 
-    public static SortType fromString(String value) {
-        for (SortType type : SortType.values()) {
-            if (type.getValue()
-                .equalsIgnoreCase(value)) {
-                return type;
-            }
-        }
-
-        throw new BbangleException(ERROR_WORD);
+    public OrderSpecifier<?> getOrderSpecifier(){
+        return setOrder.get();
     }
 }
