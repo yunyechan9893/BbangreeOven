@@ -1,8 +1,8 @@
 package com.bbangle.bbangle.board.service;
 
-
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
-
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
@@ -13,7 +13,6 @@ import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
-import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
@@ -23,12 +22,16 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,19 +95,22 @@ public class BoardService {
         return boardRepository.getBoardDetailResponse(memberId, boardId);
     }
 
-    public Slice<BoardResponseDto> getPostInFolder(
+    @Transactional(readOnly = true)
+    public BoardCustomPage<List<BoardResponseDto>> getPostInFolder(
         Long memberId,
-        String sort,
+        SortType sort,
         Long folderId,
-        Pageable pageable
+        Long cursorId
     ) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        WishListFolder folder = folderRepository.findByMemberIdAndId(memberId, folderId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
-        WishListFolder folder = folderRepository.findByMemberAndId(member, folderId)
-            .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));
+        List<Board> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
 
-        return boardRepository.getAllByFolder(sort, pageable, folderId, folder);
+        if (allByFolder.isEmpty()){
+            return BoardCustomPage.emptyPage();
+        }
+        return getListBoardCustomPage(allByFolder);
     }
 
     @Transactional
@@ -135,5 +141,51 @@ public class BoardService {
 
         redisTemplate.opsForValue()
             .set(purchaseCountKey, "true", Duration.ofMinutes(3));
+    }
+
+    private BoardCustomPage<List<BoardResponseDto>> getListBoardCustomPage(List<Board> allByFolder) {
+        List<BoardResponseDto> boardResponseDtos = convertToBoardResponse(allByFolder);
+        Long nextCursor = allByFolder.get(allByFolder.size()-1).getId();
+        boolean hasNext = false;
+        if(allByFolder.size() == 11){
+            hasNext = true;
+        }
+        return BoardCustomPage.from(boardResponseDtos,
+            nextCursor, hasNext);
+    }
+
+    private List<BoardResponseDto> convertToBoardResponse(List<Board> boards) {
+        Map<Long, List<String>> tagMapByBoardId = boards.stream()
+            .collect(Collectors.toMap(
+                Board::getId,
+                board -> extractTags(board.getProductList())
+            ));
+
+        return boards.stream()
+            .limit(10)
+            .map(board -> BoardResponseDto.from(board, tagMapByBoardId.get(board.getId())))
+            .toList();
+    }
+
+    private List<String> extractTags(List<Product> products) {
+        if (Objects.isNull(products)) {
+            return Collections.emptyList();
+        }
+
+        HashSet<String> tags = new HashSet<>();
+        for (Product dto : products) {
+            addTagIfTrue(tags, dto.isGlutenFreeTag(), TagEnum.GLUTEN_FREE.label());
+            addTagIfTrue(tags, dto.isHighProteinTag(), TagEnum.HIGH_PROTEIN.label());
+            addTagIfTrue(tags, dto.isSugarFreeTag(), TagEnum.SUGAR_FREE.label());
+            addTagIfTrue(tags, dto.isVeganTag(), TagEnum.VEGAN.label());
+            addTagIfTrue(tags, dto.isKetogenicTag(), TagEnum.KETOGENIC.label());
+        }
+        return new ArrayList<>(tags);
+    }
+
+    private void addTagIfTrue(Set<String> tags, boolean condition, String tag) {
+        if (condition) {
+            tags.add(tag);
+        }
     }
 }
