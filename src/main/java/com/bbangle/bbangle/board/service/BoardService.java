@@ -98,8 +98,7 @@ public class BoardService {
         Long folderId,
         Pageable pageable
     ) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
 
         WishListFolder folder = folderRepository.findByMemberAndId(member, folderId)
             .orElseThrow(() -> new BbangleException("존재하지 않는 폴더입니다."));

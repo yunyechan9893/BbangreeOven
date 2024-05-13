@@ -30,8 +30,7 @@ public class ReviewService {
 
     @Transactional
     public void makeReview(ReviewRequest reviewRequest, Long memberId) {
-        memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        memberRepository.findMemberById(memberId);
         Review review = Review.builder()
             .content(reviewRequest.content())
             .rate(reviewRequest.rate())

@@ -44,8 +44,7 @@ public class WishListBoardService {
 
     @Transactional
     public void wish(Long memberId, Long boardId, WishListBoardRequest wishRequest) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
 
         WishListFolder wishlistFolder = getWishlistFolder(wishRequest, member);
 
@@ -60,8 +59,7 @@ public class WishListBoardService {
 
     @Transactional
     public void cancel(Long memberId, Long boardId) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
 
         WishListBoard product = wishlistBoardRepository.findByBoardId(boardId, member.getId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
