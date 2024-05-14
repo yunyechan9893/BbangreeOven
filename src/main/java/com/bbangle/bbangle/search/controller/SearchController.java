@@ -35,7 +35,7 @@ public class SearchController {
 
     private final SearchService searchService;
     private final ResponseService responseService;
-  
+
     @GetMapping(GET_BOARD_KEYWORD_SEARCH_API)
     public CommonResult getSearchBoardDtos(
             SearchBoardRequest searchBoardRequest
@@ -51,7 +51,7 @@ public class SearchController {
     public CommonResult getSearchStoreDtos(
             @RequestParam("page")
             int page,
-            @RequestParam(value = "keyword")
+            @RequestParam("keyword")
             String keyword
     ){
         Long memberId = SecurityUtils.getMemberIdWithAnonymous();

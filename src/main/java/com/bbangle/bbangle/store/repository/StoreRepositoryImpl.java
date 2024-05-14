@@ -441,8 +441,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     ) {
         List<Long> pageIds = getContentsIds(cursorPage);
 
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
 
         List<Long> wishedStore = queryFactory.select(
                     wishListStore.store.id)

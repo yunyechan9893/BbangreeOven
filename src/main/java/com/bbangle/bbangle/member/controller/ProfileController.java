@@ -5,9 +5,10 @@ import com.bbangle.bbangle.common.dto.MessageDto;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
-import com.bbangle.bbangle.member.service.ProfileServiceImpl;
+import com.bbangle.bbangle.member.service.ProfileService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("api/v1/profile")
 public class ProfileController {
 
-    private final ProfileServiceImpl profileService;
+    private final ProfileService profileService;
     private final ResponseService responseService;
     private static final String TYPING_NICKNAME = "닉네임을 입력해주세요!";
     private static final String RESTRICT_NICKNAME_20 = "닉네임은 20자 제한이에요!";
@@ -35,7 +36,7 @@ public class ProfileController {
      * @return 프로필 정보
      */
     @GetMapping
-    public CommonResult getProfile(){
+    public CommonResult getProfile() {
         Long memberId = SecurityUtils.getMemberId();
         ProfileInfoResponseDto profileInfo = profileService.getProfileInfo(memberId);
         return responseService.getSingleResult(profileInfo);
@@ -49,17 +50,21 @@ public class ProfileController {
      * @return 메세지
      */
     @GetMapping("/doublecheck")
-    public CommonResult doubleCheckNickname(@RequestParam String nickname){
+    public CommonResult doubleCheckNickname(
+        @RequestParam("nickname") String nickname
+    ) {
         Long memberId = SecurityUtils.getMemberId();
         Assert.notNull(memberId, "권한이 없습니다");
-        if(nickname.isEmpty() || nickname == null){
+
+        if (nickname == null || StringUtils.isBlank(nickname) || nickname.contains("\t")
+            || nickname.contains("\n")) {
             return responseService.getSingleResult(new MessageDto(TYPING_NICKNAME, false));
         }
-        if(nickname.length() > 20){
+        if (nickname.length() > 20) {
             return responseService.getSingleResult(new MessageDto(RESTRICT_NICKNAME_20, false));
         }
-        String existedNickname = profileService.doubleCheckNickname(nickname);
-        if (!existedNickname.isEmpty()){
+
+        if (profileService.doubleCheckNickname(nickname)) {
             return responseService.getSingleResult(new MessageDto(DUPLICATE_NICKNAME, false));
         }
         return responseService.getSingleResult(new MessageDto(AVAILABLE_NICKNAME, true));
