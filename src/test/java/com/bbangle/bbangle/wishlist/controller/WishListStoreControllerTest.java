@@ -110,7 +110,7 @@ public class WishListStoreControllerTest {
     @Test
     @WithCustomMockUser
     public void deleteWishListStore() throws Exception{
-        mockMvc.perform(patch("/api/v1/likes/store/1"))
+        mockMvc.perform(patch("/api/v1/likes/store/75"))
             .andExpect(status().isOk())
             .andDo(print());
     }
@@ -119,7 +119,7 @@ public class WishListStoreControllerTest {
     @Test
     @WithCustomMockUser
     public void addWishListStore() throws Exception{
-        mockMvc.perform(post("/api/v1/likes/store/25"))
+        mockMvc.perform(post("/api/v1/likes/store/51"))
             .andExpect(status().isOk())
             .andDo(print());
     }
