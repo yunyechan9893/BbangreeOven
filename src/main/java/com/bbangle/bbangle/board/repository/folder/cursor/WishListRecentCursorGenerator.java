@@ -25,7 +25,7 @@ public class WishListRecentCursorGenerator implements CursorGenerator{
             .from(wishListBoard)
             .where(wishListBoard.board.id.eq(cursorId).and(wishListBoard.memberId.eq(memberId)))
             .fetchOne();
-        return cursorBuilder.and(wishListBoard.id.lt(wishListBoardId));
+        return cursorBuilder.and(wishListBoard.id.loe(wishListBoardId));
     }
 
 }

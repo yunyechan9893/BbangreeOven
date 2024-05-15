@@ -26,7 +26,7 @@ public class LowPriceCursorGenerator implements CursorGenerator{
             .where(board.id.eq(cursorId))
             .fetchOne();
         cursorBuilder.and(board.price.goe(price)
-            .and(board.id.lt(cursorId)));
+            .and(board.id.loe(cursorId)));
         return cursorBuilder;
     }
 

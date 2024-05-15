@@ -26,7 +26,7 @@ public class PopularCursorGenerator implements CursorGenerator{
             .where(ranking.board.id.eq(cursorId))
             .fetchOne();
         cursorBuilder.and(ranking.popularScore.loe(score)
-            .and(board.id.lt(cursorId)));
+            .and(board.id.loe(cursorId)));
         return cursorBuilder;
     }
 
