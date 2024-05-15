@@ -6,7 +6,7 @@ import lombok.Builder;
 @Builder
 public record BoardDetailResponse(
     StoreDto store,
-    BoardDetailSelectDto board
+    BoardAndProductsDto board
 ) {
 
 }

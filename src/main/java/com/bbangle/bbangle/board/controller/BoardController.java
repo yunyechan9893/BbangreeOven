@@ -1,6 +1,5 @@
 package com.bbangle.bbangle.board.controller;
 
-import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;

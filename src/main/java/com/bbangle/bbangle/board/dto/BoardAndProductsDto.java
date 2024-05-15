@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record BoardDetailSelectDto(
+public record BoardAndProductsDto(
     Long boardId,
     String thumbnail,
     List<BoardImgDto> images,
@@ -15,7 +15,7 @@ public record BoardDetailSelectDto(
     String purchaseUrl,
     Boolean isWished,
     Boolean isBundled,
-    List<BoardDetailDto2> detail,
+    List<BoardDetailDto> detail,
     List<String> tags,
     List<ProductDto> products
 ) {

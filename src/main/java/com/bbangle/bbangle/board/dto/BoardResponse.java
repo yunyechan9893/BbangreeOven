@@ -19,7 +19,7 @@ public record BoardResponse(
     String purchaseUrl,
     Boolean isWished,
     Boolean status,
-    List<BoardDetailDto2> boardDetails
+    List<BoardDetailDto> boardDetails
 ) {
 
 }

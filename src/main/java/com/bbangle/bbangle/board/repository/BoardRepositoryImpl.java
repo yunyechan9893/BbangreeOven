@@ -9,15 +9,15 @@ import com.bbangle.bbangle.board.domain.QBoardDetail;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.dto.BoardAndDetailDto;
 import com.bbangle.bbangle.board.dto.BoardDetailDto;
-import com.bbangle.bbangle.board.dto.BoardDetailDto2;
 import com.bbangle.bbangle.board.dto.BoardImgDto;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
-import com.bbangle.bbangle.board.dto.QBoardDetailDto;
+import com.bbangle.bbangle.board.dto.QBoardAndDetailDto;
 import com.bbangle.bbangle.board.dto.QProductDto;
 import com.bbangle.bbangle.board.dto.QStoreAndBoardImgDto;
 import com.bbangle.bbangle.board.dto.StoreAndBoardImgDto;
@@ -41,7 +41,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +62,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public static final int BOARD_PAGE_SIZE = 10;
     private final Expression<Long> emptywishListBoardNumber = Expressions.constant(-1L);
-
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
@@ -75,6 +73,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private static final QRanking ranking = QRanking.ranking;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
+
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -126,11 +125,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return new SliceImpl<>(content, pageable, hasNext);
     }
 
-    private void getConditionalWishlistStoreJoinQuery(JPAQuery<StoreAndBoardImgDto> query, Long memberId) {
-            query.leftJoin(wishlistStore)
-                .on(wishlistStore.store.eq(store),
-                    wishlistStore.member.id.eq(memberId),
-                    wishlistStore.isDeleted.eq(false));
+    private void getConditionalWishListStore(JPAQuery<StoreAndBoardImgDto> query, Long memberId) {
+        query.leftJoin(wishlistStore)
+            .on(wishlistStore.store.eq(store),
+                wishlistStore.member.id.eq(memberId),
+                wishlistStore.isDeleted.eq(false));
     }
 
     private List<StoreAndBoardImgDto> getStoreAndBoardImgDto(Long memberId, Long boardId) {
@@ -138,36 +137,37 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             Objects.nonNull(memberId) ? wishlistStore.id : emptywishListBoardNumber;
 
         JPAQuery<StoreAndBoardImgDto> beforeFetch = queryFactory.select(
-            new QStoreAndBoardImgDto(
-                store.id,
-                store.name,
-                store.profile,
-                productImg.id,
-                productImg.url,
-                conditionalWhisList
-            )
-        ).from(board)
+                new QStoreAndBoardImgDto(
+                    store.id,
+                    store.name,
+                    store.profile,
+                    productImg.id,
+                    productImg.url,
+                    conditionalWhisList
+                )
+            ).from(board)
             .leftJoin(productImg).on(board.id.eq(productImg.board.id))
             .join(store).on(store.eq(board.store))
             .where(board.id.eq(boardId))
             .orderBy(productImg.id.desc());
 
         Optional.ofNullable(memberId)
-            .ifPresent(mId -> getConditionalWishlistStoreJoinQuery(beforeFetch, memberId));
+            .ifPresent(mId -> getConditionalWishListStore(beforeFetch, memberId));
 
         return beforeFetch.fetch();
     }
 
     @Override
-    public StoreAndBoardImgResponse getStoreAndBoardImgResponse(Long memberId, Long boardId){
-        List<StoreAndBoardImgDto> storeAndBoardImgDto =  getStoreAndBoardImgDto(memberId, boardId);
+    public StoreAndBoardImgResponse getStoreAndBoardImgResponse(Long memberId, Long boardId) {
+        List<StoreAndBoardImgDto> storeAndBoardImgDto = getStoreAndBoardImgDto(memberId, boardId);
 
         if (Objects.isNull(storeAndBoardImgDto)) {
             throw new BbangleException(STORE_NOT_FOUND);
         }
 
         StoreAndBoardImgDto storeItem = storeAndBoardImgDto.get(0);
-        List<BoardImgDto> boardImgDtos = storeAndBoardImgDto.stream().map(StoreAndBoardImgDto::toBoardImgDto).toList();
+        List<BoardImgDto> boardImgDtos = storeAndBoardImgDto.stream()
+            .map(StoreAndBoardImgDto::toBoardImgDto).toList();
 
         return StoreAndBoardImgResponse.builder()
             .storeId(storeItem.storeId())
@@ -178,58 +178,59 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .build();
     }
 
-    private void getConditionalWishlistBoardJoinQuery(JPAQuery<BoardDetailDto> query, Long memberId) {
+    private void getConditionalWishlistBoard(JPAQuery<BoardAndDetailDto> query, Long memberId) {
         query.leftJoin(wishListBoard)
             .on(wishListBoard.board.eq(board),
                 wishListBoard.memberId.eq(memberId),
                 wishListBoard.isDeleted.eq(false));
     }
 
-    private List<BoardDetailDto> getBoardDto(Long memberId, Long boardId){
+    private List<BoardAndDetailDto> getBoardAndDetailDtos(Long memberId, Long boardId) {
 
         Expression<Long> conditionalWhisList =
             Objects.nonNull(memberId) ? wishListBoard.id : emptywishListBoardNumber;
 
-        JPAQuery<BoardDetailDto> beforeFetch = queryFactory.select(
-            new QBoardDetailDto(
-                board.id,
-                board.profile,
-                board.title,
-                board.price,
-                board.monday,
-                board.tuesday,
-                board.wednesday,
-                board.thursday,
-                board.friday,
-                board.saturday,
-                board.sunday,
-                board.purchaseUrl,
-                board.status,
-                boardDetail.id,
-                boardDetail.imgIndex,
-                boardDetail.url,
-                conditionalWhisList
-            )
-        ).from(board)
+        JPAQuery<BoardAndDetailDto> beforeFetch = queryFactory.select(
+                new QBoardAndDetailDto(
+                    board.id,
+                    board.profile,
+                    board.title,
+                    board.price,
+                    board.monday,
+                    board.tuesday,
+                    board.wednesday,
+                    board.thursday,
+                    board.friday,
+                    board.saturday,
+                    board.sunday,
+                    board.purchaseUrl,
+                    board.status,
+                    boardDetail.id,
+                    boardDetail.imgIndex,
+                    boardDetail.url,
+                    conditionalWhisList
+                )
+            ).from(board)
             .leftJoin(boardDetail).on(board.id.eq(boardDetail.board.id))
             .where(board.id.eq(boardId));
 
         Optional.ofNullable(memberId)
-            .ifPresent(mId -> getConditionalWishlistBoardJoinQuery(beforeFetch, memberId));
+            .ifPresent(mId -> getConditionalWishlistBoard(beforeFetch, memberId));
 
         return beforeFetch.fetch();
     }
 
     @Override
-    public BoardResponse getBoardDetailResponse(Long memberId, Long boardId){
-        List<BoardDetailDto> boardDetailDtos = getBoardDto(memberId, boardId);
+    public BoardResponse getBoardDetailResponse(Long memberId, Long boardId) {
+        List<BoardAndDetailDto> boardAndDetailDtos = getBoardAndDetailDtos(memberId, boardId);
 
-        if (Objects.isNull(boardDetailDtos)) {
+        if (Objects.isNull(boardAndDetailDtos)) {
             throw new BbangleException(STORE_NOT_FOUND);
         }
 
-        BoardDetailDto boardDto = boardDetailDtos.get(0);
-        List<BoardDetailDto2> boardDetailDto2s = boardDetailDtos.stream().map(BoardDetailDto::toBoardDetailDto).toList();
+        BoardAndDetailDto boardDto = boardAndDetailDtos.get(0);
+        List<BoardDetailDto> BoardDetailDtos = boardAndDetailDtos.stream()
+            .map(BoardAndDetailDto::toBoardDetailDto).toList();
 
         return BoardResponse.builder()
             .boardId(boardDto.boardId())
@@ -246,7 +247,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .purchaseUrl(boardDto.purchaseUrl())
             .isWished(boardDto.isNonEmptyWishlist())
             .status(boardDto.status())
-            .boardDetails(boardDetailDto2s)
+            .boardDetails(BoardDetailDtos)
             .build();
     }
 
