@@ -3,6 +3,7 @@ package com.bbangle.bbangle.wishlist.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -31,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class WishListBoardServiceTest {
+class WishListBoardServiceTest extends AbstractIntegrationTest {
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 

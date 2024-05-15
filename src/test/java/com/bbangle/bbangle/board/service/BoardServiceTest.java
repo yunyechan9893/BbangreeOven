@@ -2,6 +2,7 @@ package com.bbangle.bbangle.board.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -39,7 +40,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-public class BoardServiceTest {
+public class BoardServiceTest extends AbstractIntegrationTest {
 
     private static final CursorInfo NULL_CURSOR = null;
     private static final SortType NULL_SORT_TYPE = null;
