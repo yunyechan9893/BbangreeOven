@@ -2,6 +2,7 @@ package com.bbangle.bbangle.store.service;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
@@ -15,16 +16,13 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class StoreServiceTest {
+class StoreServiceTest extends AbstractIntegrationTest {
 
     private static final Long NULL_CURSOR = null;
     private static final Long NULL_MEMBER_ID = null;
@@ -68,7 +66,7 @@ class StoreServiceTest {
     class GetStoreList{
 
         @BeforeEach
-        public void saveStoreList(){
+        void saveStoreList(){
             for(int i = 0; i < 30; i++){
                 Store store = StoreFixture.storeGenerator();
                 storeRepository.save(store);
@@ -77,7 +75,7 @@ class StoreServiceTest {
 
         @Test
         @DisplayName("정상적으로 첫 페이지를 조회한다")
-        public void getFirstPage() throws Exception {
+        void getFirstPage() throws Exception {
             //given, when
             StoreCustomPage<List<StoreResponseDto>> list = storeService.getList(NULL_CURSOR,
                 NULL_MEMBER_ID);
@@ -92,7 +90,7 @@ class StoreServiceTest {
 
         @Test
         @DisplayName("정상적으로 마지막 페이지를 조회한다")
-        public void getLastPage() throws Exception {
+        void getLastPage() throws Exception {
             //given
             StoreCustomPage<List<StoreResponseDto>> firstPage = storeService.getList(NULL_CURSOR,
                 NULL_MEMBER_ID);
@@ -113,7 +111,7 @@ class StoreServiceTest {
 
         @Test
         @DisplayName("마지막 자료를 조회하는 경우 nextCursor는 -1을 가리킨다")
-        public void getLastContent() throws Exception {
+        void getLastContent() throws Exception {
             //given, when
             StoreCustomPage<List<StoreResponseDto>> firstPage = storeService.getList(NULL_CURSOR,
                 NULL_MEMBER_ID);
@@ -132,7 +130,7 @@ class StoreServiceTest {
 
         @Test
         @DisplayName("좋아요를 누른 store는 isWished가 true로 반환된다")
-        public void getWishedContent() throws Exception {
+        void getWishedContent() throws Exception {
             //given, when
             StoreCustomPage<List<StoreResponseDto>> before = storeService.getList(NULL_CURSOR,
                 NULL_MEMBER_ID);

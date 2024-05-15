@@ -1,41 +1,36 @@
 package com.bbangle.bbangle.store.repository;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.ProductImg;
+import com.bbangle.bbangle.board.dto.StoreAllBoardDto;
+import com.bbangle.bbangle.board.dto.StoreBestBoardDto;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.board.dto.StoreAllBoardDto;
-import com.bbangle.bbangle.board.dto.StoreBestBoardDto;
-import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-
-@SpringBootTest
-public class StoreRepositoryImplTest {
+class StoreRepositoryImplTest extends AbstractIntegrationTest {
 
     @Autowired
     private MemberRepository memberRepository;
@@ -65,7 +60,7 @@ public class StoreRepositoryImplTest {
     Member member;
 
     @BeforeEach
-    public void saveData(){
+    void saveData(){
         createData(5, 20);
         createLikeData();
     }
@@ -78,7 +73,7 @@ public class StoreRepositoryImplTest {
     }
 
     @Test
-    public void getAllBoardTest(){
+    void getAllBoardTest(){
         String boardProfile = "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fboards%2F00000000%2F0.jpg?alt=media&token=f3d1925a-1e93-4e47-a487-63c7fc61e203";
         String boardTitle = "비건 베이커리";
         int boardPrice = 5400;
@@ -141,7 +136,7 @@ public class StoreRepositoryImplTest {
     }
 
     @Test
-    public void getStoreDetailResponseDtoTest(){
+    void getStoreDetailResponseDtoTest(){
         String storeName = "RAWSOME";
         String storeProfile = "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e";
         boolean storeIsWished = true;
@@ -188,7 +183,7 @@ public class StoreRepositoryImplTest {
     }
 
     @Test
-    public void getStoreDetailResponseDtoWithLikeTest(){
+    void getStoreDetailResponseDtoWithLikeTest(){
         String storeName = "RAWSOME";
         String storeProfile = "https://firebasestorage.googleapis.com/v0/b/test-1949b.appspot.com/o/stores%2Frawsome%2Fprofile.jpg?alt=media&token=26bd1435-2c28-4b85-a5aa-b325e9aac05e";
         boolean storeIsWished = true;
