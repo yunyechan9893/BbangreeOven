@@ -63,7 +63,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("정상적으로 마지막 페이지를 조회한다")
-        void getLastPage() throws Exception {
+        void getLastPage() {
             //given
             StoreCustomPage<List<StoreResponseDto>> firstPage = storeService.getList(NULL_CURSOR,
                 NULL_MEMBER_ID);
@@ -84,7 +84,7 @@ class StoreServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("마지막 자료를 조회하는 경우 nextCursor는 -1을 가리킨다")
-        void getLastContent() throws Exception {
+        void getLastContent() {
             //given, when
             StoreCustomPage<List<StoreResponseDto>> firstPage = storeService.getList(NULL_CURSOR,
                 NULL_MEMBER_ID);
