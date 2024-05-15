@@ -18,6 +18,7 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardDetailDto;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
+import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
@@ -85,104 +86,15 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public List<Board> getAllByFolder(
-        SortType sort,
+        FolderBoardSortType sort,
         Long cursorId,
         WishListFolder folder,
         Long memberId
     ) {
-        BooleanBuilder cursorBuilder = getCursor(cursorId, sort, memberId);
-        OrderSpecifier<?> sortBuilder = getSortBuilder(sort);
+        BooleanBuilder cursorBuilder = sort.createCursor(queryFactory).getCursor(cursorId, memberId);
+        OrderSpecifier<?> sortBuilder = sort.getOrderSpecifier();
 
-        return getBoards(folder, cursorBuilder, sortBuilder, sort);
-    }
-
-    private List<Board> getBoards(
-        WishListFolder folder,
-        BooleanBuilder cursorBuilder,
-        OrderSpecifier<?> sortBuilder,
-        SortType sort
-    ) {
-        if(sort == SortType.POPULAR){
-            return queryFactory
-                .selectFrom(board)
-                .leftJoin(board.productList, product)
-                .fetchJoin()
-                .leftJoin(board.store, store)
-                .fetchJoin()
-                .leftJoin(ranking)
-                .on(ranking.board.eq(board))
-                .join(wishListBoard)
-                .on(board.id.eq(wishListBoard.board.id))
-                .join(wishListBoard)
-                .on(wishListBoard.wishlistFolder.eq(folder))
-                .where(wishListBoard.wishlistFolder.eq(folder)
-                    .and(wishListBoard.isDeleted.eq(false))
-                    .and(cursorBuilder))
-                .orderBy(sortBuilder)
-                .limit(BOARD_PAGE_SIZE + 1)
-                .fetch();
-        }
-
-        return queryFactory
-            .selectFrom(board)
-            .leftJoin(board.productList, product)
-            .fetchJoin()
-            .leftJoin(board.store, store)
-            .fetchJoin()
-            .join(wishListBoard)
-            .on(board.id.eq(wishListBoard.board.id))
-            .join(wishListBoard)
-            .on(wishListBoard.wishlistFolder.eq(folder))
-            .where(wishListBoard.wishlistFolder.eq(folder)
-                .and(wishListBoard.isDeleted.eq(false))
-                .and(cursorBuilder))
-            .orderBy(sortBuilder)
-            .limit(BOARD_PAGE_SIZE + 1)
-            .fetch();
-    }
-
-    private OrderSpecifier<?> getSortBuilder(SortType sort) {
-        if (Objects.isNull(sort)) {
-            return SortType.WISHLIST_RECENT.getOrderSpecifier();
-        }
-
-        return sort.getOrderSpecifier();
-    }
-
-    private BooleanBuilder getCursor(Long cursorId, SortType sort, Long memberId) {
-        BooleanBuilder cursorBuilder = new BooleanBuilder();
-        if (Objects.isNull(cursorId)) {
-            return cursorBuilder;
-        }
-
-        if (sort == SortType.POPULAR) {
-            Double score = queryFactory
-                .select(ranking.popularScore)
-                .from(ranking)
-                .where(ranking.board.id.eq(cursorId))
-                .fetchOne();
-            cursorBuilder.and(ranking.popularScore.loe(score)
-                .and(board.id.lt(cursorId)));
-            return cursorBuilder;
-        }
-
-        if(sort == SortType.LOW_PRICE){
-            Integer price = queryFactory
-                .select(board.price)
-                .from(board)
-                .where(board.id.eq(cursorId))
-                .fetchOne();
-            cursorBuilder.and(board.price.goe(price)
-                .and(board.id.lt(cursorId)));
-            return cursorBuilder;
-        }
-
-        Long wishListBoardId = queryFactory
-            .select(wishListBoard.id)
-            .from(wishListBoard)
-            .where(wishListBoard.board.id.eq(cursorId).and(wishListBoard.memberId.eq(memberId)))
-            .fetchOne();
-        return cursorBuilder.and(wishListBoard.id.lt(wishListBoardId));
+        return sort.getBoards(queryFactory).getBoards(cursorBuilder, sortBuilder, folder);
     }
 
     private List<BoardDetailDto> fetchBoardDetails(Long boardId) {

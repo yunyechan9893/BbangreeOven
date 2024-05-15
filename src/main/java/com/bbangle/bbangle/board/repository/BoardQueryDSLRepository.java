@@ -5,6 +5,7 @@ import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -22,7 +23,7 @@ public interface BoardQueryDSLRepository {
     );
 
     List<Board> getAllByFolder(
-        SortType sort,
+        FolderBoardSortType sort,
         Long cursorId,
         WishListFolder folder,
         Long memberId
