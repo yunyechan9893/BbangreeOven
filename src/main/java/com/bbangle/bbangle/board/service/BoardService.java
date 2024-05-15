@@ -8,6 +8,7 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.folder.BoardPageGenerator;
 import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -44,6 +45,7 @@ public class BoardService {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
 
     private final BoardRepository boardRepository;
+    private final BoardPageGenerator boardPageGenerator;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
     @Qualifier("defaultRedisTemplate")
@@ -81,10 +83,7 @@ public class BoardService {
 
         List<Board> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
 
-        if (allByFolder.isEmpty()){
-            return BoardCustomPage.emptyPage();
-        }
-        return getListBoardCustomPage(allByFolder);
+        return boardPageGenerator.getBoardPage(allByFolder);
     }
 
 
@@ -145,49 +144,5 @@ public class BoardService {
             .set(purchaseCountKey, "true", Duration.ofMinutes(3));
     }
 
-    private BoardCustomPage<List<BoardResponseDto>> getListBoardCustomPage(List<Board> allByFolder) {
-        List<BoardResponseDto> boardResponseDtos = convertToBoardResponse(allByFolder);
-        Long nextCursor = allByFolder.get(allByFolder.size()-1).getId();
-        boolean hasNext = false;
-        if(allByFolder.size() == 11){
-            hasNext = true;
-        }
-        return BoardCustomPage.from(boardResponseDtos,
-            nextCursor, hasNext);
-    }
 
-    private List<BoardResponseDto> convertToBoardResponse(List<Board> boards) {
-        Map<Long, List<String>> tagMapByBoardId = boards.stream()
-            .collect(Collectors.toMap(
-                Board::getId,
-                board -> extractTags(board.getProductList())
-            ));
-
-        return boards.stream()
-            .limit(10)
-            .map(board -> BoardResponseDto.from(board, tagMapByBoardId.get(board.getId())))
-            .toList();
-    }
-
-    private List<String> extractTags(List<Product> products) {
-        if (Objects.isNull(products)) {
-            return Collections.emptyList();
-        }
-
-        HashSet<String> tags = new HashSet<>();
-        for (Product dto : products) {
-            addTagIfTrue(tags, dto.isGlutenFreeTag(), TagEnum.GLUTEN_FREE.label());
-            addTagIfTrue(tags, dto.isHighProteinTag(), TagEnum.HIGH_PROTEIN.label());
-            addTagIfTrue(tags, dto.isSugarFreeTag(), TagEnum.SUGAR_FREE.label());
-            addTagIfTrue(tags, dto.isVeganTag(), TagEnum.VEGAN.label());
-            addTagIfTrue(tags, dto.isKetogenicTag(), TagEnum.KETOGENIC.label());
-        }
-        return new ArrayList<>(tags);
-    }
-
-    private void addTagIfTrue(Set<String> tags, boolean condition, String tag) {
-        if (condition) {
-            tags.add(tag);
-        }
-    }
 }
