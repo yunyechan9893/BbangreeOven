@@ -1,29 +1,27 @@
 package com.bbangle.bbangle.notification.controller;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.notification.domain.Notice;
+import com.bbangle.bbangle.notification.repository.NotificationRepository;
+import com.bbangle.bbangle.notification.service.NotificationService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.bbangle.bbangle.common.service.ResponseService;
-import com.bbangle.bbangle.notification.domain.Notice;
-import com.bbangle.bbangle.notification.repository.NotificationRepository;
-import com.bbangle.bbangle.notification.service.NotificationService;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-
-@SpringBootTest
-@AutoConfigureMockMvc
-public class NotificationControllerTest {
+class NotificationControllerTest extends AbstractIntegrationTest {
     @Autowired
     NotificationService notificationService;
     @Autowired

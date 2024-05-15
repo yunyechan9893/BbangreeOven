@@ -1,9 +1,5 @@
 package com.bbangle.bbangle.board.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
@@ -26,6 +22,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -120,7 +120,7 @@ class BoardControllerTest {
 
     @Test
     @DisplayName("순서나 필터링 조건이 없어도 정상적으로 조회한다.")
-    public void getBoardListSuccessWithoutAnyCondition() throws Exception {
+    void getBoardListSuccessWithoutAnyCondition() throws Exception {
         //given, when, then
         mockMvc.perform(get("/api/v1/boards"))
             .andExpect(status().isOk())
@@ -133,7 +133,7 @@ class BoardControllerTest {
         strings = {"glutenFreeTag", "highProteinTag", "sugarFreeTag", "veganTag", "ketogenicTag"}
     )
     @DisplayName("순서가 없고 필터링 조건이 있어도 정상적으로 조회한다.")
-    public void getBoardListSuccessWithIngredientFilteringCondition(String ingredient)
+    void getBoardListSuccessWithIngredientFilteringCondition(String ingredient)
         throws Exception {
         //given, when, then
         mockMvc.perform(get("/api/v1/boards")
@@ -145,7 +145,7 @@ class BoardControllerTest {
     @ParameterizedTest
     @EnumSource(value = Category.class)
     @DisplayName("순서가 없고 카테고리 필터링 조건이 있어도 정상적으로 조회한다.")
-    public void getBoardListSuccessWithCategoryCondition(Category category) throws Exception {
+    void getBoardListSuccessWithCategoryCondition(Category category) throws Exception {
         //given, when, then
         mockMvc.perform(get("/api/v1/boards")
                 .param("category", category.name()))
@@ -156,7 +156,7 @@ class BoardControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"BREAD", "COOKIE", "TART", "JAM", "YOGURT", "ETC"})
     @DisplayName("순서가 없고 필터링 조건 둘 이상 있어도 정상적으로 조회한다.")
-    public void getBoardListSuccessWithCategoryAndIngredientCondition(String ingredient)
+    void getBoardListSuccessWithCategoryAndIngredientCondition(String ingredient)
         throws Exception {
         // given
         MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
@@ -174,7 +174,7 @@ class BoardControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"bread", "school", "SOCCER", "잼"})
     @DisplayName("잘못된 카테고리로 카테고리 필터링 검색을 하면 조회한다.")
-    public void getBoardListFailWithWrongCategory(String category) throws Exception {
+    void getBoardListFailWithWrongCategory(String category) throws Exception {
         // given, when, then
         mockMvc.perform(get("/api/v1/boards")
                 .param("category", category))
