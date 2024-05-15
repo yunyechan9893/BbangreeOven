@@ -13,7 +13,6 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.ProductResponse;
 import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
-import com.bbangle.bbangle.board.dto.TagDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -111,11 +110,11 @@ public class BoardService {
         return productDtos.stream().map(product -> BoardDetailProductDto.builder()
             .productId(product.productId())
             .productTitle(product.productTitle())
-            .glutenFreeTag(product.gluten_free_tag())
-            .sugarFreeTag(product.sugar_free_tag())
-            .highProteinTag(product.high_protein_tag())
-            .veganTag(product.vegan_tag())
-            .ketogenicTag(product.ketogenic_tag())
+            .glutenFreeTag(product.glutenFreeTag())
+            .sugarFreeTag(product.sugarFreeTag())
+            .highProteinTag(product.highProteinTag())
+            .veganTag(product.veganTag())
+            .ketogenicTag(product.ketogenicTag())
             .build()
         ).toList();
     }
