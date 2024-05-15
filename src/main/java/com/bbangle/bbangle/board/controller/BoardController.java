@@ -79,9 +79,9 @@ public class BoardController {
     public CommonResult getPostInFolder(
         @RequestParam(required = false, value = "sort")
         FolderBoardSortType sort,
-        @PathVariable(name = "folderId")
+        @PathVariable(value = "folderId")
         Long folderId,
-        @RequestParam(name = "cursorId", required = false)
+        @RequestParam(value = "cursorId", required = false)
         Long cursorId,
         @AuthenticationPrincipal
         Long memberId
