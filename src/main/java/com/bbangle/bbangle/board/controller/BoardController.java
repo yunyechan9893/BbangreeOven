@@ -7,6 +7,7 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
+import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
@@ -77,7 +78,7 @@ public class BoardController {
     @GetMapping("/folders/{folderId}")
     public CommonResult getPostInFolder(
         @RequestParam(required = false, value = "sort")
-        SortType sort,
+        FolderBoardSortType sort,
         @PathVariable(name = "folderId")
         Long folderId,
         @RequestParam(name = "cursorId", required = false)
@@ -85,6 +86,9 @@ public class BoardController {
         @AuthenticationPrincipal
         Long memberId
     ) {
+        if(sort == null){
+            sort = FolderBoardSortType.WISHLIST_RECENT;
+        }
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto = boardService.getPostInFolder(memberId, sort, folderId, cursorId);
         return responseService.getSingleResult(boardResponseDto);
     }

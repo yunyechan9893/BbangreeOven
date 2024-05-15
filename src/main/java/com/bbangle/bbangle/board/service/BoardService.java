@@ -8,6 +8,7 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
 import com.bbangle.bbangle.config.ranking.ScoreType;
@@ -68,6 +69,25 @@ public class BoardService {
         return boards;
     }
 
+    @Transactional(readOnly = true)
+    public BoardCustomPage<List<BoardResponseDto>> getPostInFolder(
+        Long memberId,
+        FolderBoardSortType sort,
+        Long folderId,
+        Long cursorId
+    ) {
+        WishListFolder folder = folderRepository.findByMemberIdAndId(memberId, folderId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
+
+        List<Board> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
+
+        if (allByFolder.isEmpty()){
+            return BoardCustomPage.emptyPage();
+        }
+        return getListBoardCustomPage(allByFolder);
+    }
+
+
     private void updateLikeStatus(
         BoardCustomPage<List<BoardResponseDto>> boardResponseDto,
         Long memberId
@@ -93,24 +113,6 @@ public class BoardService {
     @Transactional(readOnly = true)
     public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
         return boardRepository.getBoardDetailResponse(memberId, boardId);
-    }
-
-    @Transactional(readOnly = true)
-    public BoardCustomPage<List<BoardResponseDto>> getPostInFolder(
-        Long memberId,
-        SortType sort,
-        Long folderId,
-        Long cursorId
-    ) {
-        WishListFolder folder = folderRepository.findByMemberIdAndId(memberId, folderId)
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
-
-        List<Board> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
-
-        if (allByFolder.isEmpty()){
-            return BoardCustomPage.emptyPage();
-        }
-        return getListBoardCustomPage(allByFolder);
     }
 
     @Transactional
