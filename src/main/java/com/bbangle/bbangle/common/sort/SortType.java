@@ -1,32 +1,19 @@
 package com.bbangle.bbangle.common.sort;
 
-import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.repository.folder.cursor.CursorGenerator;
-import com.bbangle.bbangle.board.repository.folder.cursor.LowPriceCursorGenerator;
-import com.bbangle.bbangle.board.repository.folder.cursor.PopularCursorGenerator;
-import com.bbangle.bbangle.board.repository.folder.cursor.WishListRecentCursorGenerator;
-import com.bbangle.bbangle.ranking.domain.QRanking;
-import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import lombok.Getter;
 
 @Getter
 public enum SortType {
-    RECENT(QBoard.board.createdAt::desc),
-    POPULAR(QRanking.ranking.popularScore::desc);
+    RECENT("recent"),
+    LOW_PRICE("low-price"),
+    POPULAR("popular"),
+    RECOMMEND("recommend");
 
-    private final Supplier<OrderSpecifier<?>> setOrder;
+    private static final String ERROR_WORD = "올바르지 않은 분류 값입니다. 다시 선택해주세요";
+    private final String value;
 
-    SortType(Supplier<OrderSpecifier<?>> setOrder
-    ) {
-        this.setOrder = setOrder;
+    SortType(String value) {
+        this.value = value;
     }
-
-    public OrderSpecifier<?> getOrderSpecifier(){
-        return setOrder.get();
-    }
-
+    
 }
