@@ -7,11 +7,11 @@ import lombok.Builder;
 public record BoardDetailProductDto(
     Long productId,
     String productTitle,
-    Boolean gluten_free_tag,
-    Boolean high_protein_tag,
-    Boolean sugar_free_tag,
-    Boolean vegan_tag,
-    Boolean ketogenic_tag
+    Boolean glutenFreeTag,
+    Boolean highProteinTag,
+    Boolean sugarFreeTag,
+    Boolean veganTag,
+    Boolean ketogenicTag
 ) {
 
 

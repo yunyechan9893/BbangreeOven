@@ -111,11 +111,11 @@ public class BoardService {
         return productDtos.stream().map(product -> BoardDetailProductDto.builder()
             .productId(product.productId())
             .productTitle(product.productTitle())
-            .gluten_free_tag(product.gluten_free_tag())
-            .sugar_free_tag(product.sugar_free_tag())
-            .high_protein_tag(product.high_protein_tag())
-            .vegan_tag(product.vegan_tag())
-            .ketogenic_tag(product.ketogenic_tag())
+            .glutenFreeTag(product.gluten_free_tag())
+            .sugarFreeTag(product.sugar_free_tag())
+            .highProteinTag(product.high_protein_tag())
+            .veganTag(product.vegan_tag())
+            .ketogenicTag(product.ketogenic_tag())
             .build()
         ).toList();
     }
