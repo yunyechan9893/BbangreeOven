@@ -1,12 +1,19 @@
 package com.bbangle.bbangle.board.service;
 
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
+import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.ProductDto;
+import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
+import com.bbangle.bbangle.board.dto.TagDto;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -23,9 +30,12 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import net.datafaker.providers.base.Bool;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -47,6 +57,8 @@ public class BoardService {
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
     private final RankingRepository rankingRepository;
+
+    private final int ONE_CATEGOTY = 1;
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -87,9 +99,47 @@ public class BoardService {
             .toList();
     }
 
-    @Transactional(readOnly = true)
-    public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
+    public StoreAndBoardImgResponse getStoreAndBoardResponse(Long memberId, Long boardId){
+        return boardRepository.getStoreAndBoardImgResponse(memberId, boardId);
+    }
+
+    public BoardResponse getBoardDetailResponse(Long memberId, Long boardId){
         return boardRepository.getBoardDetailResponse(memberId, boardId);
+    }
+
+    private List<BoardDetailProductDto> toProductToResponse(List<ProductDto> productDtos){
+        return productDtos.stream().map(product -> BoardDetailProductDto.builder()
+            .productId(product.productId())
+            .productTitle(product.productTitle())
+            .gluten_free_tag(product.gluten_free_tag())
+            .sugar_free_tag(product.sugar_free_tag())
+            .high_protein_tag(product.high_protein_tag())
+            .vegan_tag(product.vegan_tag())
+            .ketogenic_tag(product.ketogenic_tag())
+            .build()
+        ).toList();
+    }
+
+    private Boolean isBundled(List<ProductDto> productDtos){
+        return productDtos.stream()
+            .map(productDto -> productDto.category())
+            .distinct()
+            .count() > ONE_CATEGOTY;
+    }
+
+    public ProductResponse getProductResponse(Long boardId) {
+        List<ProductDto> productDtos = boardRepository.getProductDto(boardId);
+
+        Optional.ofNullable(productDtos).orElseThrow(() ->
+            new BbangleException(BOARD_NOT_FOUND));
+
+        List<BoardDetailProductDto> boardDetailProductDtos = toProductToResponse(productDtos);
+        Boolean isBundled = isBundled(productDtos);
+
+        return ProductResponse.builder()
+            .products(boardDetailProductDtos)
+            .boardIsBundled(isBundled)
+            .build();
     }
 
     public Slice<BoardResponseDto> getPostInFolder(

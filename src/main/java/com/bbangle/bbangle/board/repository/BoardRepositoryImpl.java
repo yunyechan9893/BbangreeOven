@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
+
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
@@ -7,31 +9,33 @@ import com.bbangle.bbangle.board.domain.QBoardDetail;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.domain.TagEnum;
-import com.bbangle.bbangle.board.dto.BoardAvailableDayDto;
 import com.bbangle.bbangle.board.dto.BoardDetailDto;
-import com.bbangle.bbangle.board.dto.BoardDetailResponse;
-import com.bbangle.bbangle.board.dto.BoardDetailSelectDto;
+import com.bbangle.bbangle.board.dto.BoardDetailDto2;
 import com.bbangle.bbangle.board.dto.BoardImgDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardDetailDto;
+import com.bbangle.bbangle.board.dto.QProductDto;
+import com.bbangle.bbangle.board.dto.QStoreAndBoardImgDto;
+import com.bbangle.bbangle.board.dto.StoreAndBoardImgDto;
+import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
-import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -42,6 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +62,7 @@ import org.springframework.stereotype.Repository;
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public static final int BOARD_PAGE_SIZE = 10;
+    private final Expression<Long> emptywishListBoardNumber = Expressions.constant(-1L);
 
     private static final QBoard board = QBoard.board;
     private static final QProduct product = QProduct.product;
@@ -120,213 +126,147 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return new SliceImpl<>(content, pageable, hasNext);
     }
 
-    private List<BoardDetailDto> fetchBoardDetails(Long boardId) {
-        return queryFactory.select(new QBoardDetailDto(
+    private void getConditionalWishlistStoreJoinQuery(JPAQuery<StoreAndBoardImgDto> query, Long memberId) {
+            query.leftJoin(wishlistStore)
+                .on(wishlistStore.store.eq(store),
+                    wishlistStore.member.id.eq(memberId),
+                    wishlistStore.isDeleted.eq(false));
+    }
+
+    private List<StoreAndBoardImgDto> getStoreAndBoardImgDto(Long memberId, Long boardId) {
+        Expression<Long> conditionalWhisList =
+            Objects.nonNull(memberId) ? wishlistStore.id : emptywishListBoardNumber;
+
+        JPAQuery<StoreAndBoardImgDto> beforeFetch = queryFactory.select(
+            new QStoreAndBoardImgDto(
+                store.id,
+                store.name,
+                store.profile,
+                productImg.id,
+                productImg.url,
+                conditionalWhisList
+            )
+        ).from(board)
+            .leftJoin(productImg).on(board.id.eq(productImg.board.id))
+            .join(store).on(store.eq(board.store))
+            .where(board.id.eq(boardId))
+            .orderBy(productImg.id.desc());
+
+        Optional.ofNullable(memberId)
+            .ifPresent(mId -> getConditionalWishlistStoreJoinQuery(beforeFetch, memberId));
+
+        return beforeFetch.fetch();
+    }
+
+    @Override
+    public StoreAndBoardImgResponse getStoreAndBoardImgResponse(Long memberId, Long boardId){
+        List<StoreAndBoardImgDto> storeAndBoardImgDto =  getStoreAndBoardImgDto(memberId, boardId);
+
+        if (Objects.isNull(storeAndBoardImgDto)) {
+            throw new BbangleException(STORE_NOT_FOUND);
+        }
+
+        StoreAndBoardImgDto storeItem = storeAndBoardImgDto.get(0);
+        List<BoardImgDto> boardImgDtos = storeAndBoardImgDto.stream().map(StoreAndBoardImgDto::toBoardImgDto).toList();
+
+        return StoreAndBoardImgResponse.builder()
+            .storeId(storeItem.storeId())
+            .storeTitle(storeItem.storeTitle())
+            .storeProfile(storeItem.storeProfile())
+            .isWished(storeItem.isNonEmptyWishlist())
+            .boardImgs(boardImgDtos)
+            .build();
+    }
+
+    private void getConditionalWishlistBoardJoinQuery(JPAQuery<BoardDetailDto> query, Long memberId) {
+        query.leftJoin(wishListBoard)
+            .on(wishListBoard.board.eq(board),
+                wishListBoard.memberId.eq(memberId),
+                wishListBoard.isDeleted.eq(false));
+    }
+
+    private List<BoardDetailDto> getBoardDto(Long memberId, Long boardId){
+
+        Expression<Long> conditionalWhisList =
+            Objects.nonNull(memberId) ? wishListBoard.id : emptywishListBoardNumber;
+
+        JPAQuery<BoardDetailDto> beforeFetch = queryFactory.select(
+            new QBoardDetailDto(
+                board.id,
+                board.profile,
+                board.title,
+                board.price,
+                board.monday,
+                board.tuesday,
+                board.wednesday,
+                board.thursday,
+                board.friday,
+                board.saturday,
+                board.sunday,
+                board.purchaseUrl,
+                board.status,
                 boardDetail.id,
                 boardDetail.imgIndex,
-                boardDetail.url
-            ))
-            .from(boardDetail)
-            .where(board.id.eq(boardId))
-            .fetch();
-    }
-
-    private List<String> getTagsToStringList(Product product) {
-        List<String> tags = new ArrayList<>();
-        if (product.isGlutenFreeTag()) {
-            tags.add(TagEnum.GLUTEN_FREE.label());
-        }
-        if (product.isSugarFreeTag()) {
-            tags.add(TagEnum.SUGAR_FREE.label());
-        }
-
-        if (product.isHighProteinTag()) {
-            tags.add(TagEnum.HIGH_PROTEIN.label());
-        }
-        if (product.isVeganTag()) {
-            tags.add(TagEnum.VEGAN.label());
-        }
-        if (product.isKetogenicTag()) {
-            tags.add(TagEnum.KETOGENIC.label());
-        }
-
-        return tags;
-    }
-
-    public List<ProductDto> fetchProductDtoByBoardId(Long boardId) {
-        List<Product> products = queryFactory.selectFrom(product)
-            .where(board.id.eq(boardId))
-            .fetch();
-
-        return products.stream().map(product1 ->
-                ProductDto.builder()
-                    .id(product1.getId())
-                    .title(product1.getTitle())
-                    .tags(getTagsToStringList(product1))
-                    .category(product1.getCategory())
-                    .build())
-            .toList();
-    }
-
-    public List<String> getProductDtosToDuplicatedTags(List<ProductDto> productDtos) {
-        return productDtos.stream()
-            .map(ProductDto::tags)
-            .filter(Objects::nonNull)
-            .flatMap(List::stream)
-            .distinct()
-            .collect(Collectors.toList());
-    }
-
-    public boolean isBundleBoard(List<ProductDto> productDtos) {
-        return productDtos.stream()
-            .map(ProductDto::category)
-            .distinct()
-            .count() > 1;
-    }
-
-    private void setWishlistBoard(List<Expression<?>> columns) {
-        columns.add(wishListBoard.id);
-    }
-
-    private void setWishlistStore(List<Expression<?>> columns) {
-        columns.add(wishlistStore.id);
-    }
-
-    private Expression[] setColomns(Long memberId) {
-        List<Expression<?>> columns = new ArrayList<>();
-        columns.add(store.id);
-        columns.add(store.name);
-        columns.add(store.profile);
-        columns.add(board.id);
-        columns.add(board.profile);
-        columns.add(board.title);
-        columns.add(board.price);
-        columns.add(board.monday);
-        columns.add(board.tuesday);
-        columns.add(board.wednesday);
-        columns.add(board.thursday);
-        columns.add(board.friday);
-        columns.add(board.saturday);
-        columns.add(board.sunday);
-        columns.add(board.purchaseUrl);
-        columns.add(productImg.id);
-        columns.add(productImg.url);
-
-        if (memberId != null && memberId > 0) {
-            setWishlistBoard(columns);
-        }
-
-        if (memberId != null && memberId > 0) {
-            setWishlistStore(columns);
-        }
-
-        return columns.toArray(new Expression[0]);
-    }
-
-    private JPAQuery<Tuple> getBoardDetailSelect(Long memberId) {
-        return queryFactory.select(setColomns(memberId));
-    }
-
-    private void setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId) {
-        jpaQuery.leftJoin(wishListBoard)
-            .on(wishListBoard.board.id.eq(board.id),
-                wishListBoard.memberId.eq(memberId),
-                wishListBoard.isDeleted.eq(false))
-            .leftJoin(wishlistStore)
-            .on(wishlistStore.store.id.eq(store.id),
-                wishlistStore.member.id.eq(memberId),
-                wishlistStore.isDeleted.eq(false));
-    }
-
-    public List<Tuple> fetchStoreAndBoardAndImageTuple(Long memberId, Long boardId) {
-        JPAQuery<Tuple> jpaQuery = getBoardDetailSelect(memberId).from(board)
-            .where(board.id.eq(boardId))
-            .join(board.store, store)
-            .leftJoin(productImg).on(board.id.eq(productImg.board.id));
-
-        if (memberId != null && memberId > 0) {
-            setWishlistJoin(jpaQuery, memberId);
-        }
-
-        return jpaQuery.fetch();
-    }
-
-    private List<BoardImgDto> getBoardImageToDto(List<Tuple> tuplesRelateBoard) {
-        List<BoardImgDto> boardImgDtos = new ArrayList<>();
-        for (Tuple tupleReleteBoard : tuplesRelateBoard) {
-            boardImgDtos.add(
-                BoardImgDto.builder()
-                    .id(tupleReleteBoard.get(productImg.id))
-                    .url(tupleReleteBoard.get(productImg.url))
-                    .build()
-            );
-        }
-
-        return boardImgDtos;
-    }
-
-    @Override
-    public BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId) {
-        List<Tuple> tuplesRelateBoard = fetchStoreAndBoardAndImageTuple(memberId, boardId);
-        List<ProductDto> productDtos = fetchProductDtoByBoardId(boardId);
-        List<String> duplicatedTags = getProductDtosToDuplicatedTags(productDtos);
-        Boolean isBundled = isBundleBoard(productDtos);
-        List<BoardDetailDto> boardDetails = fetchBoardDetails(boardId);
-
-        Tuple tupleReleteBoard = tuplesRelateBoard.get(0);
-        List<BoardImgDto> boardImgDtos = getBoardImageToDto(tuplesRelateBoard);
-
-        StoreDto storeDto = StoreDto.builder()
-            .storeId(tupleReleteBoard.get(store.id))
-            .storeName(tupleReleteBoard.get(store.name))
-            .profile(tupleReleteBoard.get(store.profile))
-            .isWished(tupleReleteBoard.get(wishlistStore.id) != null)
-            .build();
-
-        BoardDetailSelectDto boardDto = BoardDetailSelectDto.builder()
-            .boardId(tupleReleteBoard.get(board.id))
-            .thumbnail(tupleReleteBoard.get(board.profile))
-            .title(tupleReleteBoard.get(board.title))
-            .price(tupleReleteBoard.get(board.price))
-            .orderAvailableDays(
-                BoardAvailableDayDto.builder()
-                    .mon(tupleReleteBoard.get(board.monday))
-                    .tue(tupleReleteBoard.get(board.tuesday))
-                    .wed(tupleReleteBoard.get(board.wednesday))
-                    .thu(tupleReleteBoard.get(board.thursday))
-                    .fri(tupleReleteBoard.get(board.friday))
-                    .sat(tupleReleteBoard.get(board.saturday))
-                    .sun(tupleReleteBoard.get(board.sunday))
-                    .build()
+                boardDetail.url,
+                conditionalWhisList
             )
-            .purchaseUrl(tupleReleteBoard.get(board.purchaseUrl))
-            .detail(boardDetails)
-            .products(productDtos)
-            .images(boardImgDtos.stream()
-                .toList())
-            .tags(duplicatedTags)
-            .isWished(tupleReleteBoard.get(wishListBoard.id) != null)
-            .isBundled(isBundled)
-            .build();
+        ).from(board)
+            .leftJoin(boardDetail).on(board.id.eq(boardDetail.board.id))
+            .where(board.id.eq(boardId));
 
-        return BoardDetailResponse.builder()
-            .store(storeDto)
-            .board(boardDto)
+        Optional.ofNullable(memberId)
+            .ifPresent(mId -> getConditionalWishlistBoardJoinQuery(beforeFetch, memberId));
+
+        return beforeFetch.fetch();
+    }
+
+    @Override
+    public BoardResponse getBoardDetailResponse(Long memberId, Long boardId){
+        List<BoardDetailDto> boardDetailDtos = getBoardDto(memberId, boardId);
+
+        if (Objects.isNull(boardDetailDtos)) {
+            throw new BbangleException(STORE_NOT_FOUND);
+        }
+
+        BoardDetailDto boardDto = boardDetailDtos.get(0);
+        List<BoardDetailDto2> boardDetailDto2s = boardDetailDtos.stream().map(BoardDetailDto::toBoardDetailDto).toList();
+
+        return BoardResponse.builder()
+            .boardId(boardDto.boardId())
+            .boardTitle(boardDto.boardTitle())
+            .boardProfile(boardDto.boardProfile())
+            .boardPrice(boardDto.boardPrice())
+            .monday(boardDto.monday())
+            .tuesday(boardDto.thursday())
+            .wednesday(boardDto.wednesday())
+            .thursday(boardDto.thursday())
+            .friday(boardDto.friday())
+            .saturday(boardDto.saturday())
+            .sunday(boardDto.sunday())
+            .purchaseUrl(boardDto.purchaseUrl())
+            .isWished(boardDto.isNonEmptyWishlist())
+            .status(boardDto.status())
+            .boardDetails(boardDetailDto2s)
             .build();
     }
 
     @Override
-    public HashMap<Long, String> getAllBoardTitle() {
-        List<Tuple> fetch = queryFactory
-            .select(board.id, board.title)
-            .from(board)
+    public List<ProductDto> getProductDto(Long boardId) {
+        return queryFactory.select(new QProductDto(
+                product.id,
+                product.title,
+                product.category,
+                product.glutenFreeTag,
+                product.highProteinTag,
+                product.sugarFreeTag,
+                product.veganTag,
+                product.ketogenicTag
+            ))
+            .from(product)
+            .where(product.board.id.eq(boardId))
             .fetch();
-
-        HashMap<Long, String> boardMap = new HashMap<>();
-        fetch.forEach((tuple) -> boardMap.put(tuple.get(board.id), tuple.get(board.title)));
-
-        return boardMap;
     }
+
 
     @Override
     public List<Board> checkingNullRanking() {

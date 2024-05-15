@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record BoardImgDto(
-    Long id,
+    Long boardImgId,
     String url
 ) {
 

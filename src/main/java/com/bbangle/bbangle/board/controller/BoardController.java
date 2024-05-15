@@ -1,9 +1,12 @@
 package com.bbangle.bbangle.board.controller;
 
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
@@ -104,16 +107,36 @@ public class BoardController {
         return responseService.getSuccessResult();
     }
 
-    @GetMapping("/{id}")
-    public CommonResult getBoardDetailResponse(
-        @PathVariable("id")
+    @GetMapping("/{boardId}/store")
+    public CommonResult getStoreAndBoardImgResponse(
+        @PathVariable("boardId")
         Long boardId,
         @AuthenticationPrincipal
         Long memberId
     ) {
-        BoardDetailResponse boardDetailResponse =
-            boardService.getBoardDetailResponse(memberId, boardId);
-        return responseService.getSingleResult(boardDetailResponse);
+        StoreAndBoardImgResponse storeAndBoardImgResponse =
+            boardService.getStoreAndBoardResponse(memberId, boardId);
+        return responseService.getSingleResult(storeAndBoardImgResponse);
+    }
+
+    @GetMapping("/{boardId}")
+    public CommonResult getBoardDetailResponse(
+        @PathVariable("boardId")
+        Long boardId,
+        @AuthenticationPrincipal
+        Long memberId
+    ) {
+        BoardResponse boardResponse = boardService.getBoardDetailResponse(memberId, boardId);
+        return responseService.getSingleResult(boardResponse);
+    }
+
+    @GetMapping("/{boardId}/product")
+    public CommonResult getProductResponse(
+        @PathVariable("boardId")
+        Long boardId
+    ) {
+        ProductResponse productResponse = boardService.getProductResponse(boardId);
+        return responseService.getSingleResult(productResponse);
     }
 
     @PatchMapping("/{boardId}/purchase")

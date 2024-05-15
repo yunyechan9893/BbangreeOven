@@ -154,7 +154,8 @@ public class SearchServiceImpl implements SearchService {
     private void updateRedisWithTokenizedBoardTitles() {
         Map<String, List<Long>> boardTitleTokenToIdMapping;
 
-        HashMap<Long, String> titlesAtBoard = boardRepository.getAllBoardTitle();
+//        HashMap<Long, String> titlesAtBoard = boardRepository.getAllBoardTitle();
+        HashMap<Long, String> titlesAtBoard = new HashMap<>();
         boardTitleTokenToIdMapping = createTitleTokenToIdMapping(titlesAtBoard,
             RedisEnum.BOARD.name());
         try {

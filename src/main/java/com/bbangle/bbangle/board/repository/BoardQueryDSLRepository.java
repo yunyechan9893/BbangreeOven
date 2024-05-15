@@ -2,9 +2,12 @@ package com.bbangle.bbangle.board.repository;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.dto.BoardDetailResponse;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.board.dto.ProductDto;
+import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
@@ -28,9 +31,11 @@ public interface BoardQueryDSLRepository {
         WishListFolder wishlistFolder
     );
 
-    BoardDetailResponse getBoardDetailResponse(Long memberId, Long boardId);
+    StoreAndBoardImgResponse getStoreAndBoardImgResponse(Long memberId, Long boardId);
 
-    HashMap<Long, String> getAllBoardTitle();
+    BoardResponse getBoardDetailResponse(Long memberId, Long boardId);
+
+    List<ProductDto> getProductDto(Long boardId);
 
     List<Board> checkingNullRanking();
 
