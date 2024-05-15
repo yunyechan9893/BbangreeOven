@@ -29,18 +29,13 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
         List<Long> fetch = queryFactory
             .select(board.id)
             .distinct()
-            .from(product)
-            .join(product.board, board)
-            .leftJoin(board.store, store)
-            .fetchJoin()
+            .from(board)
             .join(wishListBoard)
             .on(board.id.eq(wishListBoard.board.id))
-            .join(wishListBoard)
-            .on(wishListBoard.wishlistFolder.eq(folder))
-            .where(wishListBoard.wishlistFolder.eq(folder)
+            .where(wishListBoard.wishlistFolder.id.eq(folder.getId())
                 .and(wishListBoard.isDeleted.eq(false))
                 .and(cursor))
-            .orderBy(order, board.id.desc())
+            .orderBy(order)
             .limit(BOARD_PAGE_SIZE + 1L)
             .fetch();
 
@@ -50,9 +45,12 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
             .fetchJoin()
             .join(board.store, store)
             .fetchJoin()
+            .join(wishListBoard)
+            .on(board.id.eq(wishListBoard.board.id))
             .where(board.id.in(fetch))
             .orderBy(order, board.id.desc())
             .fetch();
+
     }
 
 }

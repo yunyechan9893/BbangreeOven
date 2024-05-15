@@ -24,7 +24,6 @@ public class PopularBoardQueryProvider implements QueryGenerator{
     private static final QStore store = QStore.store;
     private static final QRanking ranking = QRanking.ranking;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
-    private static final QWishListFolder folder = QWishListFolder.wishListFolder;
 
     private static final int BOARD_PAGE_SIZE = 10;
 
@@ -32,19 +31,16 @@ public class PopularBoardQueryProvider implements QueryGenerator{
 
 
     @Override
-    public List<Board> getBoards(BooleanBuilder cursor, OrderSpecifier<?> order, WishListFolder wishListFolder) {
+    public List<Board> getBoards(BooleanBuilder cursor, OrderSpecifier<?> order, WishListFolder folder) {
         List<Long> fetch = queryFactory
             .select(board.id)
             .distinct()
-            .from(product)
-            .join(product.board, board)
-            .leftJoin(board.store, store)
-            .fetchJoin()
+            .from(board)
             .join(wishListBoard)
             .on(board.id.eq(wishListBoard.board.id))
-            .join(wishListBoard)
-            .on(wishListBoard.wishlistFolder.eq(folder))
-            .where(wishListBoard.wishlistFolder.eq(folder)
+            .join(ranking)
+            .on(board.id.eq(ranking.board.id))
+            .where(wishListBoard.wishlistFolder.id.eq(folder.getId())
                 .and(wishListBoard.isDeleted.eq(false))
                 .and(cursor))
             .orderBy(order, board.id.desc())
@@ -53,10 +49,14 @@ public class PopularBoardQueryProvider implements QueryGenerator{
 
         return queryFactory.select(board)
             .from(board)
-            .join(board.productList, product)
+            .leftJoin(board.productList, product)
             .fetchJoin()
-            .join(board.store, store)
+            .join(store)
+            .on(board.store.id.eq(store.id))
             .fetchJoin()
+            .join(ranking)
+            .fetchJoin()
+            .on(board.id.eq(ranking.board.id))
             .where(board.id.in(fetch))
             .orderBy(order, board.id.desc())
             .fetch();
