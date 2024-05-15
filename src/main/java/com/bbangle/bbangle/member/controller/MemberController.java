@@ -38,7 +38,8 @@ public class MemberController {
     public CommonResult deleteMember(
         @RequestBody WithdrawalRequestDto withdrawalRequestDto,
         @AuthenticationPrincipal
-        Long memberId){
+        Long memberId
+    ){
         memberService.saveDeleteReason(withdrawalRequestDto, memberId);
         memberService.deleteMember(memberId);
         return responseService.getSingleResult(new MessageDto(DELETE_SUCCESS_MSG,true));
