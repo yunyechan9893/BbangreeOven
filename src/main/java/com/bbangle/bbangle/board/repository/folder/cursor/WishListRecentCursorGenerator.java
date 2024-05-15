@@ -17,6 +17,9 @@ public class WishListRecentCursorGenerator implements CursorGenerator{
     @Override
     public BooleanBuilder getCursor(Long cursorId, Long memberId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
+        if(cursorId == null){
+            return cursorBuilder;
+        }
         Long wishListBoardId = queryFactory
             .select(wishListBoard.id)
             .from(wishListBoard)

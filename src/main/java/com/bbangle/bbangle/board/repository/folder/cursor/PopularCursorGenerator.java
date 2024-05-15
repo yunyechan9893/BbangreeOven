@@ -17,6 +17,9 @@ public class PopularCursorGenerator implements CursorGenerator{
     @Override
     public BooleanBuilder getCursor(Long cursorId, Long memberId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
+        if(cursorId == null){
+            return cursorBuilder;
+        }
         Double score = queryFactory
             .select(ranking.popularScore)
             .from(ranking)

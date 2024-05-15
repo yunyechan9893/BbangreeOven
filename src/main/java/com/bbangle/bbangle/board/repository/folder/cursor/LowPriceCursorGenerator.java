@@ -17,6 +17,9 @@ public class LowPriceCursorGenerator implements CursorGenerator{
     @Override
     public BooleanBuilder getCursor(Long cursorId, Long memberId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
+        if(cursorId == null){
+            return cursorBuilder;
+        }
         Integer price = queryFactory
             .select(board.price)
             .from(board)
