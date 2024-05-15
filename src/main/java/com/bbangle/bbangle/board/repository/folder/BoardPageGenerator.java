@@ -21,16 +21,20 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BoardPageGenerator {
 
+    private static final Long NO_NEXT_CURSOR = -1L;
+    private static final Long HAS_NEXT_PAGE_SIZE = 11L;
+
     public BoardCustomPage<List<BoardResponseDto>> getBoardPage(List<Board> allByFolder){
         if(allByFolder.isEmpty()){
             return BoardCustomPage.emptyPage();
         }
 
         List<BoardResponseDto> boardResponseDtos = convertToBoardResponse(allByFolder);
-        Long nextCursor = allByFolder.get(allByFolder.size()-1).getId();
+        Long nextCursor = NO_NEXT_CURSOR;
         boolean hasNext = false;
-        if(allByFolder.size() == 11){
+        if(allByFolder.size() == HAS_NEXT_PAGE_SIZE){
             hasNext = true;
+            nextCursor = allByFolder.get(allByFolder.size()-1).getId();
         }
         return BoardCustomPage.from(boardResponseDtos,
             nextCursor, hasNext);
