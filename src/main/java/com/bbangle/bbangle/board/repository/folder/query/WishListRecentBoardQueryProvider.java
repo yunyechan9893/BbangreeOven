@@ -41,7 +41,7 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
 
         return queryFactory.select(board)
             .from(board)
-            .join(board.productList, product)
+            .leftJoin(board.productList, product)
             .fetchJoin()
             .join(board.store, store)
             .fetchJoin()
