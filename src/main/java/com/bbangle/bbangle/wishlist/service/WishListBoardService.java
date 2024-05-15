@@ -1,7 +1,5 @@
 package com.bbangle.bbangle.wishlist.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
-
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -50,10 +48,12 @@ public class WishListBoardService {
 
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
+        Optional<WishListBoard> wishListBoard = wishlistBoardRepository.findByBoardId(board.getId(),
+            memberId);
 
-        validateIsWishAvailable(memberId, board);
+        validateIsWishAvailable(wishListBoard);
 
-        makeNewWish(board, wishlistFolder, member);
+        makeNewWish(wishListBoard, board, wishlistFolder, member);
     }
 
 
@@ -84,9 +84,8 @@ public class WishListBoardService {
             }
         }
     }
-    private void validateIsWishAvailable(Long memberId, Board board) {
-        Optional<WishListBoard> wishListBoard = wishlistBoardRepository.findByBoardId(board.getId(), memberId);
 
+    private void validateIsWishAvailable(Optional<WishListBoard> wishListBoard) {
         if (wishListBoard.isPresent() && !wishListBoard.get().isDeleted()) {
             throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
         }
@@ -96,7 +95,8 @@ public class WishListBoardService {
         WishListBoardRequest wishRequest,
         Member member
     ) {
-        if (wishRequest.folderId().equals(0L)) {
+        if (wishRequest.folderId()
+            .equals(0L)) {
             return wishListFolderRepository.findByMemberAndFolderName(
                     member, DEFAULT_FOLDER_NAME)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
@@ -107,19 +107,28 @@ public class WishListBoardService {
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
     }
 
-    private void makeNewWish(Board board, WishListFolder wishlistFolder, Member member) {
+    private void makeNewWish(
+        Optional<WishListBoard> wishListBoard,
+        Board board,
+        WishListFolder wishlistFolder,
+        Member member
+    ) {
         updateRankingScore(board.getId(), 1.0);
+        wishListBoard.ifPresentOrElse(
+            WishListBoard::updateWishStatus,
+            () -> {
+                WishListBoard wishlistBoard = WishListBoard.builder()
+                    .wishlistFolder(wishlistFolder)
+                    .board(board)
+                    .memberId(member.getId())
+                    .isDeleted(false)
+                    .build();
 
-        WishListBoard wishlistBoard = WishListBoard.builder()
-            .wishlistFolder(wishlistFolder)
-            .board(board)
-            .memberId(member.getId())
-            .isDeleted(false)
-            .build();
+                wishlistBoardRepository.save(wishlistBoard);
+                board.updateWishCnt(true);
+            }
+        );
 
-        WishListBoard save = wishlistBoardRepository.save(wishlistBoard);
-        save.getBoard()
-            .updateWishCnt(true);
     }
 
     private void updateRankingScore(Long boardId, Double updatingScore) {
