@@ -37,13 +37,13 @@ public class ProductRepositoryImpl implements ProductQueryDSLRepository {
             .fetch()
             .stream()
             .collect(Collectors.toMap(
-                tuple -> tuple.get(board.id),
-                tuple -> {
+                tuple -> tuple.get(board.id), // key
+                tuple -> { // value
                     Set<Category> categories = new HashSet<>();
                     categories.add(tuple.get(product.category));
                     return categories;
                 },
-                (existCategories, newCategory) -> {
+                (existCategories, newCategory) -> { // 키 중복처리
                     existCategories.addAll(newCategory);
                     return existCategories;
                 }
