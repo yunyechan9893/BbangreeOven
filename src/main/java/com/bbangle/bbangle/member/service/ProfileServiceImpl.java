@@ -9,7 +9,6 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.dto.InfoUpdateRequest;
 import com.bbangle.bbangle.member.dto.ProfileInfoResponseDto;
 import com.bbangle.bbangle.member.repository.ProfileRepository;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,42 +18,40 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
 
-  private final ProfileRepository profileRepository;
-  private final S3Service imageService;
+    private final ProfileRepository profileRepository;
+    private final S3Service imageService;
 
-  @Override
-  public ProfileInfoResponseDto getProfileInfo(Long memberId) {
-    Member member = profileRepository.findById(memberId)
-        .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
-    return ProfileInfoResponseDto.builder()
-        .profileImg(member.getProfile())
-        .nickname(member.getNickname())
-        .phoneNumber(member.getPhone())
-        .birthDate(member.getBirth())
-        .build();
-  }
-
-  @Transactional
-  public void updateProfileInfo(
-      InfoUpdateRequest request, Long memberId,
-      MultipartFile profileImg
-  ) {
-    Member member = profileRepository.findById(memberId)
-        .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
-    if (profileImg != null && !profileImg.isEmpty()) {
-      ImageValidator.validateImage(profileImg);
-      String imgUrl = imageService.saveImage(profileImg);
-      member.updateProfile(imgUrl);
+    @Override
+    public ProfileInfoResponseDto getProfileInfo(Long memberId) {
+        Member member = profileRepository.findById(memberId)
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        return ProfileInfoResponseDto.builder()
+            .profileImg(member.getProfile())
+            .nickname(member.getNickname())
+            .phoneNumber(member.getPhone())
+            .birthDate(member.getBirth())
+            .build();
     }
-    member.update(request);
-  }
 
-  @Override
-  public String doubleCheckNickname(String nickname) {
-    Optional<Member> member = profileRepository.findByNickname(nickname);
-    if (!member.isEmpty()) {
-      return nickname;
+    @Transactional
+    @Override
+    public void updateProfileInfo(
+        InfoUpdateRequest request,
+        Long memberId,
+        MultipartFile profileImg
+    ) {
+        Member member = profileRepository.findById(memberId)
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        if (profileImg != null && !profileImg.isEmpty()) {
+            ImageValidator.validateImage(profileImg);
+            String imgUrl = imageService.saveImage(profileImg);
+            member.updateProfile(imgUrl);
+        }
+        member.update(request);
     }
-    return "";
-  }
+
+    @Override
+    public boolean doubleCheckNickname(String nickname) {
+        return profileRepository.findByNickname(nickname).isPresent();
+    }
 }

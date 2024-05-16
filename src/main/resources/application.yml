@@ -46,7 +46,6 @@ cloud:
     stack:
       auto: false
 
-
 ---
 spring:
   config:

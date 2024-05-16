@@ -21,12 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class LandingPageController {
+
     private static final String DIRECTORY_PATH = "/etc/bbangle";
     private static final String FILE_NAME = "landingPageUserEmail.txt";
     private final ResponseService responseService;
+
     @PostMapping("/landingpage")
-    public CommonResult getUserEmail(@Valid @RequestBody RequestEmailDto requestEmailDto){
-        String email = requestEmailDto.getEmail()+",";
+    public CommonResult getUserEmail(@Valid @RequestBody RequestEmailDto requestEmailDto) {
+        String email = requestEmailDto.getEmail() + ",";
         Path filePath = Paths.get(DIRECTORY_PATH, FILE_NAME);
         try {
             Files.createDirectories(filePath.getParent());
