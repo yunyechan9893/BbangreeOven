@@ -40,18 +40,19 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
         BooleanBuilder cursorCondition = getCursorCondition(cursorId, memberId);
         List<WishListStoreResponseDto> responseDtos =
             queryFactory.select(
-                    new QWishListStoreResponseDto(
-                        store.introduce,
-                        store.name.as("storeName"),
-                        store.id.as("storeId"),
-                        store.profile
-                    ))
-                .from(wishListStore)
-                .leftJoin(wishListStore.store, store)
-                .where(cursorCondition)
-                .limit(PAGE_SIZE + 1)
-                .orderBy(wishListStore.createdAt.desc())
-                .fetch();
+                new QWishListStoreResponseDto(
+                    store.introduce,
+                    store.name.as("storeName"),
+                    store.id.as("storeId"),
+                    store.profile
+                ))
+            .from(wishListStore)
+            .leftJoin(wishListStore.store, store)
+            .where(cursorCondition)
+            .limit(PAGE_SIZE + 1)
+            .orderBy(wishListStore.modifiedAt.desc(),wishListStore.createdAt.desc())
+            .fetch();
+
         boolean hasNext = checkingHasNext(responseDtos);
         int size = responseDtos.size();
         Long requestCursor = size != 0 ? responseDtos.get(size -1).getStoreId() : 0L;

@@ -26,7 +26,7 @@ public class StoreController {
 
     @GetMapping
     public CommonResult getList(
-        @RequestParam(required = false)
+        @RequestParam(required = false, value = "cursorId")
         Long cursorId,
         @AuthenticationPrincipal
         Long memberId

@@ -30,7 +30,16 @@ public class S3Service {
     final String ext = originName.substring(originName.lastIndexOf("."));
     final String changedImageName = changeImageName(ext);
     final String storeImagePath = uploadImage(request, ext, changedImageName);
+    return storeImagePath;
+  }
 
+  @Transactional
+  public String saveImage(MultipartFile request, String folder) {
+    Assert.notNull(request);
+    final String originName = request.getOriginalFilename();
+    final String ext = originName.substring(originName.lastIndexOf("."));
+    final String changedImageName = folder +"/"+ changeImageName(ext);
+    final String storeImagePath = uploadImage(request, ext, changedImageName);
     return storeImagePath;
   }
 

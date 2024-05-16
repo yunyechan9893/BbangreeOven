@@ -65,8 +65,7 @@ public class MemberService {
     }
 
   public Member findById(Long id) {
-    return memberRepository.findById(id)
-        .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+    return memberRepository.findMemberById(id);
   }
 
     @Transactional
@@ -133,8 +132,7 @@ public class MemberService {
 
   @Transactional
   public void saveDeleteReason(WithdrawalRequestDto withdrawalRequestDto, Long memberId) {
-    Member member = memberRepository.findById(memberId)
-        .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+    Member member = memberRepository.findMemberById(memberId);
     String[] reasons = withdrawalRequestDto.getReasons().split(",");
     for (String reason : reasons) {
       withdrawalRepository.save(Withdrawal.builder()

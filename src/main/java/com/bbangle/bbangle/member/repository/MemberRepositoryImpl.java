@@ -1,0 +1,28 @@
+package com.bbangle.bbangle.member.repository;
+
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.member.domain.QMember;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class MemberRepositoryImpl implements MemberQueryDSLRepository{
+    
+    private static final QMember member = QMember.member;
+    
+    private final JPAQueryFactory queryFactory;
+
+    @Override
+    public Member findMemberById(Long memberId) {
+        return Optional.ofNullable(queryFactory.selectFrom(member)
+            .where(member.id.eq(memberId))
+            .fetchOne())
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
+    }
+
+}
