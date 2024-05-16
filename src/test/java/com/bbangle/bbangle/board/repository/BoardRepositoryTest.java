@@ -53,7 +53,7 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("스토어 상세페이지 - 스토어, 게시판 이미지 조회 기능 : 게시판 아이디로 스토어, 이미지를 조회할 수 있다")
+    @DisplayName("스토어 상세페이지 - 상품 조회 기능 : 게시판 아이디로 상품리스트를 조회할 수 있다")
     void getProductDtoTest() {
         Map<String, Object> productParam = new HashMap<>();
         productParam.put("title", TEST_TITLE);
