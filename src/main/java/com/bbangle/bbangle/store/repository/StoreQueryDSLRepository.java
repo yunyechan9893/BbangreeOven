@@ -1,10 +1,8 @@
 package com.bbangle.bbangle.store.repository;
 
-import com.bbangle.bbangle.board.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
-import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.dto.StoreResponse;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;

@@ -27,9 +27,8 @@ public class NotificationService {
     }
 
     public NotificationDetailResponseDto getNoticeDetail(Long id) {
-        Notice notification = notificationRepository.findById(id).orElseThrow(
-            () -> new BbangleException(NOTIFICATION_NOT_FOUND)
-        );
+        Notice notification = notificationRepository.findById(id)
+            .orElseThrow(() -> new BbangleException(NOTIFICATION_NOT_FOUND));
         return NotificationDetailResponseDto.from(notification);
     }
 

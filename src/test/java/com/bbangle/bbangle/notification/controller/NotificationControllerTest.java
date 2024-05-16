@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class NotificationControllerTest {
+class NotificationControllerTest {
     @Autowired
     NotificationService notificationService;
     @Autowired
