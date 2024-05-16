@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 @Builder
 public class PopularBoardResponse {
 
@@ -16,6 +15,10 @@ public class PopularBoardResponse {
     private Integer boardPrice;
     private Boolean isWished;
     private Boolean isBundled;
+
+    public void setWishlist(boolean isWished) {
+        this.isWished = isWished;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -168,7 +168,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
         duplicatedPopularBoardResponses.stream()
             .filter(popularBoardDto -> idCount.get(popularBoardDto.getBoardId()) >= 2)
-            .forEach(popularBoardDto -> popularBoardDto.setIsBundled(true));
+            .forEach(popularBoardDto -> popularBoardDto.setWishlist(true));
 
         return duplicatedPopularBoardResponses;
     }
