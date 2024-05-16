@@ -29,8 +29,7 @@ public class WishListFolderService {
 
     @Transactional
     public Long create(Long memberId, FolderRequestDto requestDto) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
         validateMakingFolder(requestDto, member);
 
         WishListFolder folder = WishListFolder.builder()
@@ -45,16 +44,14 @@ public class WishListFolderService {
 
     @Transactional(readOnly = true)
     public List<FolderResponseDto> getList(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
 
         return wishListFolderRepository.findMemberFolderList(member);
     }
 
     @Transactional
     public void delete(Long folderId, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
 
         WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member, folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
@@ -66,8 +63,7 @@ public class WishListFolderService {
 
     @Transactional
     public void update(Long memberId, Long folderId, FolderUpdateDto updateDto) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
 
         WishListFolder wishlistFolder = wishListFolderRepository.findByMemberAndId(member, folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));

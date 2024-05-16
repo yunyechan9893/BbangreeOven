@@ -38,8 +38,7 @@ public class WishListStoreService {
     public void save(Long memberId, Long storeId) {
         Store store = storeRepository.findById(storeId)
             .orElseThrow(() -> new BbangleException(STORE_NOT_FOUND));
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+        Member member = memberRepository.findMemberById(memberId);
         wishListStoreRepositoryImpl.findWishListStore(memberId, storeId)
                 .ifPresentOrElse(wishlistStore -> wishlistStore.changeDeletedFalse(),
                     () -> wishListStoreRepository.save(WishListStore.builder()

@@ -5,7 +5,6 @@ import com.bbangle.bbangle.board.validator.BoardValidator;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Builder
 @Schema(description = "filter에 필요한 파라미터")
