@@ -1,20 +1,19 @@
 package com.bbangle.bbangle.store.repository;
 
+import static java.util.Collections.emptySet;
+
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.StoreAllBoardDto;
 import com.bbangle.bbangle.board.dto.StoreBestBoardDto;
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.store.dto.QStoreResponseDto;
-import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
-import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListStore;
@@ -23,37 +22,37 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
-
-import org.springframework.data.domain.Pageable;
-import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
 public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
     private static final Long PAGE_SIZE = 20L;
+    private static final Long BEST_BOARD_PAGE_SIZE = 3L;
     private static final Long EMPTY_PAGE_CURSOR = -1L;
+
     private static final Boolean EMPTY_PAGE_HAS_NEXT = false;
-    private final QStore store = QStore.store;
-    private final QBoard board = QBoard.board;
-    private final QProduct product = QProduct.product;
-    private final QWishListStore wishListStore = QWishListStore.wishListStore;
-    private final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
+    private static final QStore store = QStore.store;
+    private static final QBoard board = QBoard.board;
+    private static final QProduct product = QProduct.product;
+    private static final QWishListStore wishListStore = QWishListStore.wishListStore;
+    private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private final JPAQueryFactory queryFactory;
     private final MemberRepository memberRepository;
+    private final ProductRepository productRepository;
 
     @Override
-    public StoreDetailResponseDto getStoreDetailResponseDtoWithLike(Long memberId, Long storeId) {
-        List<Tuple> fetch = queryFactory.select(
-                store.id,
-                store.profile,
-                store.name,
-                store.introduce,
-                wishListStore.id,
+    public List<StoreBestBoardDto> findBestBoards(Long storeId) {
+        List<Tuple> boards = queryFactory.select(
                 board.id,
                 board.profile,
                 board.title,
@@ -62,136 +61,31 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             )
             .from(board)
             .where(board.store.id.eq(storeId))
-            .join(board.store, store)
-            .leftJoin(wishListStore)
-            .on(wishListStore.store.eq(store), wishListStore.member.id.eq(memberId),
-                wishListStore.isDeleted.eq(false))
             .orderBy(board.view.desc())
-            .limit(3)
+            .limit(BEST_BOARD_PAGE_SIZE)
             .fetch();
 
-        List<Long> boardIds = fetch.stream()
+        List<Long> boardIds = boards.stream()
             .map(tuple -> tuple.get(board.id))
             .toList();
 
-        List<Tuple> productCategory = queryFactory.select(
-                board.id,
-                product.category)
-            .from(product)
-            .where(product.board.id.in(boardIds))
-            .distinct()
-            .fetch();
+        Map<Long, Set<Category>> categoryInfoByBoardId = productRepository
+            .getCategoryInfoByBoardId(boardIds);
 
-        Map<Long, Boolean> isBundledMap = new HashMap<>();
-        productCategory.forEach(tuple -> {
-            Long boardId = tuple.get(board.id);
+        return boards.stream()
+            .map(boardWithStoreInfo -> {
+                    Long boardId = boardWithStoreInfo.get(board.id);
+                    Set<Category> categories = categoryInfoByBoardId.getOrDefault(boardId, emptySet());
 
-            if (isBundledMap.containsKey(boardId)) {
-                // boardId가 이미 존재한다면, true로 업데이트
-                isBundledMap.put(boardId, true);
-            } else {
-                // boardId가 존재하지 않는다면, 처음으로 추가하므로 false로 설정
-                isBundledMap.put(boardId, false);
-            }
-        });
-
-        var storeDto = StoreDto.builder();
-        List<StoreBestBoardDto> storeBestBoardDtos = new ArrayList<>();
-        for (Tuple tuple : fetch) {
-            Long boardId = tuple.get(board.id);
-            storeBestBoardDtos.add(
-                StoreBestBoardDto.builder()
-                    .boardId(boardId)
-                    .title(tuple.get(board.title))
-                    .thumbnail(tuple.get(board.profile))
-                    .isBundled(isBundledMap.getOrDefault(boardId, false))
-                    .price(tuple.get(board.price))
-                    .build()
-            );
-
-            storeDto.storeName(tuple.get(store.name))
-                .profile(tuple.get(store.profile))
-                .introduce(tuple.get(store.introduce))
-                .storeId(tuple.get(store.id))
-                .isWished(tuple.get(wishListStore.id) != null ? true : false);
-        }
-
-        return StoreDetailResponseDto.builder()
-            .store(storeDto.build())
-            .bestProducts(storeBestBoardDtos)
-            .build();
-    }
-
-    @Override
-    public StoreDetailResponseDto getStoreDetailResponseDto(Long storeId) {
-        List<Tuple> fetch = queryFactory.select(
-                store.id,
-                store.profile,
-                store.name,
-                store.introduce,
-                board.id,
-                board.profile,
-                board.title,
-                board.price,
-                board.view
-            )
-            .from(board)
-            .where(board.store.id.eq(storeId))
-            .join(board.store, store)
-            .orderBy(board.view.desc())
-            .limit(3)
-            .fetch();
-
-        List<Long> boardIds = fetch.stream()
-            .map(tuple -> tuple.get(board.id))
-            .toList();
-
-        List<Tuple> productCategory = queryFactory.select(
-                board.id,
-                product.category)
-            .from(product)
-            .where(product.board.id.in(boardIds))
-            .distinct()
-            .fetch();
-
-        Map<Long, Boolean> isBundledMap = new HashMap<>();
-        productCategory.forEach(tuple -> {
-            Long boardId = tuple.get(board.id);
-
-            if (isBundledMap.containsKey(boardId)) {
-                // boardId가 이미 존재한다면, true로 업데이트
-                isBundledMap.put(boardId, true);
-            } else {
-                // boardId가 존재하지 않는다면, 처음으로 추가하므로 false로 설정
-                isBundledMap.put(boardId, false);
-            }
-        });
-
-        var storeDto = StoreDto.builder();
-        List<StoreBestBoardDto> storeBestBoardDtos = new ArrayList<>();
-        for (Tuple tuple : fetch) {
-            Long boardId = tuple.get(board.id);
-            storeBestBoardDtos.add(
-                StoreBestBoardDto.builder()
-                    .boardId(boardId)
-                    .title(tuple.get(board.title))
-                    .thumbnail(tuple.get(board.profile))
-                    .isBundled(isBundledMap.getOrDefault(boardId, false))
-                    .price(tuple.get(board.price))
-                    .build()
-            );
-
-            storeDto.storeName(tuple.get(store.name))
-                .profile(tuple.get(store.profile))
-                .introduce(tuple.get(store.introduce))
-                .storeId(tuple.get(store.id))
-                .isWished(true);
-        }
-
-        return StoreDetailResponseDto.builder()
-            .store(storeDto.build())
-            .bestProducts(storeBestBoardDtos)
-            .build();
+                    return StoreBestBoardDto.builder()
+                        .boardId(boardId)
+                        .title(boardWithStoreInfo.get(board.title))
+                        .thumbnail(boardWithStoreInfo.get(board.profile))
+                        .isBundled(categories.size() > 1)
+                        .price(boardWithStoreInfo.get(board.price))
+                        .build();
+                }
+            ).toList();
     }
 
     @Override
@@ -407,7 +301,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
     public StoreCustomPage<List<StoreResponseDto>> getStoreList(Long cursorId, Long memberId) {
         BooleanBuilder cursorCondition = getCursorCondition(cursorId);
         List<StoreResponseDto> responseDtos = queryFactory.select(
-            new QStoreResponseDto(
+                new QStoreResponseDto(
                     store.id,
                     store.name,
                     store.introduce,
@@ -418,7 +312,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .where(cursorCondition)
             .limit(PAGE_SIZE + 1)
             .fetch();
-        if (responseDtos.isEmpty()){
+        if (responseDtos.isEmpty()) {
             return StoreCustomPage.from(responseDtos, EMPTY_PAGE_CURSOR, EMPTY_PAGE_HAS_NEXT);
         }
 
@@ -426,9 +320,9 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         if (hasNext) {
             responseDtos.remove(responseDtos.get(responseDtos.size() - 1));
         }
-        Long nextCursor = responseDtos.get(responseDtos.size() -1).getStoreId();
+        Long nextCursor = responseDtos.get(responseDtos.size() - 1).getStoreId();
 
-        if(Objects.nonNull(memberId)){
+        if (Objects.nonNull(memberId)) {
             findNextCursorPageWithLogin(responseDtos, memberId);
         }
 
@@ -444,7 +338,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         Member member = memberRepository.findMemberById(memberId);
 
         List<Long> wishedStore = queryFactory.select(
-                    wishListStore.store.id)
+                wishListStore.store.id)
             .from(wishListStore)
             .where(wishListStore.member.eq(member)
                 .and(wishListStore.isDeleted.eq(false))
@@ -467,9 +361,9 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         List<Long> wishedIds,
         List<StoreResponseDto> cursorPage
     ) {
-        for(Long id: wishedIds){
-            for(StoreResponseDto response : cursorPage){
-                if (id.equals(response.getStoreId())){
+        for (Long id : wishedIds) {
+            for (StoreResponseDto response : cursorPage) {
+                if (id.equals(response.getStoreId())) {
                     response.isWishStore();
                 }
             }

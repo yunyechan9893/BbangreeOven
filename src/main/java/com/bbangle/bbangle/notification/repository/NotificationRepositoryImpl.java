@@ -11,43 +11,32 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class NotificationRepositoryImpl implements NotificationQueryDSLRepository{
+public class NotificationRepositoryImpl implements NotificationQueryDSLRepository {
 
     private static final Long PAGE_SIZE = 20L;
+    private static final QNotice notice = QNotice.notice;
     private final JPAQueryFactory queryFactory;
-    private final QNotice notice = QNotice.notice;
 
     @Override
     public NotificationCustomPage<List<NotificationResponse>> findNextCursorPage(Long cursorId) {
         BooleanBuilder cursorCondition = getCursorCondition(cursorId);
-        List<Notice> notifications = queryFactory.selectFrom(notice)
+        List<Notice> notifications = queryFactory
+            .selectFrom(notice)
             .where(cursorCondition)
             .limit(PAGE_SIZE + 1)
             .orderBy(notice.createdAt.desc(), notice.id.desc())
             .fetch();
+
         List<NotificationResponse> responseDtos = notifications.stream()
             .map(Notice::makeNotificationResponse)
-            .collect(Collectors.toList());
+            .toList();
 
-        boolean hasNext = checkingHasNext(responseDtos);
-        int size = responseDtos.size();
-        Long requestCursor = size != 0 ? responseDtos.get(size -1).id(): 0L;
-
-        if (hasNext) {
-            responseDtos.remove(responseDtos.get(size -1));
-        }
-
-        return NotificationCustomPage.from(responseDtos, requestCursor, hasNext);
-    }
-
-    private static boolean checkingHasNext(List<NotificationResponse> responseDtos) {
-        return responseDtos.size() >= PAGE_SIZE + 1;
+        return NotificationCustomPage.from(responseDtos, PAGE_SIZE);
     }
 
     private BooleanBuilder getCursorCondition(Long cursorId) {
