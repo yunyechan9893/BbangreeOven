@@ -167,7 +167,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             .toList();
 
         duplicatedPopularBoardResponses.stream()
-            .filter(popularBoardDto -> idCount.get(popularBoardDto.getBoardId()) >= 2)
+            .filter(popularBoardDto -> idCount.get(popularBoardDto.getBoardId()) > SINGLE_CATEGORY_COUNT)
             .forEach(popularBoardDto -> popularBoardDto.setWishlist(true));
 
         return duplicatedPopularBoardResponses;
