@@ -9,6 +9,7 @@ import com.bbangle.bbangle.board.domain.QBoardDetail;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndDetailDto;
 import com.bbangle.bbangle.board.dto.BoardDetailDto;
 import com.bbangle.bbangle.board.dto.BoardImgDto;
@@ -17,6 +18,7 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
+import com.bbangle.bbangle.board.dto.QBoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.QBoardAndDetailDto;
 import com.bbangle.bbangle.board.dto.QProductDto;
 import com.bbangle.bbangle.board.dto.QStoreAndBoardImgDto;
@@ -49,14 +51,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Slf4j
 @RequiredArgsConstructor
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
@@ -75,6 +75,14 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     private final BoardQueryProviderResolver boardQueryProviderResolver;
 
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public List<BoardAllTitleDto> findTitleByBoardAll() {
+        return queryFactory.select(
+                new QBoardAllTitleDto(board.id, board.title))
+            .from(board)
+            .fetch();
+    }
 
     @Override
     public BoardCustomPage<List<BoardResponseDto>> getBoardResponseList(
