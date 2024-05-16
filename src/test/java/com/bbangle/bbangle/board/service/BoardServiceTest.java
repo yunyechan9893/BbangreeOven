@@ -2,6 +2,9 @@ package com.bbangle.bbangle.board.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
+import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -9,6 +12,8 @@ import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -17,33 +22,30 @@ import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
+import java.util.Map;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@SpringBootTest
-public class BoardServiceTest {
+public class BoardServiceTest extends AbstractIntegrationTest {
 
     private static final CursorInfo NULL_CURSOR = null;
     private static final SortType NULL_SORT_TYPE = null;
     private static final Long NULL_MEMBER = null;
+    private final String TEST_TITLE = "TestTitle";
 
     @Autowired
     StoreRepository storeRepository;
@@ -436,6 +438,100 @@ public class BoardServiceTest {
         //then
         assertThat(boardList.getContent()).hasSize(10);
         assertThat(boardList.getBoardCount()).isEqualTo(14);
+    }
+
+    @Test
+    @DisplayName("스토어 상세페이지 - 스토어, 게시물 이미지 조회 기능 : 게시물 아이디로 스토어, 이미지를 조회할 수 있다")
+    public void getStoreAndBoardResponse() {
+        Store store = fixtureStore(Map.of("name",TEST_TITLE));
+        Board targetBoard = fixtureBoard(Map.of("store", store));
+        fixtureBoardImage(Map.of("board", targetBoard));
+        fixtureBoardImage(Map.of("board", targetBoard));
+        Long memberId = null;
+
+        StoreAndBoardImgResponse storeAndBoardImgDto = boardService.getStoreAndBoardResponse(memberId, targetBoard.getId());
+        AssertionsForClassTypes.assertThat(storeAndBoardImgDto.storeTitle()).isEqualTo(TEST_TITLE);
+        AssertionsForClassTypes.assertThat(storeAndBoardImgDto.boardImgs().size()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("스토어 상세페이지 - 스토어, 게시판 이미지 조회 기능 : 게시판 아이디로 스토어, 이미지를 조회할 수 있다")
+    void getBoardDetailResponseTest() {
+        Board targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
+        fixtureBoardDetail(Map.of("board", targetBoard));
+        fixtureBoardDetail(Map.of("board", targetBoard));
+        Long memberId = null;
+
+        BoardResponse boardResponse = boardService.getBoardDetailResponse(memberId, targetBoard.getId());
+
+        AssertionsForClassTypes.assertThat(boardResponse.boardTitle()).isEqualTo(TEST_TITLE);
+        AssertionsForClassTypes.assertThat(boardResponse.boardDetails().size()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("스토어 상세페이지 - 상품 조회 기능 : bundled Test")
+    void getIsBundledTest() {
+        // isBundled True Test
+        List<Product> differentCategotyProducts = List.of(
+            fixtureProduct(Map.of(
+                "title",TEST_TITLE,
+                "category",Category.BREAD
+            )),
+            fixtureProduct(Map.of(
+                "title",TEST_TITLE,
+                "category",Category.COOKIE
+            )));
+
+        Board differentCategotyBoard = fixtureBoard(Map.of("productList", differentCategotyProducts));
+
+        ProductResponse productResponse = boardService.getProductResponse(differentCategotyBoard.getId());
+        assertThat(productResponse.boardIsBundled()).isTrue();
+
+        // isBundled False Test
+        List<Product> products = List.of(
+            fixtureProduct(Map.of(
+                "title",TEST_TITLE,
+                "category",Category.BREAD
+            )),
+            fixtureProduct(Map.of(
+                "title",TEST_TITLE,
+                "category",Category.BREAD
+            )));
+
+        Board sameCategotyBoard = fixtureBoard(Map.of("productList", products));
+
+        ProductResponse sameProductResponse = boardService.getProductResponse(sameCategotyBoard.getId());
+        assertThat(sameProductResponse.boardIsBundled()).isFalse();
+    }
+
+    @Test
+    @DisplayName("스토어 상세페이지 - 상품 조회 기능 : 게시판 아이디로 상품리스트를 조회할 수 있다")
+    void getProductResponseTest() {
+        List<Product> products = List.of(
+            fixtureProduct(Map.of(
+                "title",TEST_TITLE,
+                "category",Category.BREAD
+            )),
+            fixtureProduct(Map.of(
+                "title",TEST_TITLE,
+                "category",Category.COOKIE
+            )));
+
+        Board targetBoard = fixtureBoard(Map.of("productList", products));
+
+        ProductResponse productResponse = boardService.getProductResponse(targetBoard.getId());
+        List<BoardDetailProductDto> productList = productResponse.products();
+
+        AssertionsForClassTypes.assertThat(productList.size()).isEqualTo(2);
+        productList.forEach(productDto -> {
+            assertThat(productDto.productId()).isNotNull();
+            assertThat(productDto.productTitle()).isNotNull();
+            assertThat(productDto.glutenFreeTag()).isNotNull();
+            assertThat(productDto.highProteinTag()).isNotNull();
+            assertThat(productDto.veganTag()).isNotNull();
+            assertThat(productDto.sugarFreeTag()).isNotNull();
+            assertThat(productDto.ketogenicTag()).isNotNull();
+        });
     }
 
 }
