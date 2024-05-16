@@ -3,7 +3,11 @@ package com.bbangle.bbangle;
 import static java.util.Collections.emptyMap;
 
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.BoardDetail;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.ProductImg;
+import com.bbangle.bbangle.board.repository.BoardDetailRepository;
+import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.ranking.domain.Ranking;
@@ -35,10 +39,15 @@ public abstract class AbstractIntegrationTest {
     protected RankingRepository rankingRepository;
     @Autowired
     protected ProductRepository productRepository;
+    @Autowired
+    protected BoardImgRepository boardImgRepository;
+    @Autowired
+    protected BoardDetailRepository boardDetailRepository;
 
     @BeforeEach
     void before() {
         // 이거 없으면 데이터가 꼬여서 테스트 너무 힘들어서 넣었습니다 살려주세요
+        boardImgRepository.deleteAllInBatch();
         storeRepository.deleteAllInBatch();
         rankingRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
@@ -56,6 +65,10 @@ public abstract class AbstractIntegrationTest {
         ArbitraryBuilder<Store> builder = fixtureMonkey.giveMeBuilder(Store.class);
         setBuilderParams(params, builder);
 
+        if (!params.containsKey("wishListStoreList")) {
+            builder = builder.set("wishListStores", null); // store wishlist가 없으면 에러나서 추가
+        }
+
         return storeRepository.save(builder.sample());
     }
 
@@ -69,6 +82,30 @@ public abstract class AbstractIntegrationTest {
 
         Product sample = builder.sample();
         return productRepository.save(sample);
+    }
+
+    protected BoardDetail fixtureBoardDetail(Map<String, Object> params) {
+        ArbitraryBuilder<BoardDetail> builder = fixtureMonkey.giveMeBuilder(BoardDetail.class);
+        setBuilderParams(params, builder);
+
+        if (!params.containsKey("board")) {
+            builder = builder.set("board", null); // board 가 있으면 에러나서 추가
+        }
+
+        BoardDetail sample = builder.sample();
+        return boardDetailRepository.save(sample);
+    }
+
+    protected ProductImg fixtureBoardImage(Map<String, Object> params) {
+        ArbitraryBuilder<ProductImg> builder = fixtureMonkey.giveMeBuilder(ProductImg.class);
+        setBuilderParams(params, builder);
+
+        if (!params.containsKey("board")) {
+            builder = builder.set("board", null); // board 가 있으면 에러나서 추가
+        }
+
+        ProductImg sample = builder.sample();
+        return boardImgRepository.save(sample);
     }
 
     protected Ranking fixtureRanking(Map<String, Object> params) {
