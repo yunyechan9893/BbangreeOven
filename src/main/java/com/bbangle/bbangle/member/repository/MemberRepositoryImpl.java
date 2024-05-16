@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.member.repository;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
+
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
@@ -12,9 +14,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class MemberRepositoryImpl implements MemberQueryDSLRepository{
-    
+
     private static final QMember member = QMember.member;
-    
+
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -22,7 +24,7 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
         return Optional.ofNullable(queryFactory.selectFrom(member)
             .where(member.id.eq(memberId))
             .fetchOne())
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.NOTFOUND_MEMBER));
+            .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
     }
 
 }
