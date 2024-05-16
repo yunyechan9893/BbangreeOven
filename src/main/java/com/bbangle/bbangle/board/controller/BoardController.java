@@ -49,52 +49,27 @@ public class BoardController {
     private final BoardService boardService;
 
     @Operation(summary = "게시글 전체 조회")
-    @ApiResponse(
-        responseCode = "200",
-        content = @Content(
-            mediaType = "application/json",
-            schema = @Schema(implementation = CustomPage.class)
-        )
-    )
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CustomPage.class)))
     @GetMapping
-    public CommonResult getList(
-        @ParameterObject
-        FilterRequest filterRequest,
-        @RequestParam(required = false, name = "sort")
-        SortType sort,
-        @ParameterObject
-        CursorInfo cursorInfo,
-        @AuthenticationPrincipal
-        Long memberId
-    ) {
+    public CommonResult getList(@ParameterObject FilterRequest filterRequest,
+        @RequestParam(required = false, name = "sort") SortType sort,
+        @ParameterObject CursorInfo cursorInfo, @AuthenticationPrincipal Long memberId) {
         BoardCustomPage<List<BoardResponseDto>> boardResponseList = boardService.getBoardList(
-            filterRequest,
-            sort,
-            cursorInfo,
-            memberId);
+            filterRequest, sort, cursorInfo, memberId);
         return responseService.getSingleResult(boardResponseList);
     }
 
     @GetMapping("/folders/{folderId}")
-    public CommonResult getPostInFolder(
-        @RequestParam(required = false)
-        String sort,
-        @PathVariable
-        Long folderId,
-        @PageableDefault
-        Pageable pageable
-    ) {
+    public CommonResult getPostInFolder(@RequestParam(required = false) String sort,
+        @PathVariable Long folderId, @PageableDefault Pageable pageable) {
         Long memberId = SecurityUtils.getMemberId();
-        Slice<BoardResponseDto> boardResponseDto =
-            boardService.getPostInFolder(memberId, sort, folderId, pageable);
+        Slice<BoardResponseDto> boardResponseDto = boardService.getPostInFolder(memberId, sort,
+            folderId, pageable);
         return responseService.getSingleResult(boardResponseDto);
     }
 
     @PatchMapping("/{boardId}")
-    public CommonResult countView(
-        @PathVariable
-        Long boardId, HttpServletRequest request
-    ) {
+    public CommonResult countView(@PathVariable Long boardId, HttpServletRequest request) {
         String ipAddress = request.getRemoteAddr();
         String viewCountKey = "VIEW:" + boardId + ":" + ipAddress;
         if (Boolean.TRUE.equals(redisTemplate.hasKey(viewCountKey))) {
@@ -107,42 +82,28 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}/store")
-    public CommonResult getStoreAndBoardImgResponse(
-        @PathVariable("boardId")
-        Long boardId,
-        @AuthenticationPrincipal
-        Long memberId
-    ) {
-        StoreAndBoardImgResponse storeAndBoardImgResponse =
-            boardService.getStoreAndBoardResponse(memberId, boardId);
+    public CommonResult getStoreAndBoardImgResponse(@PathVariable("boardId") Long boardId,
+        @AuthenticationPrincipal Long memberId) {
+        StoreAndBoardImgResponse storeAndBoardImgResponse = boardService.getStoreAndBoardResponse(
+            memberId, boardId);
         return responseService.getSingleResult(storeAndBoardImgResponse);
     }
 
     @GetMapping("/{boardId}")
-    public CommonResult getBoardDetailResponse(
-        @PathVariable("boardId")
-        Long boardId,
-        @AuthenticationPrincipal
-        Long memberId
-    ) {
+    public CommonResult getBoardDetailResponse(@PathVariable("boardId") Long boardId,
+        @AuthenticationPrincipal Long memberId) {
         BoardResponse boardResponse = boardService.getBoardDetailResponse(memberId, boardId);
         return responseService.getSingleResult(boardResponse);
     }
 
     @GetMapping("/{boardId}/product")
-    public CommonResult getProductResponse(
-        @PathVariable("boardId")
-        Long boardId
-    ) {
+    public CommonResult getProductResponse(@PathVariable("boardId") Long boardId) {
         ProductResponse productResponse = boardService.getProductResponse(boardId);
         return responseService.getSingleResult(productResponse);
     }
 
     @PatchMapping("/{boardId}/purchase")
-    public CommonResult movePurchasePage(
-        @PathVariable
-        Long boardId, HttpServletRequest request
-    ) {
+    public CommonResult movePurchasePage(@PathVariable Long boardId, HttpServletRequest request) {
         String ipAddress = request.getRemoteAddr();
         String purchaseCountKey = "PURCHASE:" + boardId + ":" + ipAddress;
         if (Boolean.TRUE.equals(redisTemplate.hasKey(purchaseCountKey))) {

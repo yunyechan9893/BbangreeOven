@@ -11,11 +11,12 @@ public record StoreAndBoardImgDto(
     String boardImgUrl,
     Long wishListStoreId
 ) {
+
     @QueryProjection
     public StoreAndBoardImgDto {
     }
 
-    public BoardImgDto toBoardImgDto(){
+    public BoardImgDto toBoardImgDto() {
         return BoardImgDto.builder()
             .boardImgId(boardImgId)
             .url(boardImgUrl)

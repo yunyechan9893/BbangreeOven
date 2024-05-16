@@ -5,7 +5,6 @@ import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
 import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
-import com.bbangle.bbangle.board.dto.BoardDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
@@ -29,12 +28,10 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import net.datafaker.providers.base.Bool;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -98,15 +95,15 @@ public class BoardService {
             .toList();
     }
 
-    public StoreAndBoardImgResponse getStoreAndBoardResponse(Long memberId, Long boardId){
+    public StoreAndBoardImgResponse getStoreAndBoardResponse(Long memberId, Long boardId) {
         return boardRepository.getStoreAndBoardImgResponse(memberId, boardId);
     }
 
-    public BoardResponse getBoardDetailResponse(Long memberId, Long boardId){
+    public BoardResponse getBoardDetailResponse(Long memberId, Long boardId) {
         return boardRepository.getBoardDetailResponse(memberId, boardId);
     }
 
-    private List<BoardDetailProductDto> toProductToResponse(List<ProductDto> productDtos){
+    private List<BoardDetailProductDto> toProductToResponse(List<ProductDto> productDtos) {
         return productDtos.stream().map(product -> BoardDetailProductDto.builder()
             .productId(product.productId())
             .productTitle(product.productTitle())
@@ -119,7 +116,7 @@ public class BoardService {
         ).toList();
     }
 
-    private Boolean isBundled(List<ProductDto> productDtos){
+    private Boolean isBundled(List<ProductDto> productDtos) {
         return productDtos.stream()
             .map(productDto -> productDto.category())
             .distinct()

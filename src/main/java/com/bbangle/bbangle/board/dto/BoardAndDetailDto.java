@@ -22,11 +22,12 @@ public record BoardAndDetailDto(
     String boardDetailUrl,
     Long wishListBoardId
 ) {
+
     @QueryProjection
-    public BoardAndDetailDto{
+    public BoardAndDetailDto {
     }
 
-    public BoardDetailDto toBoardDetailDto(){
+    public BoardDetailDto toBoardDetailDto() {
         return BoardDetailDto.builder()
             .boardDetailId(boardId)
             .boardDetailOrder(order)

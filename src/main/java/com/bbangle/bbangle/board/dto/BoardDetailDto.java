@@ -5,9 +5,9 @@ import lombok.Builder;
 
 @Builder
 public record BoardDetailDto(
-        Long boardDetailId,
-        Integer boardDetailOrder,
-        String boardDetailUrl
+    Long boardDetailId,
+    Integer boardDetailOrder,
+    String boardDetailUrl
 ) {
 
     @QueryProjection
