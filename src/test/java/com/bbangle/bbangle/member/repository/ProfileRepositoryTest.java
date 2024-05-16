@@ -20,14 +20,14 @@ class ProfileRepositoryTest extends AbstractIntegrationTest {
     }
 
     @AfterEach
-    void clearData() {
+    void tearDown() {
         profileRepository.deleteAll();
     }
 
 
     @Test
     @DisplayName("중복된 닉네임이 있는 지 확인한다")
-    void isDuplicatedNickname() throws Exception {
+    void isDuplicatedNickname() {
         //given
         String nickname = "윤동석";
 
