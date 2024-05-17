@@ -85,7 +85,6 @@ public class Board extends BaseEntity {
     private boolean isDeleted;
 
     @Builder.Default
-    @BatchSize(size = 100)
     @OneToMany(mappedBy = "board")
     private List<Product> productList = new ArrayList<>();
 
