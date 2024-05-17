@@ -88,8 +88,7 @@ public class WishListBoardService {
         WishListBoardRequest wishRequest,
         Member member
     ) {
-        if (wishRequest.folderId()
-            .equals(0L)) {
+        if (wishRequest.folderId().equals(0L)) {
             return wishListFolderRepository.findByMemberAndFolderName(member, DEFAULT_FOLDER_NAME)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
         }
