@@ -296,9 +296,9 @@ public class StoreRepositoryTest {
                 build());
 
         return wishListProductRepository.save(
-            WishListBoard.builder().board(board)
+            WishListBoard.builder().boardId(board.getId())
                 .memberId(member.getId())
-                .wishlistFolder(wishlistFolder)
+                .wishlistFolderId(wishlistFolder.getId())
                 .build());
     }
 

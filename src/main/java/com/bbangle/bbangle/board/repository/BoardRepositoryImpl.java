@@ -101,11 +101,10 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .leftJoin(board.store, store)
             .fetchJoin()
             .join(board)
-            .on(board.id.eq(wishListBoard.board.id))
+            .on(board.id.eq(wishListBoard.boardId))
             .join(wishListBoard)
-            .on(wishListBoard.wishlistFolder.eq(folder))
-            .where(wishListBoard.wishlistFolder.eq(selectedFolder)
-                .and(wishListBoard.isDeleted.eq(false)))
+            .on(wishListBoard.wishlistFolderId.eq(folder.id))
+            .where(wishListBoard.wishlistFolderId.eq(selectedFolder.getId()))
             .offset(pageable.getOffset())
             .orderBy(orderSpecifier)
             .limit(pageable.getPageSize() + 1)
@@ -229,9 +228,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private void setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId) {
         jpaQuery.leftJoin(wishListBoard)
-            .on(wishListBoard.board.id.eq(board.id),
-                wishListBoard.memberId.eq(memberId),
-                wishListBoard.isDeleted.eq(false))
+            .on(wishListBoard.boardId.eq(board.id),
+                wishListBoard.memberId.eq(memberId))
             .leftJoin(wishlistStore)
             .on(wishlistStore.store.id.eq(store.id),
                 wishlistStore.member.id.eq(memberId),
@@ -343,10 +341,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return queryFactory.select(board.id)
             .from(board)
             .leftJoin(wishListBoard)
-            .on(board.eq(wishListBoard.board))
+            .on(board.id.eq(wishListBoard.boardId))
             .where(board.id.in(responseList)
-                .and(wishListBoard.memberId.eq(memberId))
-                .and(wishListBoard.isDeleted.eq(false)))
+                .and(wishListBoard.memberId.eq(memberId)))
             .fetch();
     }
 

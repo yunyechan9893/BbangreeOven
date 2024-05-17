@@ -147,7 +147,7 @@ public class SearchRepositoryImpl implements SearchQueryDSLRepository {
 
         // 회원이라면 위시리스트 조인
         if (memberId != null && memberId > 0) {
-            boards = boards.leftJoin(wishListBoard).on(wishListBoard.board.eq(board), wishListBoard.memberId.eq(memberId), wishListBoard.isDeleted.eq(false));
+            boards = boards.leftJoin(wishListBoard).on(wishListBoard.boardId.eq(board.id), wishListBoard.memberId.eq(memberId));
         }
 
         return boards.fetch();
