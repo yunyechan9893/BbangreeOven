@@ -3,6 +3,7 @@ package com.bbangle.bbangle.wishlist.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
@@ -31,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class WishListBoardServiceTest {
+class WishListBoardServiceTest extends AbstractIntegrationTest {
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
 
@@ -168,7 +169,7 @@ class WishListBoardServiceTest {
     class WishCancelBoard {
 
         @Test
-        @DisplayName("정상적으로 게시글을 위시리스트에 저장한다")
+        @DisplayName("정상적으로 게시글을 위시리스트에서 삭제한다")
         public void wishBoard() throws Exception {
             //given
             FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
@@ -218,7 +219,7 @@ class WishListBoardServiceTest {
             wishListBoardService.cancel(member.getId(), board.getId());
             assertThatThrownBy(() -> wishListBoardService.cancel(member.getId(), board.getId()))
                 .isInstanceOf(BbangleException.class)
-                .hasMessage(BbangleErrorCode.WISHLIST_BOARD_ALREADY_CANCELED.getMessage());
+                .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
         }
 
     }
