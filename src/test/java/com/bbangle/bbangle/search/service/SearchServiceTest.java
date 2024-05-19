@@ -1,38 +1,35 @@
 package com.bbangle.bbangle.search.service;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.repository.BoardRepository;
+import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.common.redis.domain.RedisEnum;
+import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.repository.SearchRepository;
-import com.bbangle.bbangle.board.repository.BoardRepository;
-import com.bbangle.bbangle.board.repository.ProductRepository;
-import com.bbangle.bbangle.common.redis.domain.RedisEnum;
-import com.bbangle.bbangle.common.redis.repository.RedisRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.util.TrieUtil;
 import jakarta.persistence.EntityManager;
-
 import java.util.*;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
-@SpringBootTest
-public class SearchServiceTest {
+class SearchServiceTest extends AbstractIntegrationTest {
 
     @Autowired
     MemberRepository memberRepository;
@@ -59,7 +56,7 @@ public class SearchServiceTest {
 
 
     @BeforeEach
-    public void saveEntity() {
+    void saveEntity() {
         createMember();
         createProductRelatedContent(15);
         redisRepository.delete("MIGRATION", "board");
@@ -69,7 +66,7 @@ public class SearchServiceTest {
     }
 
     @AfterEach
-    public void deleteAllEntity() {
+    void deleteAllEntity() {
         redisRepository.deleteAll();
         searchRepository.deleteAll();
         rankingRepository.deleteAll();
@@ -81,14 +78,14 @@ public class SearchServiceTest {
 
     @Test
     @DisplayName("게시물이 잘 저장돼있다")
-    public void checkAllBoardCountTest() {
+    void checkAllBoardCountTest() {
         var boardCount = boardRepository.findAll().size();
         assertThat(boardCount, is(15));
     }
 
     @Test
     @DisplayName("자동완성 알고리즘에 값을 저장하면 정상적으로 저장한 값을 불러올 수 있다")
-    public void trieUtilTest() {
+    void trieUtilTest() {
         TrieUtil trieUtil = new TrieUtil();
 
         trieUtil.insert("비건 베이커리");
@@ -115,7 +112,7 @@ public class SearchServiceTest {
 
     @Test
     @DisplayName("검색한 내용에 대한 게시판 결과값을 얻을 수 있다")
-    public void getSearchBoard() {
+    void getSearchBoard() {
         String SEARCH_KEYWORD = "비건 베이커리";
         var searchBoardRequest = SearchBoardRequest.builder().keyword(SEARCH_KEYWORD).sort("LATEST")
                 .glutenFreeTag(true).highProteinTag(false).sugarFreeTag(false).veganTag(false)
@@ -141,7 +138,7 @@ public class SearchServiceTest {
 
     @Test
     @DisplayName("검색을 통해 스토어를 찾을 수 있다")
-    public void getSearchedStore() {
+    void getSearchedStore() {
         int storePage = 0;
         String SEARCH_KEYWORD_STORE = "RAWSOME";
         var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
@@ -166,7 +163,7 @@ public class SearchServiceTest {
 
     @Test
     @DisplayName("검색된 스토어 데이터를 무한스크롤로 구현할 수 있다")
-    public void TestInfiniteScroll() {
+    void TestInfiniteScroll() {
         int storePage = 1;
         String SEARCH_KEYWORD_STORE = "RAWSOME";
         var searchStoreResult = searchService.getSearchStoreDtos(member.getId(), storePage,
@@ -189,7 +186,7 @@ public class SearchServiceTest {
 
     @Test
     @DisplayName("기본으로 등록된 베스트 키워드를 가져올 수 있다")
-    public void getBestKeyword() {
+    void getBestKeyword() {
         String BEST_KEYWORD_KEY = "keyword";
         var bestKewords = redisRepository.getStringList(RedisEnum.BEST_KEYWORD.name(),
                 BEST_KEYWORD_KEY);

@@ -1,7 +1,5 @@
 package com.bbangle.bbangle.wishlist.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
-
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -51,7 +49,7 @@ public class WishListBoardService {
         Board board = boardRepository.findById(boardId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        validateIsWishAvailable(memberId, board);
+        validateIsWishAvailable(board.getId(), member.getId());
 
         makeNewWish(board, wishlistFolder, member);
     }
@@ -60,15 +58,14 @@ public class WishListBoardService {
     @Transactional
     public void cancel(Long memberId, Long boardId) {
         Member member = memberRepository.findMemberById(memberId);
+        Board board = boardRepository.findById(boardId)
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND));
 
-        WishListBoard product = wishlistBoardRepository.findByBoardId(boardId, member.getId())
+        WishListBoard wishedBoard = wishlistBoardRepository.findByBoardIdAndMemberId(boardId, member.getId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
-        if (product.isDeleted()) {
-            throw new BbangleException(BbangleErrorCode.WISHLIST_BOARD_ALREADY_CANCELED);
-        }
-
-        product.updateWishStatus();
+        wishlistBoardRepository.delete(wishedBoard);
+        board.updateWishCnt(false);
 
         updateRankingScore(boardId, -1.0);
     }
@@ -78,16 +75,11 @@ public class WishListBoardService {
         Optional<List<WishListBoard>> wishlistProducts = wishlistBoardRepository.findByMemberId(
             memberId);
 
-        if (wishlistProducts.isPresent()) {
-            for (WishListBoard wishlistBoard : wishlistProducts.get()) {
-                wishlistBoard.delete();
-            }
-        }
+        wishlistProducts.ifPresent(wishlistBoardRepository::deleteAll);
     }
-    private void validateIsWishAvailable(Long memberId, Board board) {
-        Optional<WishListBoard> wishListBoard = wishlistBoardRepository.findByBoardId(board.getId(), memberId);
 
-        if (wishListBoard.isPresent() && !wishListBoard.get().isDeleted()) {
+    private void validateIsWishAvailable(Long boardId, Long memberId) {
+        if(wishlistBoardRepository.existsByBoardIdAndMemberId(boardId, memberId)){
             throw new BbangleException(BbangleErrorCode.ALREADY_ON_WISHLIST);
         }
     }
@@ -97,29 +89,29 @@ public class WishListBoardService {
         Member member
     ) {
         if (wishRequest.folderId().equals(0L)) {
-            return wishListFolderRepository.findByMemberAndFolderName(
-                    member, DEFAULT_FOLDER_NAME)
+            return wishListFolderRepository.findByMemberAndFolderName(member, DEFAULT_FOLDER_NAME)
                 .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
         }
 
-        return wishListFolderRepository.findByMemberAndId(member,
-                wishRequest.folderId())
+        return wishListFolderRepository.findByMemberAndId(member, wishRequest.folderId())
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
     }
 
-    private void makeNewWish(Board board, WishListFolder wishlistFolder, Member member) {
+    private void makeNewWish(
+        Board board,
+        WishListFolder wishlistFolder,
+        Member member
+    ) {
         updateRankingScore(board.getId(), 1.0);
 
         WishListBoard wishlistBoard = WishListBoard.builder()
-            .wishlistFolder(wishlistFolder)
-            .board(board)
+            .wishlistFolderId(wishlistFolder.getId())
+            .boardId(board.getId())
             .memberId(member.getId())
-            .isDeleted(false)
             .build();
 
-        WishListBoard save = wishlistBoardRepository.save(wishlistBoard);
-        save.getBoard()
-            .updateWishCnt(true);
+        wishlistBoardRepository.save(wishlistBoard);
+        board.updateWishCnt(true);
     }
 
     private void updateRankingScore(Long boardId, Double updatingScore) {

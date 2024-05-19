@@ -2,8 +2,9 @@ package com.bbangle.bbangle.token.service;
 
 import static org.mockito.BDDMockito.given;
 
-import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.fixture.MemberFixture;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
 import com.bbangle.bbangle.token.oauth.OauthService;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
@@ -14,15 +15,11 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 @Transactional
-class TokenServiceTest {
+class TokenServiceTest extends AbstractIntegrationTest {
 
     private static final Faker faker = new Faker();
 
@@ -40,7 +37,7 @@ class TokenServiceTest {
 
     @Test
     @DisplayName("로그인 후 리프레시 토큰을 요청하면 정상적으로 리프레시 토큰을 반환한다.")
-    public void refreshSuccessTest() throws Exception {
+    void refreshSuccessTest() {
         //given
         Member kakaoMember = MemberFixture.createKakaoMember();
         String token = faker.random()

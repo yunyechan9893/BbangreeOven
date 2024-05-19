@@ -22,16 +22,14 @@ import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class WishListBoardServiceTest extends AbstractIntegrationTest {
 
     private static final String DEFAULT_FOLDER_NAME = "기본 폴더";
@@ -69,7 +67,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
     Board board2;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         wishlistBoardRepository.deleteAll();
         wishListFolderRepository.deleteAll();
         memberRepository.deleteAll();
@@ -106,7 +104,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("정상적으로 게시글을 위시리스트에 저장한다")
-        public void wishBoard() throws Exception {
+        void wishBoard() {
             //given
             FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
                 .stream()
@@ -136,7 +134,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("이미 위시리스트에 담긴 게시글은 다른 폴더에 담을 수 없다")
-        public void cannotWishAlreadyWishedBoard() throws Exception {
+        void cannotWishAlreadyWishedBoard() {
             //given
             WishListFolder wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
             wishListFolderRepository.save(wishListFolder);
@@ -169,8 +167,8 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
     class WishCancelBoard {
 
         @Test
-        @DisplayName("정상적으로 게시글을 위시리스트에 저장한다")
-        public void wishBoard() throws Exception {
+        @DisplayName("정상적으로 게시글을 위시리스트에 삭제한다")
+        void wishBoard() {
             //given
             FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
                 .stream()
@@ -201,7 +199,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("이미 삭제된 게시글은 다시 삭제할 수 없다")
-        public void cannotWishAlreadyWishedBoard() throws Exception {
+        void cannotWishAlreadyWishedBoard() {
             //given
             WishListFolder wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
             wishListFolderRepository.save(wishListFolder);
@@ -219,7 +217,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
             wishListBoardService.cancel(member.getId(), board.getId());
             assertThatThrownBy(() -> wishListBoardService.cancel(member.getId(), board.getId()))
                 .isInstanceOf(BbangleException.class)
-                .hasMessage(BbangleErrorCode.WISHLIST_BOARD_ALREADY_CANCELED.getMessage());
+                .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
         }
 
     }

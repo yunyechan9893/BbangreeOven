@@ -207,9 +207,8 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     private void setWishlistJoin(JPAQuery<Tuple> jpaQuery, Long memberId) {
         jpaQuery.leftJoin(wishListBoard)
-            .on(wishListBoard.board.id.eq(board.id),
-                wishListBoard.memberId.eq(memberId),
-                wishListBoard.isDeleted.eq(false))
+            .on(wishListBoard.boardId.eq(board.id),
+                wishListBoard.memberId.eq(memberId))
             .leftJoin(wishlistStore)
             .on(wishlistStore.store.id.eq(store.id),
                 wishlistStore.member.id.eq(memberId),
@@ -322,10 +321,9 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return queryFactory.select(board.id)
             .from(board)
             .leftJoin(wishListBoard)
-            .on(board.eq(wishListBoard.board))
+            .on(board.id.eq(wishListBoard.boardId))
             .where(board.id.in(responseList)
-                .and(wishListBoard.memberId.eq(memberId))
-                .and(wishListBoard.isDeleted.eq(false)))
+                .and(wishListBoard.memberId.eq(memberId)))
             .fetch();
     }
 

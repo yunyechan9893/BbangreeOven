@@ -23,10 +23,9 @@ import com.bbangle.bbangle.wishlist.dto.FolderRequestDto;
 import com.bbangle.bbangle.wishlist.dto.FolderResponseDto;
 import com.bbangle.bbangle.wishlist.dto.FolderUpdateDto;
 import com.bbangle.bbangle.wishlist.dto.WishListBoardRequest;
-import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import java.util.List;
-
 import net.datafaker.Faker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,9 +36,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class WishListFolderServiceTest extends AbstractIntegrationTest {
 
     private static final Faker faker = new Faker();
@@ -75,7 +72,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
     Member member;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         wishlistBoardRepository.deleteAll();
         wishListFolderRepository.deleteAll();
         memberRepository.deleteAll();
@@ -90,7 +87,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("처음 가입한 멤버는 기본 폴더 하나만을 가지고 있다")
-        public void memberWithFirstJoinedWishlistFolder() throws Exception {
+        void memberWithFirstJoinedWishlistFolder() {
             //given, when
             List<FolderResponseDto> folderList = wishListFolderService.getList(member.getId());
 
@@ -102,7 +99,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("정상적인 이름의 위시리스트 폴더 생성을 요청하면 새로운 폴더가 만들어진다")
-        public void memberCreateNewFolder() throws Exception {
+        void memberCreateNewFolder() {
             //given, when
             String title = faker.book()
                 .title();
@@ -125,7 +122,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("비정상적인 제목의 폴더는 만들 수 없다")
         @ValueSource(strings = {" ", "aaaaaaaaaaaaaaaaaaaaa"})
         @NullAndEmptySource
-        public void cannotCrateFolderWithInvalidTitle(String title) throws Exception {
+        void cannotCrateFolderWithInvalidTitle(String title) {
             //given, when, then
             assertThatThrownBy(() -> new FolderRequestDto(title))
                 .isInstanceOf(BbangleException.class)
@@ -134,7 +131,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("이미 이 유저가 만든 폴더의 제목과 동일한 제목의 폴더를 만드는 경우 예외가 발생한다")
-        public void memberCreateNewFolderWithFolderNameAlreadyExist() throws Exception {
+        void memberCreateNewFolderWithFolderNameAlreadyExist() {
             //given
             String title = faker.book()
                 .title();
@@ -152,7 +149,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("다른 유저가 만든 폴더와 같은 이름의 폴더를 만들더라도 정상적으로 만들어진다")
-        public void createFolderWithSameTitleWithOthers() throws Exception {
+        void createFolderWithSameTitleWithOthers() {
             //given
             String title = faker.book()
                 .title();
@@ -172,7 +169,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("10개의 wishList 폴더를 가지고 있는 경우 더이상 폴더를 만들 수 없다.")
-        public void cannotCreateFolderMoreThan10() throws Exception {
+        void cannotCreateFolderMoreThan10() {
             //given
             String title = faker.book()
                 .title();
@@ -216,7 +213,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("정상적으로 폴더 이름 변경에 성공한다")
-        public void updateFolderName() throws Exception {
+        void updateFolderName() {
             //given
             String newFolderName = faker.name()
                 .name();
@@ -238,7 +235,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
         @DisplayName("비정상적인 제목의 폴더로 변경할 수 없다")
         @ValueSource(strings = {" ", "aaaaaaaaaaaaaaaaaaaaa"})
         @NullAndEmptySource
-        public void cannotUpdateFolderNameWithInvalidTitle(String invalidTitle) throws Exception {
+        void cannotUpdateFolderNameWithInvalidTitle(String invalidTitle) {
             //given, when, then
             assertThatThrownBy(() -> new FolderUpdateDto(invalidTitle))
                 .isInstanceOf(BbangleException.class)
@@ -247,7 +244,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("존재하지 않는 memberId로 조회할 수 없다")
-        public void cannotFindFolderWithAnonymousUser() throws Exception {
+        void cannotFindFolderWithAnonymousUser() {
             //given
             String newFolderName = faker.name()
                 .name();
@@ -265,7 +262,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("존재하지 않는 folderId로 조회할 수 없다")
-        public void cannotFindFolderWithInvalidFolderId() throws Exception {
+        void cannotFindFolderWithInvalidFolderId() {
             //given
             String newFolderName = faker.name()
                 .name();
@@ -283,7 +280,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("기본 폴더 이름은 변경할 수 없다.")
-        public void cannotChangeDefaultFolder() throws Exception {
+        void cannotChangeDefaultFolder() {
             //given
             String newFolderName = faker.name()
                 .name();
@@ -318,7 +315,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("위시리스트 폴더를 정상적으로 조회한다.")
-        public void getWishlistFolder() throws Exception {
+        void getWishlistFolder() {
             //given, when
             List<FolderResponseDto> folderResponseDtoList = wishListFolderService.getList(member.getId());
             List<String> folderTitleList = folderResponseDtoList.stream()
@@ -332,7 +329,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("존재하지 않는 멤버의 아이디로 조회하는 경우 예외가 발생한다")
-        public void getWishlistFolderWithAnonymousMember() throws Exception {
+        void getWishlistFolderWithAnonymousMember() {
             //given, when, then
             assertThatThrownBy(() -> wishListFolderService.getList(member.getId() + 1L))
                 .isInstanceOf(BbangleException.class)
@@ -341,7 +338,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("저장된 게시글의 개수만큼 이미지 썸네일을 보여주지만 네 개 이상인 경우 네 개만 보여준다.")
-        public void listContainsThumbnailWithFourMaxCount() throws Exception {
+        void listContainsThumbnailWithFourMaxCount() {
             //given, when
             List<FolderResponseDto> folderResponseDtoList = wishListFolderService.getList(member.getId());
             FolderResponseDto defaultFolder = folderResponseDtoList.stream()
@@ -397,7 +394,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("정상적으로 위시리스트 폴더를 삭제한다")
-        public void deleteWishListFolder() throws Exception {
+        void deleteWishListFolder() {
             //given, when
             wishListFolderService.delete(wishListFolder.getId(), member.getId());
 
@@ -408,7 +405,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("이미 삭제된 위시리스트 폴더는 다시 삭제할 수 없다.")
-        public void cannotDeleteAlreadyDeletedFolder() throws Exception {
+        void cannotDeleteAlreadyDeletedFolder() {
             //given, when
             wishListFolderService.delete(wishListFolder.getId(), member.getId());
 
@@ -420,7 +417,7 @@ class WishListFolderServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("기볼 폴더는 삭제할 수 없다.")
-        public void cannotDeleteDefaultFolder() throws Exception {
+        void cannotDeleteDefaultFolder() {
             //given, when
             FolderResponseDto DefaultFolder = wishListFolderService.getList(member.getId()).stream().filter(folder -> folder.title().equals(DEFAULT_FOLDER_NAME))
                 .findFirst()
