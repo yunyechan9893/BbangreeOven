@@ -41,10 +41,9 @@ public class WishListFolderRepositoryImpl implements WishListFolderQueryDSLRepos
                 board.profile)
             .from(wishListFolder)
             .leftJoin(wishedBoard)
-            .on(wishedBoard.wishlistFolder.eq(wishListFolder))
+            .on(wishedBoard.wishlistFolderId.eq(wishListFolder.id))
             .leftJoin(board)
-            .on(wishedBoard.board.eq(board)
-                .and(wishedBoard.isDeleted.eq(false)))
+            .on(wishedBoard.boardId.eq(board.id))
             .where(wishListFolder.member.eq(member)
                 .and(wishListFolder.isDeleted.eq(false)))
             .fetch();

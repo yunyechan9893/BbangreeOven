@@ -31,26 +31,13 @@ public class WishListBoard extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wishlist_folder_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private WishListFolder wishlistFolder;
+    @Column(name = "wishlist_folder_id")
+    private Long wishlistFolderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_board_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Board board;
+    @Column(name = "product_board_id")
+    private Long boardId;
 
     @Column(name = "member_id")
     private Long memberId;
 
-    @Column(name = "is_deleted", columnDefinition = "tinyint")
-    private boolean isDeleted;
-
-    public boolean updateWishStatus() {
-        isDeleted = !isDeleted;
-        return isDeleted;
-    }
-
-    public void delete() {
-        this.isDeleted = true;
-    }
 }

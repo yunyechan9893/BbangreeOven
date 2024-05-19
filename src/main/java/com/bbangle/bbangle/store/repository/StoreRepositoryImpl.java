@@ -67,8 +67,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         query.leftJoin(wishListBoard)
             .on(
                 wishListBoard.memberId.eq(memberId),
-                wishListBoard.board.eq(board),
-                wishListBoard.isDeleted.eq(false));
+                wishListBoard.boardId.eq(board.id));
     }
 
     private void getWishlistStoreJoinQuery(
@@ -206,9 +205,8 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
         JPAQuery<StoreBoardListDto> query, Long memberId) {
         return Objects.isNull(memberId) ? query :
             query.leftJoin(wishListBoard)
-                .on(wishListBoard.board.eq(board),
-                    wishListBoard.memberId.eq(memberId),
-                    wishListBoard.isDeleted.eq(false));
+                .on(wishListBoard.boardId.eq(board.id),
+                    wishListBoard.memberId.eq(memberId));
     }
 
     private List<String> toTags(List<StoreDetailProductDto> storeDetailProductDtos) {

@@ -104,7 +104,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("정상적으로 게시글을 위시리스트에 저장한다")
-        void wishBoard() throws Exception {
+        void wishBoard() {
             //given
             FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
                 .stream()
@@ -134,7 +134,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("이미 위시리스트에 담긴 게시글은 다른 폴더에 담을 수 없다")
-        void cannotWishAlreadyWishedBoard() throws Exception {
+        void cannotWishAlreadyWishedBoard() {
             //given
             WishListFolder wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
             wishListFolderRepository.save(wishListFolder);
@@ -167,8 +167,8 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
     class WishCancelBoard {
 
         @Test
-        @DisplayName("정상적으로 게시글을 위시리스트에 저장한다")
-        void wishBoard() throws Exception {
+        @DisplayName("정상적으로 게시글을 위시리스트에 삭제한다")
+        void wishBoard() {
             //given
             FolderResponseDto defaultFolder = wishListFolderService.getList(member.getId())
                 .stream()
@@ -199,7 +199,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("이미 삭제된 게시글은 다시 삭제할 수 없다")
-        void cannotWishAlreadyWishedBoard() throws Exception {
+        void cannotWishAlreadyWishedBoard() {
             //given
             WishListFolder wishListFolder = WishlistFolderFixture.createWishlistFolder(member);
             wishListFolderRepository.save(wishListFolder);
@@ -217,7 +217,7 @@ class WishListBoardServiceTest extends AbstractIntegrationTest {
             wishListBoardService.cancel(member.getId(), board.getId());
             assertThatThrownBy(() -> wishListBoardService.cancel(member.getId(), board.getId()))
                 .isInstanceOf(BbangleException.class)
-                .hasMessage(BbangleErrorCode.WISHLIST_BOARD_ALREADY_CANCELED.getMessage());
+                .hasMessage(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND.getMessage());
         }
 
     }
