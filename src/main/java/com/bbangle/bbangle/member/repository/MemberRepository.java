@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, Long> {
-    Optional<Member> findById(Long memberId);
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberQueryDSLRepository {
+
     Optional<Member> findByProviderAndProviderId(OauthServerType provider, String providerId);
 
 }

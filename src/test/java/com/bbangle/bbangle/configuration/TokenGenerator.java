@@ -3,11 +3,10 @@ package com.bbangle.bbangle.configuration;
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.token.jwt.TokenProvider;
+import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

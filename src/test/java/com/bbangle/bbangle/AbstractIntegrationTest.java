@@ -4,12 +4,20 @@ import static java.util.Collections.emptyMap;
 
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.repository.BoardImgRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.store.service.StoreService;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
+import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
@@ -35,6 +43,14 @@ public abstract class AbstractIntegrationTest {
     protected MockMvc mockMvc;
     @Autowired
     protected WebApplicationContext context;
+
+    @Autowired
+    protected MemberService memberService;
+    @Autowired
+    protected StoreService storeService;
+    @Autowired
+    protected WishListStoreService wishListStoreService;
+
     @Autowired
     protected BoardRepository boardRepository;
     @Autowired
@@ -43,6 +59,16 @@ public abstract class AbstractIntegrationTest {
     protected RankingRepository rankingRepository;
     @Autowired
     protected ProductRepository productRepository;
+    @Autowired
+    protected MemberRepository memberRepository;
+    @Autowired
+    protected BoardImgRepository boardImgRepository;
+    @Autowired
+    protected WishListFolderRepository wishListFolderRepository;
+    @Autowired
+    protected WishListBoardRepository wishListBoardRepository;
+    @Autowired
+    protected WishListStoreRepository wishListStoreRepository;
 
     @BeforeEach
     void before() {
@@ -51,6 +77,11 @@ public abstract class AbstractIntegrationTest {
         rankingRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
         boardRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
+        boardImgRepository.deleteAllInBatch();
+        wishListFolderRepository.deleteAllInBatch();
+        wishListBoardRepository.deleteAllInBatch();
+        wishListStoreRepository.deleteAllInBatch();
     }
 
     protected FixtureMonkey fixtureMonkey = FixtureMonkey.builder()
