@@ -35,7 +35,7 @@ public class WishListStoreController {
     }
 
     @PostMapping("/store/{storeId}")
-    public CommonResult addWishListStore(@PathVariable Long storeId) {
+    public CommonResult addWishListStore(@PathVariable("storeId") Long storeId) {
         Long memberId = SecurityUtils.getMemberId();
         wishlistStoreService.save(memberId, storeId);
         return responseService.getSingleResult(MessageDto.builder()
@@ -44,7 +44,7 @@ public class WishListStoreController {
     }
 
     @PatchMapping("/store/{storeId}")
-    public CommonResult deleteWishListStore(@PathVariable Long storeId) {
+    public CommonResult deleteWishListStore(@PathVariable("storeId") Long storeId) {
         Long memberId = SecurityUtils.getMemberId();
         wishlistStoreService.deleteStore(memberId, storeId);
         return responseService.getSingleResult(MessageDto.builder()

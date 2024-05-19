@@ -1,38 +1,32 @@
 package com.bbangle.bbangle.search.repository;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.common.redis.repository.RedisRepository;
-import com.bbangle.bbangle.member.domain.Member;
-import com.bbangle.bbangle.ranking.repository.RankingRepository;
-import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
+import com.bbangle.bbangle.common.redis.repository.RedisRepository;
+import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
+import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.search.domain.Search;
 import com.bbangle.bbangle.search.dto.KeywordDto;
+import com.bbangle.bbangle.search.dto.request.SearchBoardRequest;
 import com.bbangle.bbangle.search.service.SearchService;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-
 import java.util.Arrays;
 import java.util.List;
-
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.Rollback;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
-
-@SpringBootTest
-public class SearchRepositoryTest {
+class SearchRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     MemberRepository memberRepository;
@@ -59,7 +53,7 @@ public class SearchRepositoryTest {
 
 
     @BeforeEach
-    public void saveEntity() {
+    void saveEntity() {
         createMember();
         createProductRelatedContent(15);
         redisRepository.delete("MIGRATION", "board");
@@ -69,7 +63,7 @@ public class SearchRepositoryTest {
     }
 
     @AfterEach
-    public void deleteAllEntity() {
+    void deleteAllEntity() {
         redisRepository.deleteAll();
         searchRepository.deleteAll();
         rankingRepository.deleteAll();
@@ -81,7 +75,7 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("게시물이 잘 저장돼있다")
-    public void checkAllBoardCountTest() {
+    void checkAllBoardCountTest() {
         var boardCount = boardRepository.findAll().size();
         assertThat(boardCount, is(15));
         var productCount = productRepository.findAll().size();
@@ -90,7 +84,7 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("필터 설정에 맞게 상품 게시물 전체 개수를 가져올 수 있다")
-    public void getSearchedBoardAllCountTest() {
+    void getSearchedBoardAllCountTest() {
         List<Long> boardIds = boardRepository.findAll().stream().map(board1 -> board1.getId())
                 .toList();
         var searchBoardRequest = SearchBoardRequest.builder()
@@ -111,7 +105,7 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("필터 설정에 맞게 상품 게시물 결과값을 가져올 수 있다")
-    public void getSearchBoard() {
+    void getSearchBoard() {
         int page = 0;
         int limit = 10;
 
@@ -149,7 +143,7 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("스토어 검색")
-    public void getSearchStoreTest() {
+    void getSearchStoreTest() {
         List<Long> storeIds = storeRepository.findAll().stream().map(store1 -> store1.getId())
                 .toList();
         var searchedStores = searchRepository.getSearchedStore(member.getId(), storeIds,
@@ -163,7 +157,7 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("최근 키워드를 검색할 수 있다")
-    public void getRecentKeywordTest() {
+    void getRecentKeywordTest() {
         createSearchKeyword("초콜릿");
         createSearchKeyword("키토제닉 빵");
         createSearchKeyword("비건 베이커리");
@@ -185,7 +179,7 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("키워드를 저장할 수 있다")
-    public void getAllSearch() {
+    void getAllSearch() {
         List<String> savingKeyword = Arrays.asList("초콜릿", "키토제닉 빵", "비건", "비건 베이커리", "키토제닉 빵",
                 "초코 휘낭시에", "바나나 빵", "배부른 음식", "당당 치킨");
         savingKeyword.forEach(keyword -> createSearchKeyword(keyword));
@@ -195,7 +189,7 @@ public class SearchRepositoryTest {
 
     @Test
     @DisplayName("저장된 키워드를 삭제할 수 있다")
-    public void deleteKeyword() {
+    void deleteKeyword() {
         String keyword = "비건";
         var search = createSearchKeyword(keyword);
         checkSearchKeyword(searchRepository, search, keyword);

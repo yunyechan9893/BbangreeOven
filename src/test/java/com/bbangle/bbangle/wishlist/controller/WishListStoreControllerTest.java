@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.config.ranking.BoardWishListConfig;
 import com.bbangle.bbangle.member.domain.Member;
@@ -23,15 +24,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class WishListStoreControllerTest {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+class WishListStoreControllerTest extends AbstractIntegrationTest {
     @Autowired
     MockMvc mockMvc;
 
@@ -57,12 +56,12 @@ public class WishListStoreControllerTest {
     StoreRepository storeRepository;
 
     @BeforeEach
-    public void setUpMockMvc() {
+    void setUpMockMvc() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(new WishListStoreController(wishListStoreService, responseService)).build();
     }
 
     @BeforeEach
-    public void createData(){
+    void createData(){
         memberRepository.deleteAll();
         storeRepository.deleteAll();
         wishListStoreRepository.deleteAll();
@@ -98,7 +97,7 @@ public class WishListStoreControllerTest {
     @DisplayName("위시리스트 스토어 전체 조회를 시행한다")
     @Test
     @WithCustomMockUser
-    public void getWishListStores() throws Exception{
+    void getWishListStores() throws Exception {
         mockMvc.perform(get("/api/v1/likes/stores"))
                 .andExpect(jsonPath("$.result.hasNext").value(true))
                 .andExpect(jsonPath("$.result.nextCursor").value(4))
@@ -109,7 +108,7 @@ public class WishListStoreControllerTest {
     @DisplayName("위시리스트 삭제를 시행한다")
     @Test
     @WithCustomMockUser
-    public void deleteWishListStore() throws Exception{
+    void deleteWishListStore() throws Exception {
         mockMvc.perform(patch("/api/v1/likes/store/1"))
             .andExpect(status().isOk())
             .andDo(print());
@@ -118,8 +117,8 @@ public class WishListStoreControllerTest {
     @DisplayName("위시리스트 추가를 시행한다")
     @Test
     @WithCustomMockUser
-    public void addWishListStore() throws Exception{
-        mockMvc.perform(post("/api/v1/likes/store/25"))
+    void addWishListStore() throws Exception {
+        mockMvc.perform(post("/api/v1/likes/store/1"))
             .andExpect(status().isOk())
             .andDo(print());
     }

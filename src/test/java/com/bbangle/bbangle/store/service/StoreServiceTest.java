@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 class StoreServiceTest extends AbstractIntegrationTest {
 
@@ -38,8 +39,8 @@ class StoreServiceTest extends AbstractIntegrationTest {
     class GetStoreList {
 
         @BeforeEach
-        public void saveStoreList() {
-            for (int i = 0; i < 30; i++) {
+        void saveStoreList(){
+            for(int i = 0; i < 30; i++){
                 Store store = StoreFixture.storeGenerator();
                 storeRepository.save(store);
             }
