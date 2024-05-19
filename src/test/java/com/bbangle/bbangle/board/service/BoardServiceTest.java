@@ -1,14 +1,13 @@
 package com.bbangle.bbangle.board.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import com.bbangle.bbangle.board.dto.BoardResponseDto;
-import com.bbangle.bbangle.board.dto.CursorInfo;
-import com.bbangle.bbangle.board.dto.FilterRequest;
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
+import com.bbangle.bbangle.board.dto.BoardResponseDto;
+import com.bbangle.bbangle.board.dto.CursorInfo;
+import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -17,7 +16,6 @@ import com.bbangle.bbangle.fixture.ProductFixture;
 import com.bbangle.bbangle.fixture.RankingFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.page.BoardCustomPage;
-import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
@@ -28,18 +26,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-public class BoardServiceTest {
+class BoardServiceTest extends AbstractIntegrationTest {
 
     private static final CursorInfo NULL_CURSOR = null;
     private static final SortType NULL_SORT_TYPE = null;
@@ -98,7 +92,7 @@ public class BoardServiceTest {
 
     @Test
     @DisplayName("필터가 없는 경우에도 모든 리스트를 정상적으로 조회한다.")
-    public void showAllList() {
+    void showAllList() {
         //given, when
         Product product1 = ProductFixture.productWithFullInfo(board,
             true,
@@ -164,7 +158,7 @@ public class BoardServiceTest {
 
     @Test
     @DisplayName("glutenFree 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterByGlutenFree() {
+    void showListFilterByGlutenFree() {
         //given, when
         Product product1 = ProductFixture.gluetenFreeProduct(board);
         Product product2 = ProductFixture.nonGluetenFreeProduct(board);
@@ -186,7 +180,7 @@ public class BoardServiceTest {
 
     @Test
     @DisplayName("highProtein 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterByHighProtein() {
+    void showListFilterByHighProtein() {
         //given, when
         Product product1 = ProductFixture.highProteinProduct(board);
         Product product2 = ProductFixture.highProteinProduct(board);
@@ -208,7 +202,7 @@ public class BoardServiceTest {
 
     @Test
     @DisplayName("sugarFree 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterBySugarFree() {
+    void showListFilterBySugarFree() {
         //given, when
         Product product1 = ProductFixture.sugarFreeProduct(board);
         Product product2 = ProductFixture.sugarFreeProduct(board);
@@ -229,7 +223,7 @@ public class BoardServiceTest {
 
     @Test
     @DisplayName("veganFree 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterByVeganFree() {
+    void showListFilterByVeganFree() {
         //given, when
         Product product1 = ProductFixture.veganFreeProduct(board);
         Product product2 = ProductFixture.veganFreeProduct(board);
@@ -250,7 +244,7 @@ public class BoardServiceTest {
 
     @Test
     @DisplayName("ketogenic 제품이 포함된 게시물만 조회한다.")
-    public void showListFilterKetogenic() {
+    void showListFilterKetogenic() {
         //given, when
         Product product1 = ProductFixture.ketogenicProduct(board);
         Product product2 = ProductFixture.ketogenicProduct(board);
@@ -273,7 +267,7 @@ public class BoardServiceTest {
     @ParameterizedTest
     @EnumSource(value = Category.class)
     @DisplayName("카테고리로 필터링하여서 조회한다.")
-    public void showListFilterCategory(Category category) {
+    void showListFilterCategory(Category category) {
         //given
         Product product1 = ProductFixture.categoryBasedProduct(board, category);
         Product product2 = ProductFixture.categoryBasedProduct(board2, Category.ETC);
@@ -301,7 +295,7 @@ public class BoardServiceTest {
     @ParameterizedTest
     @ValueSource(strings = {"bread", "school", "SOCCER", "잼"})
     @DisplayName("잘못된 카테고리로 조회할 경우 예외가 발생한다.")
-    public void showListFilterWithInvalidCategory(String category) {
+    void showListFilterWithInvalidCategory(String category) {
         //given, when
         Product product1 = ProductFixture.randomProduct(board);
         Product product2 = ProductFixture.randomProduct(board2);
@@ -321,7 +315,7 @@ public class BoardServiceTest {
     @ParameterizedTest
     @EnumSource(value = Category.class)
     @DisplayName("성분과 카테고리를 한꺼번에 요청 시 정상적으로 필터링해서 반환한다.")
-    public void showListFilterCategoryAndIngredient(Category category) {
+    void showListFilterCategoryAndIngredient(Category category) {
         //given, when
         Product product1 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
         Product product2 = ProductFixture.categoryBasedWithSugarFreeProduct(board, category);
@@ -343,7 +337,7 @@ public class BoardServiceTest {
 
     @Test
     @DisplayName("가격 필터를 적용 시 그에 맞춰 작동한다.")
-    public void showListFilterPrice() {
+    void showListFilterPrice() {
         //given, when
         Product product1 = ProductFixture.randomProduct(board);
         Product product2 = ProductFixture.randomProduct(board);
@@ -407,7 +401,7 @@ public class BoardServiceTest {
 
     @Test
     @DisplayName("10개 단위로 정상적인 페이지네이션 후 반환한다.")
-    public void pageTest() {
+    void pageTest() {
         //given, when
         Product product1 = ProductFixture.randomProduct(board);
         Product product2 = ProductFixture.randomProduct(board2);

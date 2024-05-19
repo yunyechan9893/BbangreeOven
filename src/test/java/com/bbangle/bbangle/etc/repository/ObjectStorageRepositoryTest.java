@@ -1,20 +1,20 @@
 package com.bbangle.bbangle.etc.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.common.image.repository.ObjectStorageRepository;
 import com.bbangle.bbangle.exception.BbangleException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 
-@SpringBootTest
-public class ObjectStorageRepositoryTest {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class ObjectStorageRepositoryTest extends AbstractIntegrationTest {
 
     private final ObjectStorageRepository objectStorageRepository;
     private final String BUCKET_NAME = "bbangle-bucket";
@@ -26,7 +26,7 @@ public class ObjectStorageRepositoryTest {
     private final String OBJECT_NAME = FOLDER_PATH + HTML_FILE_NAME;
 
 
-    public ObjectStorageRepositoryTest(
+    ObjectStorageRepositoryTest(
         @Autowired
         ObjectStorageRepository objectStorageRepository
     ) {
@@ -35,13 +35,13 @@ public class ObjectStorageRepositoryTest {
 
     @Test
     @DisplayName("ObjectStorage에 정상적으로 폴더를 만들 수 있다")
-    public void createStorageFolder() {
+    void createStorageFolder() {
         objectStorageRepository.createFolder(BUCKET_NAME, FOLDER_PATH);
     }
 
     @Test
     @DisplayName("ObjectStorage에 정상적으로 파일을 저장할 수 있다")
-    public void createStorageFile() {
+    void createStorageFile() {
         // https://green-bin.tistory.com/112 S3 Mock 테스트 미래에 참조
         byte[] content;
         try {
