@@ -107,22 +107,30 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}/store")
-    public CommonResult getStoreAndBoardImgResponse(@PathVariable("boardId") Long boardId,
-        @AuthenticationPrincipal Long memberId) {
+    public CommonResult getStoreAndBoardImgResponse(
+        @PathVariable("boardId")
+        Long boardId,
+        @AuthenticationPrincipal
+        Long memberId) {
         StoreAndBoardImgResponse storeAndBoardImgResponse = boardService.getStoreAndBoardResponse(
             memberId, boardId);
         return responseService.getSingleResult(storeAndBoardImgResponse);
     }
 
     @GetMapping("/{boardId}")
-    public CommonResult getBoardDetailResponse(@PathVariable("boardId") Long boardId,
-        @AuthenticationPrincipal Long memberId) {
+    public CommonResult getBoardDetailResponse(
+        @PathVariable("boardId")
+        Long boardId,
+        @AuthenticationPrincipal
+        Long memberId) {
         BoardResponse boardResponse = boardService.getBoardDetailResponse(memberId, boardId);
         return responseService.getSingleResult(boardResponse);
     }
 
     @GetMapping("/{boardId}/product")
-    public CommonResult getProductResponse(@PathVariable("boardId") Long boardId) {
+    public CommonResult getProductResponse(
+        @PathVariable("boardId")
+        Long boardId) {
         ProductResponse productResponse = boardService.getProductResponse(boardId);
         return responseService.getSingleResult(productResponse);
     }
@@ -130,7 +138,8 @@ public class BoardController {
     @PatchMapping("/{boardId}/purchase")
     public CommonResult movePurchasePage(
         @PathVariable
-        Long boardId, HttpServletRequest request
+        Long boardId,
+        HttpServletRequest request
     ) {
         String ipAddress = request.getRemoteAddr();
         String purchaseCountKey = "PURCHASE:" + boardId + ":" + ipAddress;
