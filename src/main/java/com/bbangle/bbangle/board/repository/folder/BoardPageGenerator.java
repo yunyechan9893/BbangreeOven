@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class BoardPageGenerator {
 
     private static final Long NO_NEXT_CURSOR = -1L;
-    private static final Long HAS_NEXT_PAGE_SIZE = 11L;
+    private static final Long HAS_NEXT_PAGE_SIZE = BOARD_PAGE_SIZE + 1L;
 
     public BoardCustomPage<List<BoardResponseDto>> getBoardPage(List<Board> allByFolder){
         if(allByFolder.isEmpty()){
