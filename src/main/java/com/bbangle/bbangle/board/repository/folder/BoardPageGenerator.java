@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository.folder;
 
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
@@ -48,7 +50,7 @@ public class BoardPageGenerator {
             ));
 
         return boards.stream()
-            .limit(10)
+            .limit(BOARD_PAGE_SIZE)
             .map(board -> BoardResponseDto.from(board, tagMapByBoardId.get(board.getId())))
             .toList();
     }
