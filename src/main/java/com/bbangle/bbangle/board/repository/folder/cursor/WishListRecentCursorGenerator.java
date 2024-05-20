@@ -23,7 +23,7 @@ public class WishListRecentCursorGenerator implements CursorGenerator{
         Long wishListBoardId = queryFactory
             .select(wishListBoard.id)
             .from(wishListBoard)
-            .where(wishListBoard.board.id.eq(cursorId).and(wishListBoard.memberId.eq(memberId)))
+            .where(wishListBoard.boardId.eq(cursorId).and(wishListBoard.memberId.eq(memberId)))
             .fetchOne();
         return cursorBuilder.and(wishListBoard.id.loe(wishListBoardId));
     }

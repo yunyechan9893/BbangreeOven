@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository.folder.query;
 
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
@@ -25,8 +27,6 @@ public class PopularBoardQueryProvider implements QueryGenerator{
     private static final QRanking ranking = QRanking.ranking;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
-    private static final int BOARD_PAGE_SIZE = 10;
-
     private final JPAQueryFactory queryFactory;
 
 
@@ -34,14 +34,12 @@ public class PopularBoardQueryProvider implements QueryGenerator{
     public List<Board> getBoards(BooleanBuilder cursor, OrderSpecifier<?> order, WishListFolder folder) {
         List<Long> fetch = queryFactory
             .select(board.id)
-            .distinct()
             .from(board)
             .join(wishListBoard)
-            .on(board.id.eq(wishListBoard.board.id))
+            .on(board.id.eq(wishListBoard.boardId))
             .join(ranking)
             .on(board.id.eq(ranking.board.id))
-            .where(wishListBoard.wishlistFolder.id.eq(folder.getId())
-                .and(wishListBoard.isDeleted.eq(false))
+            .where(wishListBoard.wishlistFolderId.eq(folder.getId())
                 .and(cursor))
             .orderBy(order, board.id.desc())
             .limit(BOARD_PAGE_SIZE + 1L)

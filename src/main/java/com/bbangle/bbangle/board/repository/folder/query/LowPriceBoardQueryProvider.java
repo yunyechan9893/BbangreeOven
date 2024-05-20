@@ -22,20 +22,16 @@ public class LowPriceBoardQueryProvider implements QueryGenerator{
     private static final QStore store = QStore.store;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
-    private static final int BOARD_PAGE_SIZE = 10;
-
     private final JPAQueryFactory queryFactory;
 
     @Override
     public List<Board> getBoards(BooleanBuilder cursor, OrderSpecifier<?> order, WishListFolder folder) {
         List<Long> fetch = queryFactory
             .select(board.id)
-            .distinct()
             .from(board)
             .join(wishListBoard)
-            .on(board.id.eq(wishListBoard.board.id))
-            .where(wishListBoard.wishlistFolder.id.eq(folder.getId())
-                .and(wishListBoard.isDeleted.eq(false))
+            .on(board.id.eq(wishListBoard.boardId))
+            .where(wishListBoard.wishlistFolderId.eq(folder.getId())
                 .and(cursor))
             .orderBy(order, board.id.desc())
             .limit(BOARD_PAGE_SIZE + 1L)

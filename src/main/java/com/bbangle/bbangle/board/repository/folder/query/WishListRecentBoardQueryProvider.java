@@ -1,5 +1,7 @@
 package com.bbangle.bbangle.board.repository.folder.query;
 
+import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
+
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
@@ -20,7 +22,6 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
     private static final QStore store = QStore.store;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
-    private static final int BOARD_PAGE_SIZE = 10;
 
     private final JPAQueryFactory queryFactory;
 
@@ -28,12 +29,10 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
     public List<Board> getBoards(BooleanBuilder cursor, OrderSpecifier<?> order, WishListFolder folder) {
         List<Long> fetch = queryFactory
             .select(board.id)
-            .distinct()
             .from(board)
             .join(wishListBoard)
-            .on(board.id.eq(wishListBoard.board.id))
-            .where(wishListBoard.wishlistFolder.id.eq(folder.getId())
-                .and(wishListBoard.isDeleted.eq(false))
+            .on(board.id.eq(wishListBoard.boardId))
+            .where(wishListBoard.wishlistFolderId.eq(folder.getId())
                 .and(cursor))
             .orderBy(order)
             .limit(BOARD_PAGE_SIZE + 1L)
@@ -46,7 +45,7 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
             .join(board.store, store)
             .fetchJoin()
             .join(wishListBoard)
-            .on(board.id.eq(wishListBoard.board.id))
+            .on(board.id.eq(wishListBoard.boardId))
             .where(board.id.in(fetch))
             .orderBy(order, board.id.desc())
             .fetch();
