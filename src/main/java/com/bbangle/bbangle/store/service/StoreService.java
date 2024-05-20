@@ -1,6 +1,9 @@
 package com.bbangle.bbangle.store.service;
 
+import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
+
 import com.bbangle.bbangle.board.dto.StoreBestBoardDto;
+import com.bbangle.bbangle.board.dto.StoreInBoardDto;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 
@@ -27,6 +30,16 @@ public class StoreService {
     private static final int PAGE_SIZE = 10;
     private final StoreRepository storeRepository;
     private final WishListStoreRepository wishListStoreRepository;
+
+    public StoreInBoardDto getStoreInfoInBoardDetail(Long memberId, Long storeId) {
+        Store store = storeRepository.findById(storeId)
+            .orElseThrow(() -> new BbangleException(STORE_NOT_FOUND));
+
+        boolean isWished = memberId != null
+            && wishListStoreRepository.findWishListStore(memberId, storeId).isPresent();
+
+        return StoreInBoardDto.of(store,isWished);
+    }
 
     public StoreDetailResponseDto getStoreDetailResponse(Long memberId, Long storeId) {
         Store store = storeRepository.findById(storeId)

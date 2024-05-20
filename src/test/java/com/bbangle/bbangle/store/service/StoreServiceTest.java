@@ -3,12 +3,15 @@ package com.bbangle.bbangle.store.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.dto.StoreInBoardDto;
 import com.bbangle.bbangle.fixture.MemberFixture;
 import com.bbangle.bbangle.fixture.StoreFixture;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.dto.StoreDetailResponseDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
+import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +34,29 @@ class StoreServiceTest extends AbstractIntegrationTest {
 
         member = MemberFixture.createKakaoMember();
         member = memberService.getFirstJoinedMember(member);
+    }
+
+    @Test
+    @DisplayName("상품 상세페이지 내 store 조회 정상 확인")
+    void getStoreDetailResponse() {
+        //given
+        Store store = StoreFixture.storeGenerator();
+        storeRepository.save(store);
+
+        wishListStoreRepository.save(WishListStore.builder()
+                .store(store)
+                .member(member)
+                .build()
+        );
+
+        StoreInBoardDto result = storeService
+            .getStoreInfoInBoardDetail(member.getId(), store.getId());
+
+        //then
+        assertThat(result.storeId()).isEqualTo(store.getId());
+        assertThat(result.storeProfile()).isEqualTo(store.getProfile());
+        assertThat(result.storeTitle()).isEqualTo(store.getName());
+        assertThat(result.isWished()).isTrue();
     }
 
     @Nested
@@ -122,7 +148,6 @@ class StoreServiceTest extends AbstractIntegrationTest {
                 .orElseThrow(Exception::new);
             assertThat(wishedContent.getIsWished()).isTrue();
         }
-
     }
 
 }

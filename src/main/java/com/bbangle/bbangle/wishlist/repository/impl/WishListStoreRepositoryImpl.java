@@ -2,11 +2,9 @@ package com.bbangle.bbangle.wishlist.repository.impl;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
 import static com.bbangle.bbangle.store.domain.QStore.store;
-import com.bbangle.bbangle.wishlist.domain.QWishListStore;
-import com.bbangle.bbangle.wishlist.domain.WishListStore;
-import com.bbangle.bbangle.wishlist.repository.WishListStoreQueryDSLRepository;
-import static com.bbangle.bbangle.wishlist.domain.QWishListStore.wishListStore;
+
 import com.bbangle.bbangle.exception.BbangleException;
+import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishListStore;
 import com.bbangle.bbangle.wishlist.dto.QWishListStoreResponseDto;
 import com.bbangle.bbangle.wishlist.dto.WishListStoreCustomPage;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLRepository {
+
     private final JPAQueryFactory queryFactory;
     private static final QWishListStore wishListStore = QWishListStore.wishListStore;
     private static final Long PAGE_SIZE = 20L;
@@ -30,32 +29,33 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     @Override
     public List<WishListStore> findWishListStores(Long memberId) {
         return queryFactory
-                .selectFrom(wishListStore)
-                .where(wishListStore.member.id.eq(memberId)
-                        .and(wishListStore.isDeleted.eq(false)))
-                .fetch();
+            .selectFrom(wishListStore)
+            .where(wishListStore.member.id.eq(memberId)
+                .and(wishListStore.isDeleted.eq(false)))
+            .fetch();
     }
 
     @Override
-    public WishListStoreCustomPage<List<WishListStoreResponseDto>> getWishListStoreResponse(Long memberId, Long cursorId) {
+    public WishListStoreCustomPage<List<WishListStoreResponseDto>> getWishListStoreResponse(
+        Long memberId, Long cursorId) {
         BooleanBuilder cursorCondition = getCursorCondition(cursorId, memberId);
         List<WishListStoreResponseDto> responseDtos =
             queryFactory.select(
-                new QWishListStoreResponseDto(
-                    store.introduce,
-                    store.name.as("storeName"),
-                    store.id.as("storeId"),
-                    store.profile
-                ))
-            .from(wishListStore)
-            .leftJoin(wishListStore.store, store)
-            .where(cursorCondition)
-            .limit(PAGE_SIZE + 1)
-            .orderBy(wishListStore.modifiedAt.desc(),wishListStore.createdAt.desc())
-            .fetch();
+                    new QWishListStoreResponseDto(
+                        store.introduce,
+                        store.name.as("storeName"),
+                        store.id.as("storeId"),
+                        store.profile
+                    ))
+                .from(wishListStore)
+                .leftJoin(wishListStore.store, store)
+                .where(cursorCondition)
+                .limit(PAGE_SIZE + 1)
+                .orderBy(wishListStore.modifiedAt.desc(), wishListStore.createdAt.desc())
+                .fetch();
         boolean hasNext = checkingHasNext(responseDtos);
         int size = responseDtos.size();
-        Long requestCursor = size != 0 ? responseDtos.get(size -1).getStoreId() : 0L;
+        Long requestCursor = size != 0 ? responseDtos.get(size - 1).getStoreId() : 0L;
 
         if (hasNext) {
             responseDtos.remove(responseDtos.get(size - 1));
@@ -67,10 +67,12 @@ public class WishListStoreRepositoryImpl implements WishListStoreQueryDSLReposit
     @Override
     public Optional<WishListStore> findWishListStore(Long memberId, Long storeId) {
         return Optional.ofNullable(queryFactory
-                .selectFrom(wishListStore)
-                .where(wishListStore.member.id.eq(memberId)
-                        .and(wishListStore.store.id.eq(storeId)))
-                .fetchOne());
+            .selectFrom(wishListStore)
+            .where(wishListStore.member.id.eq(memberId)
+                .and(wishListStore.store.id.eq(storeId))
+                .and(wishListStore.isDeleted.eq(false))
+            )
+            .fetchOne());
     }
 
     private static boolean checkingHasNext(List<WishListStoreResponseDto> responseDtos) {

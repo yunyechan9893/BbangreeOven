@@ -2,7 +2,6 @@ package com.bbangle.bbangle.board.service;
 
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
 import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
 import com.bbangle.bbangle.board.dto.BoardResponse;
@@ -11,7 +10,6 @@ import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.ProductResponse;
-import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -93,10 +91,6 @@ public class BoardService {
             .stream()
             .map(BoardResponseDto::getBoardId)
             .toList();
-    }
-
-    public StoreAndBoardImgResponse getStoreAndBoardResponse(Long memberId, Long boardId) {
-        return boardRepository.getStoreAndBoardImgResponse(memberId, boardId);
     }
 
     public BoardResponse getBoardDetailResponse(Long memberId, Long boardId) {

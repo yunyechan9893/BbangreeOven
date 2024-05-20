@@ -2,6 +2,7 @@ package com.bbangle.bbangle.store.repository;
 
 import static java.util.Collections.emptySet;
 
+import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
@@ -13,6 +14,7 @@ import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.page.StoreCustomPage;
 import com.bbangle.bbangle.store.domain.QStore;
+import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.dto.QStoreResponseDto;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
@@ -281,7 +283,7 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
             content.remove(content.size() - 1);
         }
 
-        return new SliceImpl<StoreAllBoardDto>(content, pageable, hasNext);
+        return new SliceImpl<>(content, pageable, hasNext);
     }
 
     @Override
@@ -328,6 +330,18 @@ public class StoreRepositoryImpl implements StoreQueryDSLRepository {
 
         return StoreCustomPage.from(responseDtos, nextCursor, hasNext);
     }
+//
+//    public Board findStoreByBoardId(Long boardId) {
+//        queryFactory
+//            .select(
+//
+//                board
+//            )
+//            .from(board)
+//            .innerJoin(store)
+//            .on(board.store.eq(store))
+//            .where(board.id.eq(boardId));
+//    }
 
     public List<StoreResponseDto> findNextCursorPageWithLogin(
         List<StoreResponseDto> cursorPage,
