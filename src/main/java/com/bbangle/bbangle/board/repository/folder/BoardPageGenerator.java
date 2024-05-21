@@ -56,7 +56,7 @@ public class BoardPageGenerator {
     }
 
     private List<String> extractTags(List<Product> products) {
-        if (Objects.isNull(products)) {
+        if (Objects.isNull(products) || products.isEmpty()) {
             return Collections.emptyList();
         }
 
