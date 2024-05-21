@@ -17,6 +17,8 @@ import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardDetailDto;
+import com.bbangle.bbangle.board.repository.folder.cursor.CursorGeneratorMapping;
+import com.bbangle.bbangle.board.repository.folder.query.QueryGeneratorMapping;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.FolderBoardSortType;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -91,10 +93,19 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         WishListFolder folder,
         Long memberId
     ) {
-        BooleanBuilder cursorBuilder = sort.createCursor(queryFactory).getCursor(cursorId, memberId);
+        BooleanBuilder cursorBuilder = new CursorGeneratorMapping(memberId, queryFactory, sort)
+            .mappingCursorGenerator()
+            .getCursor(cursorId);
         OrderSpecifier<?> sortBuilder = sort.getOrderSpecifier();
 
-        return sort.getBoards(queryFactory).getBoards(cursorBuilder, sortBuilder, folder);
+        return QueryGeneratorMapping.builder()
+            .order(sortBuilder)
+            .sortType(sort)
+            .jpaQueryFactory(queryFactory)
+            .cursorBuilder(cursorBuilder)
+            .build()
+            .mappingQueryGenerator()
+            .getBoards();
     }
 
     private List<BoardDetailDto> fetchBoardDetails(Long boardId) {
