@@ -6,4 +6,6 @@ public interface MemberQueryDSLRepository {
 
     Member findMemberById(Long memberId);
 
+    Long countNewMember(int day);
+
 }

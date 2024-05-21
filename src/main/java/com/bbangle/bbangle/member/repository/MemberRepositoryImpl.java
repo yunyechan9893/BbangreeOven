@@ -1,15 +1,16 @@
 package com.bbangle.bbangle.member.repository;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
-
-import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.QMember;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,6 +26,17 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
             .where(member.id.eq(memberId))
             .fetchOne())
             .orElseThrow(() -> new BbangleException(NOTFOUND_MEMBER));
+    }
+
+    @Override
+    public Long countNewMember(int days) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime fromDate = now.minusDays(days);
+
+        return queryFactory.select(member.id.count())
+                .from(member)
+                .where(member.createdAt.between(fromDate, now))
+                .fetchOne();
     }
 
 }
