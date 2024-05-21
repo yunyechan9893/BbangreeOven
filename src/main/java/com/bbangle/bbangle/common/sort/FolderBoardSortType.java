@@ -19,42 +19,18 @@ import lombok.Getter;
 
 @Getter
 public enum FolderBoardSortType {
-    LOW_PRICE(
-        QBoard.board.price::asc,
-        LowPriceCursorGenerator::new,
-        LowPriceBoardQueryProvider::new),
-    POPULAR(
-        QRanking.ranking.popularScore::desc,
-        PopularCursorGenerator::new,
-        PopularBoardQueryProvider::new),
-    WISHLIST_RECENT(
-        QWishListBoard.wishListBoard.id::desc,
-        WishListRecentCursorGenerator::new,
-        WishListRecentBoardQueryProvider::new);
+    LOW_PRICE(QBoard.board.price::asc),
+    POPULAR(QRanking.ranking.popularScore::desc),
+    WISHLIST_RECENT(QWishListBoard.wishListBoard.id::desc);
 
     private final Supplier<OrderSpecifier<?>> setOrder;
-    private final Function<JPAQueryFactory, CursorGenerator> createCursor;
-    private final Function<JPAQueryFactory, QueryGenerator> getQuery;
 
-    FolderBoardSortType(Supplier<OrderSpecifier<?>> setOrder,
-        Function<JPAQueryFactory, CursorGenerator> createCursor,
-        Function<JPAQueryFactory, QueryGenerator> getQuery
-    ) {
+    FolderBoardSortType(Supplier<OrderSpecifier<?>> setOrder) {
         this.setOrder = setOrder;
-        this.createCursor = createCursor;
-        this.getQuery = getQuery;
     }
 
-    public CursorGenerator createCursor(JPAQueryFactory jpaQueryFactory){
-        return createCursor.apply(jpaQueryFactory);
-    }
-
-    public OrderSpecifier<?> getOrderSpecifier(){
+    public OrderSpecifier<?> getOrderSpecifier() {
         return setOrder.get();
-    }
-
-    public QueryGenerator getBoards(JPAQueryFactory jpaQueryFactory){
-        return getQuery.apply(jpaQueryFactory);
     }
 
 }
