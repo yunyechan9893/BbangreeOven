@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface QueryGenerator {
 
-    List<Board> getBoards(BooleanBuilder cursor, OrderSpecifier<?> order, WishListFolder wishListFolder);
+    List<Board> getBoards();
 
 }

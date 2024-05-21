@@ -6,16 +6,16 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
 @RequiredArgsConstructor
 public class WishListRecentCursorGenerator implements CursorGenerator{
 
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
+    private final Long memberId;
 
     @Override
-    public BooleanBuilder getCursor(Long cursorId, Long memberId) {
+    public BooleanBuilder getCursor(Long cursorId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
         if(cursorId == null){
             return cursorBuilder;

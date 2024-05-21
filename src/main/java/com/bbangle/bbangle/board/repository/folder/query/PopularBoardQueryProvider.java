@@ -28,10 +28,12 @@ public class PopularBoardQueryProvider implements QueryGenerator{
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
-
+    private final BooleanBuilder cursorBuilder;
+    private final OrderSpecifier<?> order;
+    private final WishListFolder folder;
 
     @Override
-    public List<Board> getBoards(BooleanBuilder cursor, OrderSpecifier<?> order, WishListFolder folder) {
+    public List<Board> getBoards() {
         List<Long> fetch = queryFactory
             .select(board.id)
             .from(board)
@@ -40,7 +42,7 @@ public class PopularBoardQueryProvider implements QueryGenerator{
             .join(ranking)
             .on(board.id.eq(ranking.board.id))
             .where(wishListBoard.wishlistFolderId.eq(folder.getId())
-                .and(cursor))
+                .and(cursorBuilder))
             .orderBy(order, board.id.desc())
             .limit(BOARD_PAGE_SIZE + 1L)
             .fetch();

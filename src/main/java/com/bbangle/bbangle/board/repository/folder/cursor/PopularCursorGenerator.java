@@ -15,7 +15,7 @@ public class PopularCursorGenerator implements CursorGenerator{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public BooleanBuilder getCursor(Long cursorId, Long memberId) {
+    public BooleanBuilder getCursor(Long cursorId) {
         BooleanBuilder cursorBuilder = new BooleanBuilder();
         if(cursorId == null){
             return cursorBuilder;
