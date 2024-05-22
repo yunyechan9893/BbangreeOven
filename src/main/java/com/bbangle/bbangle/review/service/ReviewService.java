@@ -1,22 +1,21 @@
 package com.bbangle.bbangle.review.service;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
-
 import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.common.image.service.S3Service;
-import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.review.domain.ReviewImg;
+import com.bbangle.bbangle.review.dto.ReviewRateResponse;
 import com.bbangle.bbangle.review.dto.ReviewRequest;
 import com.bbangle.bbangle.review.repository.ReviewImgRepository;
 import com.bbangle.bbangle.review.repository.ReviewRepository;
-import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -56,5 +55,11 @@ public class ReviewService {
                                         .reviewId(reviewId)
                                         .url(reviewImgPath)
                                         .build()));
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewRateResponse getRate(Long boardId) {
+        List<Review> reviews = reviewRepository.findByBoardId(boardId);
+        return ReviewRateResponse.from(reviews);
     }
 }

@@ -8,10 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,5 +25,10 @@ public class ReviewController {
     ){
         reviewService.makeReview(reviewRequest, memberId);
         return responseService.getSuccessResult();
+    }
+
+    @GetMapping(value = "/rate/{boardId}")
+    public CommonResult getRate(@PathVariable Long boardId) {
+        return responseService.getSingleResult(reviewService.getRate(boardId));
     }
 }

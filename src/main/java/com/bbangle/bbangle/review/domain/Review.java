@@ -3,12 +3,7 @@ package com.bbangle.bbangle.review.domain;
 
 import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.common.domain.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
@@ -28,7 +23,6 @@ public class Review extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //동현님 말대로 연관매핑 안해보고 해보기
     @Column(name = "member_id")
     @NotNull
     private Long memberId;
@@ -39,13 +33,16 @@ public class Review extends BaseEntity {
 
     @NotNull
     @Column(name = "badge_taste")
-    private String badgeTaste;
+    @Enumerated(EnumType.STRING)
+    private Badge badgeTaste;
     @NotNull
     @Column(name = "badge_brix")
-    private String badgeBrix;
+    @Enumerated(EnumType.STRING)
+    private Badge badgeBrix;
     @NotNull
     @Column(name = "badge_texture")
-    private String badgeTexture;
+    @Enumerated(EnumType.STRING)
+    private Badge badgeTexture;
     @NotNull
     private BigDecimal rate;
 
@@ -57,9 +54,9 @@ public class Review extends BaseEntity {
 
     public void insertBadge(Badge badge){
         switch(badge){
-            case GOOD, BAD -> this.badgeTaste = badge.name();
-            case SWEET,PLAIN -> this.badgeBrix = badge.name();
-            case SOFT,HARD -> this.badgeTexture = badge.name();
+            case GOOD, BAD -> this.badgeTaste = badge;
+            case SWEET,PLAIN -> this.badgeBrix = badge;
+            case SOFT,HARD -> this.badgeTexture = badge;
         }
     }
 }
