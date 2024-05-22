@@ -2,7 +2,8 @@ package com.bbangle.bbangle.board.repository.folder.query;
 
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
-import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.store.domain.QStore;
@@ -28,7 +29,7 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
     private final WishListFolder folder;
 
     @Override
-    public List<Board> getBoards() {
+    public List<BoardResponseDao> getBoards() {
         List<Long> fetch = queryFactory
             .select(board.id)
             .from(board)
@@ -40,18 +41,33 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
             .limit(BOARD_PAGE_SIZE + 1L)
             .fetch();
 
-        return queryFactory.select(board)
-            .from(board)
-            .leftJoin(board.productList, product)
-            .fetchJoin()
-            .join(board.store, store)
-            .fetchJoin()
-            .join(wishListBoard)
+        List<BoardResponseDao> fetch1 = queryFactory.select(
+                new QBoardResponseDao(
+                    board.id,
+                    store.id,
+                    store.name,
+                    store.profile,
+                    board.title,
+                    board.price,
+                    product.category,
+                    product.glutenFreeTag,
+                    product.highProteinTag,
+                    product.sugarFreeTag,
+                    product.veganTag,
+                    product.ketogenicTag
+                ))
+            .from(product)
+            .rightJoin(board)
+            .on(product.board.id.eq(board.id))
+            .leftJoin(store)
+            .on(board.store.id.eq(store.id))
+            .leftJoin(wishListBoard)
             .on(board.id.eq(wishListBoard.boardId))
             .where(board.id.in(fetch))
             .orderBy(order, board.id.desc())
             .fetch();
 
+        return fetch1;
     }
 
 }

@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
@@ -87,7 +88,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public List<Board> getAllByFolder(
+    public List<BoardResponseDao> getAllByFolder(
         FolderBoardSortType sort,
         Long cursorId,
         WishListFolder folder,
@@ -101,6 +102,7 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return QueryGeneratorMapping.builder()
             .order(sortBuilder)
             .sortType(sort)
+            .wishListFolder(folder)
             .jpaQueryFactory(queryFactory)
             .cursorBuilder(cursorBuilder)
             .build()

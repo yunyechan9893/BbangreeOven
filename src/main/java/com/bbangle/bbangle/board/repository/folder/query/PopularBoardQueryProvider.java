@@ -2,15 +2,13 @@ package com.bbangle.bbangle.board.repository.folder.query;
 
 import static com.bbangle.bbangle.board.repository.BoardRepositoryImpl.BOARD_PAGE_SIZE;
 
-import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
+import com.bbangle.bbangle.board.dao.QBoardResponseDao;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.dto.CursorInfo;
-import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
-import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -33,7 +31,7 @@ public class PopularBoardQueryProvider implements QueryGenerator{
     private final WishListFolder folder;
 
     @Override
-    public List<Board> getBoards() {
+    public List<BoardResponseDao> getBoards() {
         List<Long> fetch = queryFactory
             .select(board.id)
             .from(board)
@@ -47,15 +45,28 @@ public class PopularBoardQueryProvider implements QueryGenerator{
             .limit(BOARD_PAGE_SIZE + 1L)
             .fetch();
 
-        return queryFactory.select(board)
-            .from(board)
-            .leftJoin(board.productList, product)
-            .fetchJoin()
-            .join(store)
+        return queryFactory.select(
+                new QBoardResponseDao(
+                    board.id,
+                    store.id,
+                    store.name,
+                    store.profile,
+                    board.title,
+                    board.price,
+                    product.category,
+                    product.glutenFreeTag,
+                    product.highProteinTag,
+                    product.sugarFreeTag,
+                    product.veganTag,
+                    product.ketogenicTag
+                )).from(product)
+            .leftJoin(board)
+            .on(product.board.id.eq(board.id))
+            .leftJoin(store)
             .on(board.store.id.eq(store.id))
-            .fetchJoin()
+            .leftJoin(wishListBoard)
+            .on(board.id.eq(wishListBoard.boardId))
             .join(ranking)
-            .fetchJoin()
             .on(board.id.eq(ranking.board.id))
             .where(board.id.in(fetch))
             .orderBy(order, board.id.desc())

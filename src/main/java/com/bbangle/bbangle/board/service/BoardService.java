@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.board.service;
 
+import com.bbangle.bbangle.board.dao.BoardResponseDao;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
@@ -81,7 +82,7 @@ public class BoardService {
         WishListFolder folder = folderRepository.findByMemberIdAndId(memberId, folderId)
             .orElseThrow(() -> new BbangleException(BbangleErrorCode.FOLDER_NOT_FOUND));
 
-        List<Board> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
+        List<BoardResponseDao> allByFolder = boardRepository.getAllByFolder(sort, cursorId, folder, memberId);
 
         return boardPageGenerator.getBoardPage(allByFolder);
     }
