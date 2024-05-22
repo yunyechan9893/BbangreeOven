@@ -1,9 +1,12 @@
 package com.bbangle.bbangle.board.repository.folder.cursor;
 
 import com.bbangle.bbangle.board.domain.QBoard;
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -20,6 +23,13 @@ public class PopularCursorGenerator implements CursorGenerator{
         if(cursorId == null){
             return cursorBuilder;
         }
+
+        Optional.ofNullable(queryFactory.select(ranking.id)
+            .from(ranking)
+            .where(ranking.board.id.eq(cursorId))
+            .fetchOne())
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
+
         Double score = queryFactory
             .select(ranking.popularScore)
             .from(ranking)
