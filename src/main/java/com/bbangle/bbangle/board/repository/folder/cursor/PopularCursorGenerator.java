@@ -4,6 +4,7 @@ import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.exception.BbangleErrorCode;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.ranking.domain.QRanking;
+import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;
@@ -14,6 +15,7 @@ public class PopularCursorGenerator implements CursorGenerator{
 
     private static final QRanking ranking = QRanking.ranking;
     private static final QBoard board = QBoard.board;
+    private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
 
     private final JPAQueryFactory queryFactory;
 
@@ -24,11 +26,11 @@ public class PopularCursorGenerator implements CursorGenerator{
             return cursorBuilder;
         }
 
-        Optional.ofNullable(queryFactory.select(ranking.id)
-            .from(ranking)
-            .where(ranking.board.id.eq(cursorId))
-            .fetchOne())
-            .orElseThrow(() -> new BbangleException(BbangleErrorCode.RANKING_NOT_FOUND));
+        Optional.ofNullable(queryFactory.select(wishListBoard.id)
+                .from(wishListBoard)
+                .where(wishListBoard.boardId.eq(cursorId))
+                .fetchOne())
+            .orElseThrow(() -> new BbangleException(BbangleErrorCode.WISHLIST_BOARD_NOT_FOUND));
 
         Double score = queryFactory
             .select(ranking.popularScore)
