@@ -39,7 +39,7 @@ public class BoardPageGenerator {
         boolean hasNext = false;
         if (boardResponseDtos.size() == HAS_NEXT_PAGE_SIZE) {
             hasNext = true;
-            nextCursor = allByFolder.get(boardResponseDtos.size() - 1).boardId();
+            nextCursor = boardResponseDtos.get(boardResponseDtos.size() - 1).getBoardId();
         }
         boardResponseDtos = boardResponseDtos.stream().limit(BOARD_PAGE_SIZE).toList();
 
