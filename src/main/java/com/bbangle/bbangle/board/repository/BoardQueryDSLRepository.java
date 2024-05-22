@@ -8,10 +8,11 @@ import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
-import java.util.HashMap;
-import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+
+import java.util.HashMap;
+import java.util.List;
 
 public interface BoardQueryDSLRepository {
 
@@ -35,5 +36,7 @@ public interface BoardQueryDSLRepository {
     List<Board> checkingNullRanking();
 
     List<Long> getLikedContentsIds(List<Long> responseList, Long memberId);
+
+    List<Board> getWishlistRanking();
 }
 

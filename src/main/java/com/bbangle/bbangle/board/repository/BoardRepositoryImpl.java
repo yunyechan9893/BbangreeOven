@@ -461,4 +461,11 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             tags.add(tag);
         }
     }
+
+    @Override
+    public List<Board> getWishlistRanking() {
+        return queryFactory.selectFrom(board)
+                .orderBy(board.wishCnt.desc())
+                .fetch();
+    }
 }

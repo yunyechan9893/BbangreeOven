@@ -1,7 +1,10 @@
 package com.bbangle.bbangle.wishlist.repository;
 
+import java.time.LocalDate;
+
 public interface WishListBoardQueryDSLRepository {
 
-    long countMembersUsingWishlist();
+    Long countMembersUsingWishlist();
 
+    Long countWishlistByPeriod(LocalDate startDate, LocalDate endDate);
 }

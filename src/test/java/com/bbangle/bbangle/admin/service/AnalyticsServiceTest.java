@@ -1,6 +1,7 @@
 package com.bbangle.bbangle.admin.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
@@ -16,6 +17,8 @@ import java.util.List;
 
 class AnalyticsServiceTest extends AbstractIntegrationTest {
 
+    @Autowired
+    AnalyticsService analyticsService;
     @Autowired MemberRepository memberRepository;
     @Autowired WishListBoardRepository wishListBoardRepository;;
 
@@ -29,11 +32,8 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("신규 회원의 수가 정상적으로 조회된다.")
     void countNewMember() {
-        // given
-        int days = 7;
-
-        // then
-        long result = memberRepository.countNewMember(days);
+        // given & then
+        long result = analyticsService.countNewMember();
 
         // then
         Assertions.assertThat(result).isEqualTo(20);
@@ -43,7 +43,7 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
     void countAllMember() {
         // given & when
-        long result = memberRepository.count();
+        long result = analyticsService.countAllMember();
 
         // then
         Assertions.assertThat(result).isEqualTo(20);

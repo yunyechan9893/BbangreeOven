@@ -3,11 +3,13 @@ package com.bbangle.bbangle.member.repository;
 import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.domain.QMember;
+import com.querydsl.core.types.dsl.DateTemplate;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.NOTFOUND_MEMBER;
@@ -30,12 +32,14 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
 
     @Override
     public Long countNewMember(int days) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime fromDate = now.minusDays(days);
+        LocalDate now = LocalDate.now();
+        LocalDate fromDate = now.minusDays(days);
+
+        DateTemplate<LocalDate> createdAt = Expressions.dateTemplate(LocalDate.class, "DATE({0})", member.createdAt);
 
         return queryFactory.select(member.id.count())
                 .from(member)
-                .where(member.createdAt.between(fromDate, now))
+                .where(createdAt.between(fromDate, now))
                 .fetchOne();
     }
 
