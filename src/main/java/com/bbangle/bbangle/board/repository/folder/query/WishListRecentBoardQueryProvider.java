@@ -41,7 +41,7 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
             .limit(BOARD_PAGE_SIZE + 1L)
             .fetch();
 
-        List<BoardResponseDao> fetch1 = queryFactory.select(
+        return queryFactory.select(
                 new QBoardResponseDao(
                     board.id,
                     store.id,
@@ -57,17 +57,15 @@ public class WishListRecentBoardQueryProvider implements QueryGenerator{
                     product.ketogenicTag
                 ))
             .from(product)
-            .rightJoin(board)
+            .leftJoin(board)
             .on(product.board.id.eq(board.id))
             .leftJoin(store)
             .on(board.store.id.eq(store.id))
             .leftJoin(wishListBoard)
             .on(board.id.eq(wishListBoard.boardId))
             .where(board.id.in(fetch))
-            .orderBy(order, board.id.desc())
+            .orderBy(order)
             .fetch();
-
-        return fetch1;
     }
 
 }
