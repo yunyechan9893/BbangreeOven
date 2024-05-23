@@ -1,7 +1,6 @@
 package com.bbangle.bbangle;
 
-import static java.util.Collections.emptyMap;
-
+import com.bbangle.bbangle.analytics.service.AnalyticsService;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.repository.BoardImgRepository;
@@ -21,11 +20,6 @@ import com.bbangle.bbangle.wishlist.service.WishListStoreService;
 import com.navercorp.fixturemonkey.ArbitraryBuilder;
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.introspector.FieldReflectionArbitraryIntrospector;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,6 +27,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyMap;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -50,7 +52,8 @@ public abstract class AbstractIntegrationTest {
     protected StoreService storeService;
     @Autowired
     protected WishListStoreService wishListStoreService;
-
+    @Autowired
+    protected AnalyticsService analyticsService;
     @Autowired
     protected BoardRepository boardRepository;
     @Autowired

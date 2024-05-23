@@ -31,7 +31,7 @@ public class AnalyticsService {
     }
 
 
-    public Double countMembersUsingWishlist() {
+    public String countMembersUsingWishlist() {
         long wishlistUsersCount = wishListBoardRepository.countMembersUsingWishlist();
         long memberCount = memberRepository.count();
 
@@ -39,11 +39,13 @@ public class AnalyticsService {
             throw new IllegalArgumentException("0으로 나눌 수 없습니다.");
         }
 
-        return (double) wishlistUsersCount / memberCount;
+        double result = ((double) wishlistUsersCount / memberCount) * 100;
+
+        return String.format("%.2f", result);
     }
 
 
-    public List<Board> getBoardWishlistRanking() {
+    public List<Board> getWishlistBoardRanking() {
         return boardRepository.getWishlistRanking();
     }
 

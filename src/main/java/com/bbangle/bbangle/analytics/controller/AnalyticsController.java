@@ -55,7 +55,7 @@ public class AnalyticsController {
 
     @GetMapping(value = "/wishlist/boards/ranking")
     public CommonResult getWishlistBoardRanking() {
-        List<Board> response = analyticsService.getBoardWishlistRanking();
+        List<Board> response = analyticsService.getWishlistBoardRanking();
 
         return responseService.getListResult(response);
     }
@@ -66,7 +66,7 @@ public class AnalyticsController {
             @RequestParam(value = "optStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> optStartDate,
             @RequestParam(value = "optEndDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> optEndDate
     ) {
-        LocalDate startDate = optStartDate.orElse(LocalDate.now().minusDays(7));
+        LocalDate startDate = optStartDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endDate = optEndDate.orElse(LocalDate.now());
 
         AnalyticsWishlistUsageCountResponseDto response = AnalyticsWishlistUsageCountResponseDto.builder()
@@ -92,7 +92,7 @@ public class AnalyticsController {
             @RequestParam(value = "optStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> optStartDate,
             @RequestParam(value = "optEndDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> optEndDate
     ) {
-        LocalDate startDate = optStartDate.orElse(LocalDate.now().minusDays(7));
+        LocalDate startDate = optStartDate.orElse(LocalDate.now().minusDays(6));
         LocalDate endDate = optEndDate.orElse(LocalDate.now());
 
         AnalyticsReviewUsageCountResponseDto response = AnalyticsReviewUsageCountResponseDto.builder()
