@@ -7,10 +7,12 @@ import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
-import com.bbangle.bbangle.board.dto.BoardResponse;
+import com.bbangle.bbangle.board.dto.BoardDetailDto;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.ranking.domain.Ranking;
+import com.querydsl.core.Tuple;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,21 +21,45 @@ import org.junit.jupiter.api.Test;
 
 class BoardRepositoryTest extends AbstractIntegrationTest {
 
+    private final QBoard board = QBoard.board;
     private final String TEST_TITLE = "TestTitle";
 
     @Test
-    @DisplayName("스토어 상세페이지 - 스토어, 게시판 이미지 조회 기능 : 게시판 아이디로 스토어, 이미지를 조회할 수 있다")
-    void getBoardDetailResponseTest() {
+    @DisplayName("스토어 상세페이지 - 게시판, 이미지 조회 기능 : 게시판 아이디로 게시판, 이미지를 조회할 수 있다")
+    void getBoardAndImages() {
+        Board targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
+        fixtureBoardImage(Map.of("board", targetBoard));
+        fixtureBoardImage(Map.of("board", targetBoard));
+
+        List<Tuple> tupleBoards = boardRepository
+            .findBoardAndBoardImageByBoardId(targetBoard.getId());
+
+        assertThat(tupleBoards).hasSize(2);
+
+        Tuple tupleBoard = tupleBoards.get(0);
+        assertThat(tupleBoard.get(board.id)).isNotNull();
+        assertThat(tupleBoard.get(board.profile)).isNotNull();
+        assertThat(tupleBoard.get(board.title)).isNotNull();
+        assertThat(tupleBoard.get(board.price)).isNotNull();
+        assertThat(tupleBoard.get(board.purchaseUrl)).isNotNull();
+        assertThat(tupleBoard.get(board.deliveryFee)).isNotNull();
+        assertThat(tupleBoard.get(board.freeShippingConditions)).isNotNull();
+    }
+
+    @Test
+    @DisplayName("스토어 상세페이지 - 게시판 상세 이미지 조회 기능 : 게시판 아이디로 상세 이미지를 조회할 수 있다")
+    void getBoardDetailTest() {
         Board targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
         fixtureBoardDetail(Map.of("board", targetBoard));
         fixtureBoardDetail(Map.of("board", targetBoard));
-        Long memberId = null;
 
-        BoardResponse boardResponse = boardRepository
-            .getBoardDetailResponse(memberId, targetBoard.getId());
+        List<BoardDetailDto> boardDetailDtos = boardDetailRepository
+            .findByBoardId(targetBoard.getId());
 
-        assertThat(boardResponse.boardTitle()).isEqualTo(TEST_TITLE);
-        assertThat(boardResponse.boardDetails()).hasSize(2);
+        assertThat(boardDetailDtos).hasSize(2);
+
+        assertThat(boardDetailDtos.get(0).getOrder()).isNotNull();
+        assertThat(boardDetailDtos.get(0).getImageUrl()).isNotNull();
     }
 
     @Test

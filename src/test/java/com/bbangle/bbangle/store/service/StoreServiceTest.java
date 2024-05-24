@@ -48,10 +48,10 @@ class StoreServiceTest extends AbstractIntegrationTest {
         Board board = fixtureBoard(Map.of("store", store));
         Long memberId = null;
 
-        StoreDto storeDto = storeService.getStoreDtoByBoardId(memberId, board.getId());
+        Map<String, StoreDto> storeDto = storeService.getStoreDtoByBoardId(memberId, board.getId());
 
-        AssertionsForClassTypes.assertThat(storeDto.getId()).isEqualTo(store.getId());
-        AssertionsForClassTypes.assertThat(storeDto.getTitle()).isEqualTo(TEST_TITLE);
+        AssertionsForClassTypes.assertThat(storeDto.get("store").getId()).isEqualTo(store.getId());
+        AssertionsForClassTypes.assertThat(storeDto.get("store").getTitle()).isEqualTo(TEST_TITLE);
     }
 
     @Test
@@ -62,9 +62,9 @@ class StoreServiceTest extends AbstractIntegrationTest {
         storeRepository.save(store);
 
         wishListStoreRepository.save(WishListStore.builder()
-                .store(store)
-                .member(member)
-                .build()
+            .store(store)
+            .member(member)
+            .build()
         );
 
         StoreResponse result = storeService
@@ -82,8 +82,8 @@ class StoreServiceTest extends AbstractIntegrationTest {
     class GetStoreList {
 
         @BeforeEach
-        void saveStoreList(){
-            for(int i = 0; i < 30; i++){
+        void saveStoreList() {
+            for (int i = 0; i < 30; i++) {
                 Store store = StoreFixture.storeGenerator();
                 storeRepository.save(store);
             }
