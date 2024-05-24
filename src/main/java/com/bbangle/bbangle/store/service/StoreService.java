@@ -1,14 +1,19 @@
 package com.bbangle.bbangle.store.service;
 
+import com.bbangle.bbangle.exception.BbangleErrorCode;
+import com.bbangle.bbangle.exception.BbangleException;
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 
 import com.bbangle.bbangle.page.StoreCustomPage;
+import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponse;
 import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
+import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +22,22 @@ import org.springframework.stereotype.Service;
 public class StoreService {
 
     private final StoreRepository storeRepository;
+    private final WishListStoreRepository wishListStoreRepository;
+
+    public StoreDto getStoreDtoByBoardId(Long memberId, Long boardId){
+        StoreDto storeDto = storeRepository.findByBoardId(boardId);
+
+        if (Objects.isNull(storeDto)) {
+            throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
+        }
+
+        boolean isWished = Objects.nonNull(memberId)
+            && wishListStoreRepository.findWishListStore(memberId, storeDto.getId()).isPresent();
+
+        storeDto.updateWished(isWished);
+
+        return storeDto;
+    }
 
     public StoreResponse getStoreResponse(Long memberId, Long storeId){
         return storeRepository.getStoreResponse(memberId, storeId);

@@ -11,6 +11,7 @@ import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.service.StoreService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -114,9 +115,8 @@ public class BoardController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        return responseService.getSingleResult(
-            storeService.getStoreInfoInBoardDetail(memberId, boardId)
-        );
+        StoreDto storeDto = storeService.getStoreDtoByBoardId(memberId, boardId);
+        return responseService.getSingleResult(StoreDto.of(storeDto));
     }
 
     @GetMapping("/{boardId}")
