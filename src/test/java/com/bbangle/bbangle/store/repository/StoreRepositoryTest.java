@@ -1,5 +1,6 @@
 package com.bbangle.bbangle.store.repository;
 
+import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
@@ -15,6 +16,7 @@ import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
 import com.bbangle.bbangle.member.domain.Member;
 import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.store.domain.Store;
+import com.bbangle.bbangle.store.dto.StoreDto;
 import com.bbangle.bbangle.store.dto.StoreResponse;
 
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
@@ -25,6 +27,8 @@ import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @SpringBootTest
-public class StoreRepositoryTest {
+public class StoreRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private MemberRepository memberRepository;
@@ -68,6 +72,8 @@ public class StoreRepositoryTest {
     @Autowired
     private BoardWishListConfig boardWishListConfig;
 
+    private final String TEST_TITLE = "TestTitle";
+
     @AfterEach
     void afterEach() {
         rankingRepository.deleteAll();
@@ -81,6 +87,18 @@ public class StoreRepositoryTest {
         storeRepository.deleteAll();
         boardRepository.deleteAll();
         storeRepository.deleteAll();
+    }
+
+    @Test
+    @DisplayName("스토어 상세페이지 - 스토어 조회 기능 : 게시판 아이디로 스토어를 조회할 수 있다")
+    void getBoardDetailResponseTest() {
+        Store store = fixtureStore(Map.of("name", TEST_TITLE));
+        Board board = fixtureBoard(Map.of("store", store));
+
+        StoreDto storeDto = storeRepository.findByBoardId(board.getId());
+
+        AssertionsForClassTypes.assertThat(storeDto.getId()).isEqualTo(store.getId());
+        AssertionsForClassTypes.assertThat(storeDto.getTitle()).isEqualTo(TEST_TITLE);
     }
 
     @Test
