@@ -5,13 +5,13 @@ import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductResponse;
-import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.board.service.BoardService;
 import com.bbangle.bbangle.common.dto.CommonResult;
 import com.bbangle.bbangle.common.service.ResponseService;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.page.CustomPage;
+import com.bbangle.bbangle.store.service.StoreService;
 import com.bbangle.bbangle.util.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -47,6 +47,7 @@ public class BoardController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ResponseService responseService;
     private final BoardService boardService;
+    private final StoreService storeService;
 
     @Operation(summary = "게시글 전체 조회")
     @ApiResponse(
@@ -107,14 +108,15 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}/store")
-    public CommonResult getStoreAndBoardImgResponse(
+    public CommonResult getStoreInfoInBoardDetail(
         @PathVariable("boardId")
         Long boardId,
         @AuthenticationPrincipal
-        Long memberId) {
-        StoreAndBoardImgResponse storeAndBoardImgResponse = boardService.getStoreAndBoardResponse(
-            memberId, boardId);
-        return responseService.getSingleResult(storeAndBoardImgResponse);
+        Long memberId
+    ) {
+        return responseService.getSingleResult(
+            storeService.getStoreInfoInBoardDetail(memberId, boardId)
+        );
     }
 
     @GetMapping("/{boardId}")

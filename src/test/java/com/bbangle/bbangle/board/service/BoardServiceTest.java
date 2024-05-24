@@ -3,17 +3,16 @@ package com.bbangle.bbangle.board.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
+import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.board.domain.Category;
+import com.bbangle.bbangle.board.domain.Product;
+import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
-import com.bbangle.bbangle.board.domain.Board;
-import com.bbangle.bbangle.board.domain.Category;
-import com.bbangle.bbangle.board.domain.Product;
-import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.ProductResponse;
-import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.board.repository.ProductRepository;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -440,20 +439,6 @@ class BoardServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("스토어 상세페이지 - 스토어, 게시물 이미지 조회 기능 : 게시물 아이디로 스토어, 이미지를 조회할 수 있다")
-    public void getStoreAndBoardResponse() {
-        Store store = fixtureStore(Map.of("name",TEST_TITLE));
-        Board targetBoard = fixtureBoard(Map.of("store", store));
-        fixtureBoardImage(Map.of("board", targetBoard));
-        fixtureBoardImage(Map.of("board", targetBoard));
-        Long memberId = null;
-
-        StoreAndBoardImgResponse storeAndBoardImgDto = boardService.getStoreAndBoardResponse(memberId, targetBoard.getId());
-        AssertionsForClassTypes.assertThat(storeAndBoardImgDto.storeTitle()).isEqualTo(TEST_TITLE);
-        AssertionsForClassTypes.assertThat(storeAndBoardImgDto.boardImgs().size()).isEqualTo(2);
-    }
-
-    @Test
     @DisplayName("스토어 상세페이지 - 스토어, 게시판 이미지 조회 기능 : 게시판 아이디로 스토어, 이미지를 조회할 수 있다")
     void getBoardDetailResponseTest() {
         Board targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
@@ -461,7 +446,8 @@ class BoardServiceTest extends AbstractIntegrationTest {
         fixtureBoardDetail(Map.of("board", targetBoard));
         Long memberId = null;
 
-        BoardResponse boardResponse = boardService.getBoardDetailResponse(memberId, targetBoard.getId());
+        BoardResponse boardResponse = boardService.getBoardDetailResponse(memberId,
+            targetBoard.getId());
 
         AssertionsForClassTypes.assertThat(boardResponse.boardTitle()).isEqualTo(TEST_TITLE);
         AssertionsForClassTypes.assertThat(boardResponse.boardDetails().size()).isEqualTo(2);
@@ -473,33 +459,36 @@ class BoardServiceTest extends AbstractIntegrationTest {
         // isBundled True Test
         List<Product> differentCategotyProducts = List.of(
             fixtureProduct(Map.of(
-                "title",TEST_TITLE,
-                "category",Category.BREAD
+                "title", TEST_TITLE,
+                "category", Category.BREAD
             )),
             fixtureProduct(Map.of(
-                "title",TEST_TITLE,
-                "category",Category.COOKIE
+                "title", TEST_TITLE,
+                "category", Category.COOKIE
             )));
 
-        Board differentCategotyBoard = fixtureBoard(Map.of("productList", differentCategotyProducts));
+        Board differentCategotyBoard = fixtureBoard(
+            Map.of("productList", differentCategotyProducts));
 
-        ProductResponse productResponse = boardService.getProductResponse(differentCategotyBoard.getId());
+        ProductResponse productResponse = boardService.getProductResponse(
+            differentCategotyBoard.getId());
         assertThat(productResponse.boardIsBundled()).isTrue();
 
         // isBundled False Test
         List<Product> products = List.of(
             fixtureProduct(Map.of(
-                "title",TEST_TITLE,
-                "category",Category.BREAD
+                "title", TEST_TITLE,
+                "category", Category.BREAD
             )),
             fixtureProduct(Map.of(
-                "title",TEST_TITLE,
-                "category",Category.BREAD
+                "title", TEST_TITLE,
+                "category", Category.BREAD
             )));
 
         Board sameCategotyBoard = fixtureBoard(Map.of("productList", products));
 
-        ProductResponse sameProductResponse = boardService.getProductResponse(sameCategotyBoard.getId());
+        ProductResponse sameProductResponse = boardService.getProductResponse(
+            sameCategotyBoard.getId());
         assertThat(sameProductResponse.boardIsBundled()).isFalse();
     }
 
@@ -508,12 +497,12 @@ class BoardServiceTest extends AbstractIntegrationTest {
     void getProductResponseTest() {
         List<Product> products = List.of(
             fixtureProduct(Map.of(
-                "title",TEST_TITLE,
-                "category",Category.BREAD
+                "title", TEST_TITLE,
+                "category", Category.BREAD
             )),
             fixtureProduct(Map.of(
-                "title",TEST_TITLE,
-                "category",Category.COOKIE
+                "title", TEST_TITLE,
+                "category", Category.COOKIE
             )));
 
         Board targetBoard = fixtureBoard(Map.of("productList", products));

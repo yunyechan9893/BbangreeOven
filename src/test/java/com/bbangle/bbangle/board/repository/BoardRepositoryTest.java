@@ -1,7 +1,6 @@
 package com.bbangle.bbangle.board.repository;
 
 import static java.util.Collections.emptyMap;
-import static net.bytebuddy.matcher.ElementMatchers.is;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
@@ -11,9 +10,7 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.ProductDto;
-import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.ranking.domain.Ranking;
-import com.bbangle.bbangle.store.domain.Store;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,20 +22,6 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
     private final String TEST_TITLE = "TestTitle";
 
     @Test
-    @DisplayName("스토어 상세페이지 - 스토어, 게시물 이미지 조회 기능 : 게시물 아이디로 스토어, 이미지를 조회할 수 있다")
-    void getStoreAndBoardImgDtoTest() {
-        Store store = fixtureStore(Map.of("name",TEST_TITLE));
-        Board targetBoard = fixtureBoard(Map.of("store", store));
-        fixtureBoardImage(Map.of("board", targetBoard));
-        fixtureBoardImage(Map.of("board", targetBoard));
-        Long memberId = null;
-
-        StoreAndBoardImgResponse storeAndBoardImgDto = boardRepository.getStoreAndBoardImgResponse(memberId, targetBoard.getId());
-        assertThat(storeAndBoardImgDto.storeTitle()).isEqualTo(TEST_TITLE);
-        assertThat(storeAndBoardImgDto.boardImgs().size()).isEqualTo(2);
-    }
-
-    @Test
     @DisplayName("스토어 상세페이지 - 스토어, 게시판 이미지 조회 기능 : 게시판 아이디로 스토어, 이미지를 조회할 수 있다")
     void getBoardDetailResponseTest() {
         Board targetBoard = fixtureBoard(Map.of("title", TEST_TITLE));
@@ -46,10 +29,11 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         fixtureBoardDetail(Map.of("board", targetBoard));
         Long memberId = null;
 
-        BoardResponse boardResponse = boardRepository.getBoardDetailResponse(memberId, targetBoard.getId());
+        BoardResponse boardResponse = boardRepository
+            .getBoardDetailResponse(memberId, targetBoard.getId());
 
         assertThat(boardResponse.boardTitle()).isEqualTo(TEST_TITLE);
-        assertThat(boardResponse.boardDetails().size()).isEqualTo(2);
+        assertThat(boardResponse.boardDetails()).hasSize(2);
     }
 
     @Test

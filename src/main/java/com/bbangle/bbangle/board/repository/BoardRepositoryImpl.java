@@ -7,12 +7,10 @@ import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.domain.QBoardDetail;
 import com.bbangle.bbangle.board.domain.QProduct;
-import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.BoardAndDetailDto;
 import com.bbangle.bbangle.board.dto.BoardDetailDto;
-import com.bbangle.bbangle.board.dto.BoardImgDto;
 import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
@@ -21,9 +19,6 @@ import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardAllTitleDto;
 import com.bbangle.bbangle.board.dto.QBoardAndDetailDto;
 import com.bbangle.bbangle.board.dto.QProductDto;
-import com.bbangle.bbangle.board.dto.QStoreAndBoardImgDto;
-import com.bbangle.bbangle.board.dto.StoreAndBoardImgDto;
-import com.bbangle.bbangle.board.dto.StoreAndBoardImgResponse;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -32,7 +27,6 @@ import com.bbangle.bbangle.ranking.domain.QRanking;
 import com.bbangle.bbangle.store.domain.QStore;
 import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
-import com.bbangle.bbangle.wishlist.domain.QWishListStore;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Expression;
@@ -63,13 +57,12 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     public static final int BOARD_PAGE_SIZE = 10;
     private final Expression<Long> emptywishListBoardNumber = Expressions.constant(-1L);
     private static final QBoard board = QBoard.board;
+
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private static final QWishListFolder folder = QWishListFolder.wishListFolder;
-    private static final QProductImg productImg = QProductImg.productImg;
     private static final QBoardDetail boardDetail = QBoardDetail.boardDetail;
-    private static final QWishListStore wishlistStore = QWishListStore.wishListStore;
     private static final QRanking ranking = QRanking.ranking;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
@@ -130,59 +123,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .toList();
 
         return new SliceImpl<>(content, pageable, hasNext);
-    }
-
-    private void getConditionalWishListStore(JPAQuery<StoreAndBoardImgDto> query, Long memberId) {
-        query.leftJoin(wishlistStore)
-            .on(wishlistStore.store.eq(store),
-                wishlistStore.member.id.eq(memberId),
-                wishlistStore.isDeleted.eq(false));
-    }
-
-    private List<StoreAndBoardImgDto> getStoreAndBoardImgDto(Long memberId, Long boardId) {
-        Expression<Long> conditionalWhisList =
-            Objects.nonNull(memberId) ? wishlistStore.id : emptywishListBoardNumber;
-
-        JPAQuery<StoreAndBoardImgDto> beforeFetch = queryFactory.select(
-                new QStoreAndBoardImgDto(
-                    store.id,
-                    store.name,
-                    store.profile,
-                    productImg.id,
-                    productImg.url,
-                    conditionalWhisList
-                )
-            ).from(board)
-            .leftJoin(productImg).on(board.id.eq(productImg.board.id))
-            .join(store).on(store.eq(board.store))
-            .where(board.id.eq(boardId))
-            .orderBy(productImg.id.desc());
-
-        Optional.ofNullable(memberId)
-            .ifPresent(mId -> getConditionalWishListStore(beforeFetch, memberId));
-
-        return beforeFetch.fetch();
-    }
-
-    @Override
-    public StoreAndBoardImgResponse getStoreAndBoardImgResponse(Long memberId, Long boardId) {
-        List<StoreAndBoardImgDto> storeAndBoardImgDto = getStoreAndBoardImgDto(memberId, boardId);
-
-        if (Objects.isNull(storeAndBoardImgDto)) {
-            throw new BbangleException(STORE_NOT_FOUND);
-        }
-
-        StoreAndBoardImgDto storeItem = storeAndBoardImgDto.get(0);
-        List<BoardImgDto> boardImgDtos = storeAndBoardImgDto.stream()
-            .map(StoreAndBoardImgDto::toBoardImgDto).toList();
-
-        return StoreAndBoardImgResponse.builder()
-            .storeId(storeItem.storeId())
-            .storeTitle(storeItem.storeTitle())
-            .storeProfile(storeItem.storeProfile())
-            .isWished(storeItem.isNonEmptyWishlist())
-            .boardImgs(boardImgDtos)
-            .build();
     }
 
     private void getConditionalWishlistBoard(JPAQuery<BoardAndDetailDto> query, Long memberId) {
@@ -273,7 +213,6 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
             .where(product.board.id.eq(boardId))
             .fetch();
     }
-
 
     @Override
     public List<Board> checkingNullRanking() {
