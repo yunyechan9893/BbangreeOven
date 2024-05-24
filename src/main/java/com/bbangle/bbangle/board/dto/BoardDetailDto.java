@@ -1,17 +1,17 @@
 package com.bbangle.bbangle.board.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.Builder;
+import lombok.Getter;
 
-@Builder
-public record BoardDetailDto(
-    Long boardDetailId,
-    Integer boardDetailOrder,
-    String boardDetailUrl
-) {
+@Getter
+public class BoardDetailDto {
+
+    private Integer order;
+    private String imageUrl;
 
     @QueryProjection
-    public BoardDetailDto {
-
+    public BoardDetailDto(Integer order, String imageUrl) {
+        this.order = order;
+        this.imageUrl = imageUrl;
     }
 }

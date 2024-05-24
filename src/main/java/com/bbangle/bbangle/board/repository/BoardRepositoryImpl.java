@@ -1,23 +1,17 @@
 package com.bbangle.bbangle.board.repository;
 
-import static com.bbangle.bbangle.exception.BbangleErrorCode.STORE_NOT_FOUND;
-
 import com.bbangle.bbangle.board.domain.Board;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
-import com.bbangle.bbangle.board.domain.QBoardDetail;
 import com.bbangle.bbangle.board.domain.QProduct;
+import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
-import com.bbangle.bbangle.board.dto.BoardAndDetailDto;
-import com.bbangle.bbangle.board.dto.BoardDetailDto;
-import com.bbangle.bbangle.board.dto.BoardResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardAllTitleDto;
-import com.bbangle.bbangle.board.dto.QBoardAndDetailDto;
 import com.bbangle.bbangle.board.dto.QProductDto;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.SortType;
@@ -29,11 +23,9 @@ import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Expression;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -55,14 +46,13 @@ import org.springframework.stereotype.Repository;
 public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     public static final int BOARD_PAGE_SIZE = 10;
-    private final Expression<Long> emptywishListBoardNumber = Expressions.constant(-1L);
     private static final QBoard board = QBoard.board;
+    private static final QProductImg productImage = QProductImg.productImg;
 
     private static final QProduct product = QProduct.product;
     private static final QStore store = QStore.store;
     private static final QWishListBoard wishListBoard = QWishListBoard.wishListBoard;
     private static final QWishListFolder folder = QWishListFolder.wishListFolder;
-    private static final QBoardDetail boardDetail = QBoardDetail.boardDetail;
     private static final QRanking ranking = QRanking.ranking;
 
     private final BoardQueryProviderResolver boardQueryProviderResolver;
@@ -125,76 +115,23 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
         return new SliceImpl<>(content, pageable, hasNext);
     }
 
-    private void getConditionalWishlistBoard(JPAQuery<BoardAndDetailDto> query, Long memberId) {
-        query.leftJoin(wishListBoard)
-            .on(wishListBoard.boardId.eq(board.id),
-                wishListBoard.memberId.eq(memberId));
-    }
-
-    private List<BoardAndDetailDto> getBoardAndDetailDtos(Long memberId, Long boardId) {
-
-        Expression<Long> conditionalWhisList =
-            Objects.nonNull(memberId) ? wishListBoard.id : emptywishListBoardNumber;
-
-        JPAQuery<BoardAndDetailDto> beforeFetch = queryFactory.select(
-                new QBoardAndDetailDto(
-                    board.id,
-                    board.profile,
-                    board.title,
-                    board.price,
-                    board.monday,
-                    board.tuesday,
-                    board.wednesday,
-                    board.thursday,
-                    board.friday,
-                    board.saturday,
-                    board.sunday,
-                    board.purchaseUrl,
-                    board.status,
-                    boardDetail.id,
-                    boardDetail.imgIndex,
-                    boardDetail.url,
-                    conditionalWhisList
-                )
-            ).from(board)
-            .leftJoin(boardDetail).on(board.id.eq(boardDetail.board.id))
-            .where(board.id.eq(boardId));
-
-        Optional.ofNullable(memberId)
-            .ifPresent(mId -> getConditionalWishlistBoard(beforeFetch, memberId));
-
-        return beforeFetch.fetch();
-    }
-
     @Override
-    public BoardResponse getBoardDetailResponse(Long memberId, Long boardId) {
-        List<BoardAndDetailDto> boardAndDetailDtos = getBoardAndDetailDtos(memberId, boardId);
-
-        if (Objects.isNull(boardAndDetailDtos)) {
-            throw new BbangleException(STORE_NOT_FOUND);
-        }
-
-        BoardAndDetailDto boardDto = boardAndDetailDtos.get(0);
-        List<BoardDetailDto> BoardDetailDtos = boardAndDetailDtos.stream()
-            .map(BoardAndDetailDto::toBoardDetailDto).toList();
-
-        return BoardResponse.builder()
-            .boardId(boardDto.boardId())
-            .boardTitle(boardDto.boardTitle())
-            .boardProfile(boardDto.boardProfile())
-            .boardPrice(boardDto.boardPrice())
-            .monday(boardDto.monday())
-            .tuesday(boardDto.thursday())
-            .wednesday(boardDto.wednesday())
-            .thursday(boardDto.thursday())
-            .friday(boardDto.friday())
-            .saturday(boardDto.saturday())
-            .sunday(boardDto.sunday())
-            .purchaseUrl(boardDto.purchaseUrl())
-            .isWished(boardDto.isNonEmptyWishlist())
-            .status(boardDto.status())
-            .boardDetails(BoardDetailDtos)
-            .build();
+    public List<Tuple> findBoardAndBoardImageByBoardId(Long boardId) {
+        return queryFactory.select(
+                board.id,
+                board.profile,
+                board.title,
+                board.price,
+                board.purchaseUrl,
+                board.status,
+                board.deliveryFee,
+                board.freeShippingConditions,
+                productImage.url
+            ).from(board)
+            .leftJoin(productImage)
+            .on(productImage.board.eq(board))
+            .where(board.id.eq(boardId))
+            .fetch();
     }
 
     @Override

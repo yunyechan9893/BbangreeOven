@@ -9,6 +9,7 @@ import lombok.Getter;
 
 @Getter
 public class StoreDto {
+
     private Long id;
     private String title;
     private String profile;
@@ -28,7 +29,7 @@ public class StoreDto {
         this.isLiked = isLiked;
     }
 
-    public static Map<String, StoreDto> of(StoreDto storeDto) {
+    public static Map<String, StoreDto> convertToMap(StoreDto storeDto) {
         return Map.of("store", storeDto);
     }
 }

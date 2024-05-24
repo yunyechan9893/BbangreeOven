@@ -3,13 +3,16 @@ package com.bbangle.bbangle.board.service;
 
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 
+import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
-import com.bbangle.bbangle.board.dto.BoardResponse;
+import com.bbangle.bbangle.board.dto.BoardDetailDto;
+import com.bbangle.bbangle.board.dto.BoardDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.ProductResponse;
+import com.bbangle.bbangle.board.repository.BoardDetailRepository;
 import com.bbangle.bbangle.board.repository.BoardRepository;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.config.ranking.BoardLikeInfo;
@@ -22,11 +25,14 @@ import com.bbangle.bbangle.page.BoardCustomPage;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
+import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
+import com.querydsl.core.Tuple;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -44,13 +50,18 @@ public class BoardService {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH");
 
     private final BoardRepository boardRepository;
+    private final BoardDetailRepository boardDetailRepository;
     private final MemberRepository memberRepository;
     private final WishListFolderRepository folderRepository;
+    private final WishListBoardRepository wishListBoardRepository;
     @Qualifier("defaultRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
     private final RankingRepository rankingRepository;
+
+    private static final QProductImg productImage = QProductImg.productImg;
+
 
     private final int ONE_CATEGOTY = 1;
 
@@ -69,6 +80,35 @@ public class BoardService {
         }
 
         return boards;
+    }
+
+    private List<String> convertToUrls(List<Tuple> boardAndImageTuples) {
+        return boardAndImageTuples.stream()
+            .map(tuple -> tuple.get(productImage.url))
+            .toList();
+    }
+
+    public Map<String, BoardDto> getBoardDtos(Long memberId, Long boardId) {
+        List<Tuple> boardAndImageTuples = boardRepository.findBoardAndBoardImageByBoardId(boardId);
+
+        if (Objects.isNull(boardAndImageTuples)) {
+            throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
+        }
+
+        BoardDto boardDto = BoardDto.of(boardAndImageTuples.get(0));
+
+        boolean isWished = Objects.nonNull(memberId)
+            && wishListBoardRepository.existsByBoardIdAndMemberId(memberId, boardId);
+
+        boardDto.updateWished(isWished);
+
+        List<String> boardImageUrls = convertToUrls(boardAndImageTuples);
+        boardDto.addBoardImageList(boardImageUrls);
+
+        List<BoardDetailDto> boardDetailDtos = boardDetailRepository.findByBoardId(boardId);
+        boardDto.addBoardDetailList(boardDetailDtos);
+
+        return BoardDto.convertToMap(boardDto); // {board: ~} 로 변경
     }
 
     private void updateLikeStatus(
@@ -91,10 +131,6 @@ public class BoardService {
             .stream()
             .map(BoardResponseDto::getBoardId)
             .toList();
-    }
-
-    public BoardResponse getBoardDetailResponse(Long memberId, Long boardId) {
-        return boardRepository.getBoardDetailResponse(memberId, boardId);
     }
 
     private List<BoardDetailProductDto> toProductToResponse(List<ProductDto> productDtos) {

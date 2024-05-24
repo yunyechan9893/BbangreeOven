@@ -13,6 +13,7 @@ import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final WishListStoreRepository wishListStoreRepository;
 
-    public StoreDto getStoreDtoByBoardId(Long memberId, Long boardId){
+    public Map<String, StoreDto> getStoreDtoByBoardId(Long memberId, Long boardId) {
         StoreDto storeDto = storeRepository.findByBoardId(boardId);
 
         if (Objects.isNull(storeDto)) {
@@ -36,10 +37,10 @@ public class StoreService {
 
         storeDto.updateWished(isWished);
 
-        return storeDto;
+        return StoreDto.convertToMap(storeDto);  // {store: ~} 로 변경
     }
 
-    public StoreResponse getStoreResponse(Long memberId, Long storeId){
+    public StoreResponse getStoreResponse(Long memberId, Long storeId) {
         return storeRepository.getStoreResponse(memberId, storeId);
     }
 
@@ -47,7 +48,8 @@ public class StoreService {
         return storeRepository.getPopularBoardResponses(memberId, storeId);
     }
 
-    public StoreDetailCustomPage<List<StoreBoardsResponse>> getStoreAllBoard(Long memberId, Long storeId,
+    public StoreDetailCustomPage<List<StoreBoardsResponse>> getStoreAllBoard(Long memberId,
+        Long storeId,
         Long boardIdAsCursorId) {
         return storeRepository.getStoreBoardsResponse(memberId, storeId, boardIdAsCursorId);
     }

@@ -1,6 +1,6 @@
 package com.bbangle.bbangle.board.controller;
 
-import com.bbangle.bbangle.board.dto.BoardResponse;
+import com.bbangle.bbangle.board.dto.BoardDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
@@ -115,8 +116,8 @@ public class BoardController {
         @AuthenticationPrincipal
         Long memberId
     ) {
-        StoreDto storeDto = storeService.getStoreDtoByBoardId(memberId, boardId);
-        return responseService.getSingleResult(StoreDto.of(storeDto));
+        Map<String, StoreDto> storeDto = storeService.getStoreDtoByBoardId(memberId, boardId);
+        return responseService.getSingleResult(storeDto);
     }
 
     @GetMapping("/{boardId}")
@@ -125,7 +126,7 @@ public class BoardController {
         Long boardId,
         @AuthenticationPrincipal
         Long memberId) {
-        BoardResponse boardResponse = boardService.getBoardDetailResponse(memberId, boardId);
+        Map<String, BoardDto> boardResponse = boardService.getBoardDtos(memberId, boardId);
         return responseService.getSingleResult(boardResponse);
     }
 
