@@ -27,19 +27,19 @@ public class AnalyticsService {
 
 
     public Long countNewMember() {
-        return memberRepository.countNewMember(7);
+        return memberRepository.countNewMember(6);
     }
 
 
     public String countMembersUsingWishlist() {
         long wishlistUsersCount = wishListBoardRepository.countMembersUsingWishlist();
-        long memberCount = memberRepository.count();
+        long membersCount = memberRepository.count();
 
-        if (memberCount == 0L) {
+        if (membersCount == 0L) {
             throw new IllegalArgumentException("0으로 나눌 수 없습니다.");
         }
 
-        double result = ((double) wishlistUsersCount / memberCount) * 100;
+        double result = ((double) wishlistUsersCount / membersCount) * 100;
 
         return String.format("%.2f", result);
     }
@@ -50,25 +50,34 @@ public class AnalyticsService {
     }
 
 
-    public Long countWishlistBoardByPeriod(LocalDate startDate, LocalDate endDate) {
-        return wishListBoardRepository.countWishlistByPeriod(startDate, endDate);
+    public Long countWishlistBoardByPeriod(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
 
+        return wishListBoardRepository.countWishlistByPeriod(startDate, endDate);
     }
 
 
-    public Double calculateReviewUsingRatio() {
+    public String calculateReviewUsingRatio() {
         Long reviewUsersCount = reviewRepository.countMembersUsingReview();
-        long memberCount = memberRepository.count();
+        long membersCount = memberRepository.count();
 
-        if (memberCount == 0L) {
+        if (membersCount == 0L) {
             throw new IllegalArgumentException("0으로 나눌 수 없습니다.");
         }
 
-        return (double) reviewUsersCount / memberCount;
+        double result = ((double) reviewUsersCount / membersCount) * 100;
+
+        return String.format("%.2f", result);
     }
 
 
-    public Long countReviewByPeriod(LocalDate startDate, LocalDate endDate) {
+    public Long countReviewByPeriod(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
         return reviewRepository.countReviewByPeriod(startDate, endDate);
     }
 }

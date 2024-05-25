@@ -10,6 +10,7 @@ import com.bbangle.bbangle.member.repository.MemberRepository;
 import com.bbangle.bbangle.member.service.MemberService;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.bbangle.bbangle.ranking.repository.RankingRepository;
+import com.bbangle.bbangle.review.repository.ReviewRepository;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.store.service.StoreService;
@@ -65,6 +66,8 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected MemberRepository memberRepository;
     @Autowired
+    protected ReviewRepository reviewRepository;
+    @Autowired
     protected BoardImgRepository boardImgRepository;
     @Autowired
     protected WishListFolderRepository wishListFolderRepository;
@@ -80,6 +83,7 @@ public abstract class AbstractIntegrationTest {
         rankingRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
         boardRepository.deleteAllInBatch();
+        reviewRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
         boardImgRepository.deleteAllInBatch();
         wishListFolderRepository.deleteAllInBatch();

@@ -468,4 +468,5 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
                 .orderBy(board.wishCnt.desc())
                 .fetch();
     }
+
 }

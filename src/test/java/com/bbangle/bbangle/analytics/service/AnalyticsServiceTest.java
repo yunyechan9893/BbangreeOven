@@ -2,13 +2,25 @@ package com.bbangle.bbangle.analytics.service;
 
 import com.bbangle.bbangle.AbstractIntegrationTest;
 import com.bbangle.bbangle.board.domain.Board;
+import com.bbangle.bbangle.common.domain.Badge;
 import com.bbangle.bbangle.member.domain.Member;
+import com.bbangle.bbangle.review.domain.Review;
 import com.bbangle.bbangle.store.domain.Store;
 import com.bbangle.bbangle.token.oauth.domain.OauthServerType;
 import com.bbangle.bbangle.wishlist.domain.WishListBoard;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,27 +28,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AnalyticsServiceTest extends AbstractIntegrationTest {
 
+    @Autowired PlatformTransactionManager tm;
+    @Autowired EntityManager em;
+
 
     @Test
     @DisplayName("신규 회원의 수가 정상적으로 조회된다.")
     void countNewMember() {
         // given
-        createOldMembers();
-        createNewMembers();
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
+        create10DaysAgoMembers(createdAt);
+        createMembers();
 
         // then
+        long membersCount = memberRepository.count();
         long result = analyticsService.countNewMember();
 
         // then
-        assertThat(result).isEqualTo(20);
+        assertThat(membersCount).isEqualTo(20);
+        assertThat(result).isEqualTo(10);
     }
+
 
     @Test
     @DisplayName("전체 회원의 수가 정상적으로 조회된다.")
     void countAllMember() {
         // given
-        createOldMembers();
-        createNewMembers();
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
+        create10DaysAgoMembers(createdAt);
+        createMembers();
 
         // when
         long result = analyticsService.countAllMember();
@@ -45,20 +65,24 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
         assertThat(result).isEqualTo(20);
     }
 
+
     @Test
     @DisplayName("회원 대비 위시리스트 이용 비율이 성공적으로 조회된다.")
     void countMembersUsingWishlist() {
         // given
-        List<Member> oldMemberList1 = createOldMembers();
-        List<Member> oldMemberList2 = createOldMembers();
-        List<Member> oldMemberList3 = createOldMembers();
-        createWishListBoards(oldMemberList1);
+        List<Member> members1 = createMembers();
+        List<Member> members2 = createMembers();
+        List<Member> members3 = createMembers();
+        createWishListBoards(members1);
 
         // when
+        long membersCount = memberRepository.count();
+        long membersUsingWishlistCount = wishListBoardRepository.countMembersUsingWishlist();
         String result = analyticsService.countMembersUsingWishlist();
 
-
         // then
+        assertThat(membersCount).isEqualTo(30);
+        assertThat(membersUsingWishlistCount).isEqualTo(10);
         assertThat(result).isEqualTo("33.33");
     }
 
@@ -67,26 +91,129 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
     @DisplayName("게시글 별 위시리스트 순위가 정상적으로 조회된다.")
     void getWishlistBoardRanking() {
         // given
-        List<Member> oldMemberList = createOldMembers();
-        createBoards(oldMemberList);
+        List<Member> members = createMembers();
+        createBoards(members);
 
         // when
-        List<Board> result = analyticsService.getWishlistBoardRanking();
+        List<Board> boardsOrderByWishCntDesc = analyticsService.getWishlistBoardRanking();
         List<Integer> expect = List.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
 
-
         // then
-        List<Integer> wishCntRankingList = result.stream()
+        List<Integer> result = boardsOrderByWishCntDesc.stream()
                 .map(Board::getWishCnt)
                 .toList();
 
-        assertThat(wishCntRankingList).isEqualTo(expect);
+        assertThat(result).isEqualTo(expect);
     }
 
 
-    // TODO: createAt을 지정할 수 있어야 7일 전 회원 데이터를 생성할 수 있음
-    private List<Member> createOldMembers() {
-        List<Member> memberList = new ArrayList<>();
+    @Test
+    @DisplayName("기간 별 위시리스트 총 개수가 정상적으로 조회된다.")
+    void countWishlistBoardByPeriod() {
+        // given
+        List<Member> members = createMembers();
+        createWishListBoards(members);
+
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
+        create10DaysAgoWishlistBoards(createdAt);
+
+        // when
+        LocalDate startDate = LocalDate.now().minusDays(9);
+        LocalDate endDate = LocalDate.now();
+        Long wishlistBoardsCount = wishListBoardRepository.count();
+        Long result = analyticsService.countWishlistBoardByPeriod(startDate, endDate);
+
+        // then
+        assertThat(wishlistBoardsCount).isEqualTo(20);
+        assertThat(result).isEqualTo(10);
+    }
+
+
+    @Test
+    @DisplayName("회원 대비 리뷰 이용 비율이 정상적으로 조회된다.")
+    void calculateReviewUsingRatio() {
+        // given
+        List<Member> members1 = createMembers();
+        List<Member> members2 = createMembers();
+        List<Member> members3 = createMembers();
+        List<Member> members4 = createMembers();
+        createReviews(members1);
+
+        // when
+        long membersCount = memberRepository.count();
+        Long membersUsingReviewCount = reviewRepository.countMembersUsingReview();
+        String result = analyticsService.calculateReviewUsingRatio();
+
+        // then
+        assertThat(membersCount).isEqualTo(40);
+        assertThat(membersUsingReviewCount).isEqualTo(10);
+        assertThat(result).isEqualTo("25.00");
+    }
+
+
+    @Test
+    @DisplayName("기간 별 리뷰 총 생성 개수가 정상적으로 조회된다.")
+    void countReviewByPeriod() {
+        // given
+        List<Member> members1 = createMembers();
+        List<Member> members2 = createMembers();
+        createReviews(members1);
+
+        LocalDateTime createdAt = LocalDateTime.now().minusDays(10);
+        create10DaysAgoReviews(members2, createdAt);
+
+        // when
+        LocalDate startDate = LocalDate.now().minusDays(9);
+        LocalDate endDate = LocalDate.now();
+        long reviewsCount = reviewRepository.count();
+        Long result = reviewRepository.countReviewByPeriod(startDate, endDate);
+
+        // then
+        assertThat(reviewsCount).isEqualTo(20);
+        assertThat(result).isEqualTo(10);
+    }
+
+
+    private void create10DaysAgoMembers(
+            LocalDateTime createdAt
+    ) {
+
+        TransactionStatus status = null;
+
+        try {
+            DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            status = tm.getTransaction(transactionDefinition);
+
+            for (int i = 1; i <= 10; i++) {
+                Member member = Member.builder()
+                        .email("test" + i + "@email.com")
+                        .name("testUser" + i)
+                        .provider(OauthServerType.KAKAO)
+                        .isDeleted(false)
+                        .build();
+
+                memberRepository.save(member);
+                em.flush();
+
+                Query query = em.createQuery("UPDATE Member as m SET m.createdAt = :createdAt WHERE m.id = :id");
+                query.setParameter("createdAt", createdAt);
+                query.setParameter("id", member.getId());
+                query.executeUpdate();
+            }
+
+            tm.commit(status);
+        } catch (Exception e) {
+            if (status != null) {
+                tm.rollback(status);
+            }
+        }
+
+    }
+
+
+    private List<Member> createMembers() {
+        List<Member> members = new ArrayList<>();
 
         for(int i = 1; i <= 10; i++){
             Member member = Member.builder()
@@ -96,33 +223,18 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
                     .isDeleted(false)
                     .build();
 
-            memberList.add(member);
+            members.add(member);
         }
 
-        return memberRepository.saveAll(memberList);
+        return memberRepository.saveAll(members);
     }
 
 
-    private List<Member> createNewMembers() {
-        List<Member> memberList = new ArrayList<>();
+    private void createWishListBoards(
+            List<Member> members
+    ) {
 
-        for(int i = 1; i <= 10; i++){
-            Member member = Member.builder()
-                    .email("test" + i + "@email.com")
-                    .name("testUser" + i)
-                    .provider(OauthServerType.KAKAO)
-                    .isDeleted(false)
-                    .build();
-
-            memberList.add(member);
-        }
-
-        return memberRepository.saveAll(memberList);
-    }
-
-
-    private void createWishListBoards(List<Member> memberList) {
-        for(int i = 0; i < memberList.size(); i++){
+        for (int i = 0; i < members.size(); i++) {
             Store store = Store.builder()
                     .id((long) i + 1)
                     .name("test" + i)
@@ -139,16 +251,21 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
             boardRepository.save(board);
 
             WishListBoard wishListBoard = WishListBoard.builder()
-                    .memberId(memberList.get(i).getId())
+                    .id((long) i + 1)
+                    .memberId(members.get(i).getId())
                     .boardId(board.getId())
                     .build();
             wishListBoardRepository.save(wishListBoard);
         }
+
     }
 
 
-    private void createBoards(List<Member> members) {
-        for(int i = 1; i <= members.size(); i++){
+    private void createBoards (
+            List<Member> members
+    ) {
+
+        for (int i = 1; i <= members.size(); i++) {
             Store store = Store.builder()
                     .id((long) i + 1)
                     .name("test" + i)
@@ -164,8 +281,103 @@ class AnalyticsServiceTest extends AbstractIntegrationTest {
                     .wishCnt(i)
                     .build();
             boardRepository.save(board);
-
         }
+
+    }
+
+
+    private void create10DaysAgoWishlistBoards(
+            LocalDateTime createdAt
+    ) {
+
+        TransactionStatus status = null;
+
+        try {
+            DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            status = tm.getTransaction(transactionDefinition);
+
+            for (int i = 1; i <= 10; i++) {
+                WishListBoard wishListBoard = WishListBoard.builder()
+                        .build();
+
+                wishListBoardRepository.save(wishListBoard);
+                em.flush();
+
+                Query query = em.createQuery("UPDATE WishListBoard as wb SET wb.createdAt = :createdAt WHERE wb.id = :id");
+                query.setParameter("createdAt", createdAt);
+                query.setParameter("id", wishListBoard.getId());
+                query.executeUpdate();
+            }
+
+            tm.commit(status);
+        } catch (Exception e) {
+            if (status != null) {
+                tm.rollback(status);
+            }
+        }
+
+    }
+
+
+    private void createReviews(
+            List<Member> members
+    ) {
+
+        for (int i = 1; i <= members.size(); i++) {
+            Review review = Review.builder()
+                    .memberId(members.get(i - 1).getId())
+                    .boardId((long) i)
+                    .badgeBrix(String.valueOf(Badge.SWEET))
+                    .badgeTaste(String.valueOf(Badge.GOOD))
+                    .badgeTexture(String.valueOf(Badge.HARD))
+                    .rate(BigDecimal.valueOf(5))
+                    .build();
+
+            reviewRepository.save(review);
+        }
+
+    }
+
+
+    private void create10DaysAgoReviews(
+            List<Member> members,
+            LocalDateTime createdAt
+    ) {
+
+        TransactionStatus status = null;
+
+        try {
+            DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+            transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+            status = tm.getTransaction(transactionDefinition);
+
+            for (int i = 1; i <= 10; i++) {
+                Review review = Review.builder()
+                        .memberId(members.get(i - 1).getId())
+                        .boardId((long) i + 20)
+                        .badgeBrix(String.valueOf(Badge.SWEET))
+                        .badgeTaste(String.valueOf(Badge.GOOD))
+                        .badgeTexture(String.valueOf(Badge.HARD))
+                        .rate(BigDecimal.valueOf(5))
+                        .build();
+
+                reviewRepository.save(review);
+                em.flush();
+
+                Query query = em.createQuery("UPDATE Review as r SET r.createdAt = :createdAt WHERE r.id = :id");
+                query.setParameter("createdAt", createdAt);
+                query.setParameter("id", review.getId());
+                query.executeUpdate();
+            }
+
+            tm.commit(status);
+        } catch (Exception e) {
+            if (status != null) {
+                tm.rollback(status);
+            }
+        }
+
     }
 
 }

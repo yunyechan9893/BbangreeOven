@@ -31,7 +31,10 @@ public class MemberRepositoryImpl implements MemberQueryDSLRepository{
     }
 
     @Override
-    public Long countNewMember(int days) {
+    public Long countNewMember(
+            int days
+    ) {
+
         LocalDate now = LocalDate.now();
         LocalDate fromDate = now.minusDays(days);
 

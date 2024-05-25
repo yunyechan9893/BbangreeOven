@@ -25,7 +25,11 @@ public class WishListBoardRepositoryImpl implements WishListBoardQueryDSLReposit
     }
 
     @Override
-    public Long countWishlistByPeriod(LocalDate startDate, LocalDate endDate) {
+    public Long countWishlistByPeriod(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
         DateTemplate<LocalDate> createdAt = Expressions.dateTemplate(LocalDate.class, "DATE({0})", wishListBoard.createdAt);
 
         return queryFactory.select(wishListBoard.id.count())
