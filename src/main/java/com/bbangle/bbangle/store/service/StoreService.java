@@ -1,7 +1,8 @@
 package com.bbangle.bbangle.store.service;
 
-import com.bbangle.bbangle.exception.BbangleErrorCode;
-import com.bbangle.bbangle.exception.BbangleException;
+import static com.bbangle.bbangle.board.validator.BoardValidator.validateNotNull;
+import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
+
 import com.bbangle.bbangle.page.StoreDetailCustomPage;
 import com.bbangle.bbangle.store.dto.PopularBoardResponse;
 import com.bbangle.bbangle.store.dto.StoreBoardsResponse;
@@ -13,7 +14,6 @@ import com.bbangle.bbangle.store.dto.StoreResponseDto;
 import com.bbangle.bbangle.store.repository.StoreRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListStoreRepository;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,19 +25,16 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final WishListStoreRepository wishListStoreRepository;
 
-    public Map<String, StoreDto> getStoreDtoByBoardId(Long memberId, Long boardId) {
+    public StoreDto getStoreDtoByBoardId(Long memberId, Long boardId) {
         StoreDto storeDto = storeRepository.findByBoardId(boardId);
-
-        if (Objects.isNull(storeDto)) {
-            throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
-        }
+        validateNotNull(storeDto, BOARD_NOT_FOUND);
 
         boolean isWished = Objects.nonNull(memberId)
             && wishListStoreRepository.findWishListStore(memberId, storeDto.getId()).isPresent();
 
         storeDto.updateWished(isWished);
 
-        return StoreDto.convertToMap(storeDto);  // {store: ~} 로 변경
+        return storeDto;
     }
 
     public StoreResponse getStoreResponse(Long memberId, Long storeId) {

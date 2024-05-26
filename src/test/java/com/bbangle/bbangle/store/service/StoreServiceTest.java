@@ -48,10 +48,10 @@ class StoreServiceTest extends AbstractIntegrationTest {
         Board board = fixtureBoard(Map.of("store", store));
         Long memberId = null;
 
-        Map<String, StoreDto> storeDto = storeService.getStoreDtoByBoardId(memberId, board.getId());
+        StoreDto storeDto = storeService.getStoreDtoByBoardId(memberId, board.getId());
 
-        AssertionsForClassTypes.assertThat(storeDto.get("store").getId()).isEqualTo(store.getId());
-        AssertionsForClassTypes.assertThat(storeDto.get("store").getTitle()).isEqualTo(TEST_TITLE);
+        AssertionsForClassTypes.assertThat(storeDto.getId()).isEqualTo(store.getId());
+        AssertionsForClassTypes.assertThat(storeDto.getTitle()).isEqualTo(TEST_TITLE);
     }
 
     @Test
