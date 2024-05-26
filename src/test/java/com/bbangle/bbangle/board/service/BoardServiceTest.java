@@ -8,7 +8,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
-import com.bbangle.bbangle.board.dto.BoardDto;
+import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -446,7 +446,7 @@ class BoardServiceTest extends AbstractIntegrationTest {
         fixtureBoardDetail(Map.of("board", targetBoard));
         Long memberId = null;
 
-        Map<String, BoardDto> boardDtos = boardService.getBoardDtos(memberId,
+        BoardImageDetailResponse boardDtos = boardService.getBoardDtos(memberId,
             targetBoard.getId());
 
         System.out.println();

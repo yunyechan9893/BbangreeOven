@@ -9,7 +9,7 @@ import com.bbangle.bbangle.board.domain.Category;
 import com.bbangle.bbangle.board.domain.Product;
 import com.bbangle.bbangle.board.domain.QBoard;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
-import com.bbangle.bbangle.board.dto.BoardDetailDto;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.ranking.domain.Ranking;
 import com.querydsl.core.Tuple;
@@ -31,19 +31,19 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         fixtureBoardImage(Map.of("board", targetBoard));
         fixtureBoardImage(Map.of("board", targetBoard));
 
-        List<Tuple> tupleBoards = boardRepository
+        List<BoardAndImageDto> boardAndImageDtos = boardRepository
             .findBoardAndBoardImageByBoardId(targetBoard.getId());
 
-        assertThat(tupleBoards).hasSize(2);
+        assertThat(boardAndImageDtos).hasSize(2);
 
-        Tuple tupleBoard = tupleBoards.get(0);
-        assertThat(tupleBoard.get(board.id)).isNotNull();
-        assertThat(tupleBoard.get(board.profile)).isNotNull();
-        assertThat(tupleBoard.get(board.title)).isNotNull();
-        assertThat(tupleBoard.get(board.price)).isNotNull();
-        assertThat(tupleBoard.get(board.purchaseUrl)).isNotNull();
-        assertThat(tupleBoard.get(board.deliveryFee)).isNotNull();
-        assertThat(tupleBoard.get(board.freeShippingConditions)).isNotNull();
+        BoardAndImageDto boardAndImageDto = boardAndImageDtos.stream().findFirst().get();
+        assertThat(boardAndImageDto.id()).isNotNull();
+        assertThat(boardAndImageDto.profile()).isNotNull();
+        assertThat(boardAndImageDto.title()).isNotNull();
+        assertThat(boardAndImageDto.price()).isNotNull();
+        assertThat(boardAndImageDto.purchaseUrl()).isNotNull();
+        assertThat(boardAndImageDto.deliveryFee()).isNotNull();
+        assertThat(boardAndImageDto.freeShippingConditions()).isNotNull();
     }
 
     @Test
@@ -53,13 +53,12 @@ class BoardRepositoryTest extends AbstractIntegrationTest {
         fixtureBoardDetail(Map.of("board", targetBoard));
         fixtureBoardDetail(Map.of("board", targetBoard));
 
-        List<BoardDetailDto> boardDetailDtos = boardDetailRepository
+        List<String> boardDetailDtos = boardDetailRepository
             .findByBoardId(targetBoard.getId());
 
         assertThat(boardDetailDtos).hasSize(2);
 
-        assertThat(boardDetailDtos.get(0).getOrder()).isNotNull();
-        assertThat(boardDetailDtos.get(0).getImageUrl()).isNotNull();
+        assertThat(boardDetailDtos).isNotEmpty();
     }
 
     @Test

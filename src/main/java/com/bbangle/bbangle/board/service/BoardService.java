@@ -1,12 +1,13 @@
 package com.bbangle.bbangle.board.service;
 
 
+import static com.bbangle.bbangle.board.validator.BoardValidator.*;
 import static com.bbangle.bbangle.exception.BbangleErrorCode.BOARD_NOT_FOUND;
 
-import com.bbangle.bbangle.board.domain.QProductImg;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardDetailProductDto;
-import com.bbangle.bbangle.board.dto.BoardDetailDto;
 import com.bbangle.bbangle.board.dto.BoardDto;
+import com.bbangle.bbangle.board.dto.BoardImageDetailResponse;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
@@ -27,14 +28,11 @@ import com.bbangle.bbangle.ranking.repository.RankingRepository;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.bbangle.bbangle.wishlist.repository.WishListBoardRepository;
 import com.bbangle.bbangle.wishlist.repository.WishListFolderRepository;
-import com.querydsl.core.Tuple;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -59,11 +57,7 @@ public class BoardService {
     @Qualifier("boardLikeInfoRedisTemplate")
     private final RedisTemplate<String, Object> boardLikeInfoRedisTemplate;
     private final RankingRepository rankingRepository;
-
-    private static final QProductImg productImage = QProductImg.productImg;
-
-
-    private final int ONE_CATEGOTY = 1;
+    private static final int ONE_CATEGOTY = 1;
 
     @Transactional(readOnly = true)
     public BoardCustomPage<List<BoardResponseDto>> getBoardList(
@@ -82,33 +76,37 @@ public class BoardService {
         return boards;
     }
 
-    private List<String> convertToUrls(List<Tuple> boardAndImageTuples) {
+    private List<String> extractImageUrl(List<BoardAndImageDto> boardAndImageTuples) {
         return boardAndImageTuples.stream()
-            .map(tuple -> tuple.get(productImage.url))
+            .map(BoardAndImageDto::purchaseUrl)
             .toList();
     }
 
-    public Map<String, BoardDto> getBoardDtos(Long memberId, Long boardId) {
-        List<Tuple> boardAndImageTuples = boardRepository.findBoardAndBoardImageByBoardId(boardId);
+    private BoardAndImageDto getFirstBoardInfo(List<BoardAndImageDto> boardAndImageTuples) {
+        return boardAndImageTuples.stream()
+            .findFirst()
+            .orElseThrow(() -> new BbangleException(BOARD_NOT_FOUND));
+    }
 
-        if (Objects.isNull(boardAndImageTuples)) {
-            throw new BbangleException(BbangleErrorCode.BOARD_NOT_FOUND);
-        }
+    public BoardImageDetailResponse getBoardDtos(Long memberId, Long boardId) {
+        List<BoardAndImageDto> boardAndImageDtos = boardRepository.findBoardAndBoardImageByBoardId(
+            boardId);
+        validateListElementExist(boardAndImageDtos, BOARD_NOT_FOUND);
 
-        BoardDto boardDto = BoardDto.of(boardAndImageTuples.get(0));
+        BoardDto boardDto = BoardDto.from(
+            getFirstBoardInfo(boardAndImageDtos));
 
         boolean isWished = Objects.nonNull(memberId)
             && wishListBoardRepository.existsByBoardIdAndMemberId(memberId, boardId);
 
-        boardDto.updateWished(isWished);
+        List<String> boardImageUrls = extractImageUrl(boardAndImageDtos);
+        List<String> boardDetailUrls = boardDetailRepository.findByBoardId(boardId);
 
-        List<String> boardImageUrls = convertToUrls(boardAndImageTuples);
-        boardDto.addBoardImageList(boardImageUrls);
-
-        List<BoardDetailDto> boardDetailDtos = boardDetailRepository.findByBoardId(boardId);
-        boardDto.addBoardDetailList(boardDetailDtos);
-
-        return BoardDto.convertToMap(boardDto); // {board: ~} 로 변경
+        return BoardImageDetailResponse.from(
+            boardDto,
+            isWished,
+            boardImageUrls,
+            boardDetailUrls);
     }
 
     private void updateLikeStatus(
@@ -133,39 +131,27 @@ public class BoardService {
             .toList();
     }
 
-    private List<BoardDetailProductDto> toProductToResponse(List<ProductDto> productDtos) {
-        return productDtos.stream().map(product -> BoardDetailProductDto.builder()
-            .productId(product.productId())
-            .productTitle(product.productTitle())
-            .glutenFreeTag(product.glutenFreeTag())
-            .sugarFreeTag(product.sugarFreeTag())
-            .highProteinTag(product.highProteinTag())
-            .veganTag(product.veganTag())
-            .ketogenicTag(product.ketogenicTag())
-            .build()
-        ).toList();
+    private List<BoardDetailProductDto> convertToProductResponse(List<ProductDto> productDtos) {
+        return productDtos.stream()
+            .map(BoardDetailProductDto::from)
+            .toList();
     }
 
     private Boolean isBundled(List<ProductDto> productDtos) {
         return productDtos.stream()
-            .map(productDto -> productDto.category())
+            .map(ProductDto::category)
             .distinct()
             .count() > ONE_CATEGOTY;
     }
 
     public ProductResponse getProductResponse(Long boardId) {
         List<ProductDto> productDtos = boardRepository.getProductDto(boardId);
+        validateListElementExist(productDtos, BOARD_NOT_FOUND);
 
-        Optional.ofNullable(productDtos).orElseThrow(() ->
-            new BbangleException(BOARD_NOT_FOUND));
-
-        List<BoardDetailProductDto> boardDetailProductDtos = toProductToResponse(productDtos);
+        List<BoardDetailProductDto> boardDetailProductDtos = convertToProductResponse(productDtos);
         Boolean isBundled = isBundled(productDtos);
 
-        return ProductResponse.builder()
-            .products(boardDetailProductDtos)
-            .boardIsBundled(isBundled)
-            .build();
+        return ProductResponse.of(isBundled, boardDetailProductDtos);
     }
 
     public Slice<BoardResponseDto> getPostInFolder(

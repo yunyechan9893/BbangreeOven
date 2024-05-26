@@ -7,12 +7,12 @@ import com.bbangle.bbangle.board.domain.QProduct;
 import com.bbangle.bbangle.board.domain.QProductImg;
 import com.bbangle.bbangle.board.domain.TagEnum;
 import com.bbangle.bbangle.board.dto.BoardAllTitleDto;
+import com.bbangle.bbangle.board.dto.BoardAndImageDto;
 import com.bbangle.bbangle.board.dto.BoardResponseDto;
 import com.bbangle.bbangle.board.dto.CursorInfo;
 import com.bbangle.bbangle.board.dto.FilterRequest;
 import com.bbangle.bbangle.board.dto.ProductDto;
 import com.bbangle.bbangle.board.dto.QBoardAllTitleDto;
-import com.bbangle.bbangle.board.dto.QProductDto;
 import com.bbangle.bbangle.board.repository.query.BoardQueryProviderResolver;
 import com.bbangle.bbangle.common.sort.SortType;
 import com.bbangle.bbangle.exception.BbangleException;
@@ -23,8 +23,8 @@ import com.bbangle.bbangle.wishlist.domain.QWishListBoard;
 import com.bbangle.bbangle.wishlist.domain.QWishListFolder;
 import com.bbangle.bbangle.wishlist.domain.WishListFolder;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
@@ -116,17 +116,19 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
     }
 
     @Override
-    public List<Tuple> findBoardAndBoardImageByBoardId(Long boardId) {
+    public List<BoardAndImageDto> findBoardAndBoardImageByBoardId(Long boardId) {
         return queryFactory.select(
-                board.id,
-                board.profile,
-                board.title,
-                board.price,
-                board.purchaseUrl,
-                board.status,
-                board.deliveryFee,
-                board.freeShippingConditions,
-                productImage.url
+                Projections.constructor(
+                    BoardAndImageDto.class,
+                    board.id,
+                    board.profile,
+                    board.title,
+                    board.price,
+                    board.purchaseUrl,
+                    board.status,
+                    board.deliveryFee,
+                    board.freeShippingConditions,
+                    productImage.url)
             ).from(board)
             .leftJoin(productImage)
             .on(productImage.board.eq(board))
@@ -136,16 +138,18 @@ public class BoardRepositoryImpl implements BoardQueryDSLRepository {
 
     @Override
     public List<ProductDto> getProductDto(Long boardId) {
-        return queryFactory.select(new QProductDto(
-                product.id,
-                product.title,
-                product.category,
-                product.glutenFreeTag,
-                product.highProteinTag,
-                product.sugarFreeTag,
-                product.veganTag,
-                product.ketogenicTag
-            ))
+        return queryFactory.select(
+                Projections.constructor(
+                    ProductDto.class,
+                    product.id,
+                    product.title,
+                    product.category,
+                    product.glutenFreeTag,
+                    product.highProteinTag,
+                    product.sugarFreeTag,
+                    product.veganTag,
+                    product.ketogenicTag
+                ))
             .from(product)
             .where(product.board.id.eq(boardId))
             .fetch();
